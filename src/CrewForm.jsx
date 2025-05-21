@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { submitCrewRequest, chatWithAgent } from './api';
 
-export default function CrewForm({ onJobCreated }) {
+export default function CrewForm({ onJobCreated, testScenario }) {
   const [userInput, setUserInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState(null);
   const messagesEndRef = useRef(null);
-  
+
   // 添加欢迎消息
   useEffect(() => {
     setMessages([
@@ -19,6 +19,66 @@ export default function CrewForm({ onJobCreated }) {
       }
     ]);
   }, []);
+
+  // 监听测试场景变化
+  useEffect(() => {
+    if (testScenario) {
+      console.log('选择测试场景:', testScenario);
+      handleTestScenario(testScenario);
+    }
+  }, [testScenario]);
+
+  // 处理测试场景
+  const handleTestScenario = async (scenario) => {
+    if (!scenario || !scenario.data) return;
+    
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      // 添加用户消息（测试场景的需求）
+      const userMessage = {
+        isUser: true,
+        text: scenario.data.requirements,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, userMessage]);
+      
+      // 添加系统确认消息
+      const confirmMessage = {
+        isUser: false,
+        text: `正在执行测试场景: ${scenario.name}\n\n需求: ${scenario.data.requirements}`,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, confirmMessage]);
+      
+      // 直接提交任务
+      console.log('提交测试场景数据:', scenario.data);
+      const res = await submitCrewRequest(scenario.data);
+      
+      if (res.job_id) {
+        console.log("测试任务创建成功，job_id:", res.job_id);
+        setMessages(prev => [...prev, {
+          isUser: false,
+          text: '测试任务已创建，正在处理中...',
+          timestamp: new Date()
+        }]);
+        onJobCreated(res.job_id);
+      } else {
+        throw new Error('任务创建失败，没有返回job_id');
+      }
+    } catch (err) {
+      console.error('测试场景执行出错:', err);
+      setError(`测试场景执行失败: ${err.message}`);
+      setMessages(prev => [...prev, {
+        isUser: false,
+        text: `测试场景执行失败: ${err.message}`,
+        timestamp: new Date()
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // 自动滚动到最新消息
   useEffect(() => {
@@ -32,7 +92,7 @@ export default function CrewForm({ onJobCreated }) {
     e.preventDefault();
     
     if (!userInput.trim()) return;
-    
+
     const newMessage = {
       isUser: true,
       text: userInput,
@@ -52,8 +112,25 @@ export default function CrewForm({ onJobCreated }) {
         text: msg.text
       }));
       
+      console.log('发送对话请求，历史记录:', history);
+      
       // 调用对话API
       const response = await chatWithAgent(newMessage.text, history);
+      
+      console.log('收到对话响应:', response);
+      
+      // 尝试从reply中解析JSON
+      let parsedData = null;
+      try {
+        // 查找reply中的JSON字符串
+        const jsonMatch = response.reply.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          parsedData = JSON.parse(jsonMatch[0]);
+          console.log('从reply中解析出的数据:', parsedData);
+        }
+      } catch (err) {
+        console.log('reply中的JSON解析失败:', err);
+      }
       
       // 添加助手回复消息
       setMessages(prev => [...prev, {
@@ -62,17 +139,23 @@ export default function CrewForm({ onJobCreated }) {
         timestamp: new Date()
       }]);
       
-      // 打印完整响应以便调试
-      console.log('完整响应:', response);
+      // 使用解析后的数据或原始数据
+      const dataToUse = parsedData || response.data;
+      
+      // 检查响应数据结构
+      console.log('响应数据结构检查:', {
+        hasData: !!dataToUse,
+        hasCrew: dataToUse && !!dataToUse.crew,
+        crewKeys: dataToUse && dataToUse.crew ? Object.keys(dataToUse.crew) : []
+      });
       
       // 如果响应包含完整数据，提交创建任务
-      if (response.data && (
-        (response.data.operation_type && response.data.task_type) || 
-        (response.data.crew && Object.keys(response.data.crew).length > 0)
-      )) {
-        console.log('提交任务数据:', response.data);
-        setFormData(response.data);
-        handleSubmitJob(response.data);
+      if (dataToUse && dataToUse.crew && Object.keys(dataToUse.crew).length > 0) {
+        console.log('准备提交任务数据:', dataToUse);
+        setFormData(dataToUse);
+        handleSubmitJob(dataToUse);
+      } else {
+        console.log('响应数据不完整，不提交任务');
       }
     } catch (err) {
       console.error('对话出错:', err);
@@ -87,16 +170,21 @@ export default function CrewForm({ onJobCreated }) {
     setIsLoading(true);
     try {
       // 确保data包含必要的字段
-      let jobData = { ...data };
+      let jobData = {
+        requirements: data.requirements || '',
+        reference_urls: data.reference_urls || [],
+        additional_data: data.additional_data || {},
+        crew: data.crew || {}
+      };
       
-      // 检查是否有crew字段并转换为API需要的格式
-      if (jobData.crew) {
-        // 已在后端完成转换，不需要在前端做额外处理
-        console.log("收到完整的crew数据", jobData);
-      }
+      console.log("准备提交到后端的数据:", jobData);
+      console.log("crew配置:", jobData.crew);
       
       const res = await submitCrewRequest(jobData);
+      console.log("后端返回结果:", res);
+      
       if (res.job_id) {
+        console.log("任务创建成功，job_id:", res.job_id);
         setMessages(prev => [...prev, {
           isUser: false,
           text: '太好了！我已经为您创建了任务，正在处理中...',
@@ -104,6 +192,7 @@ export default function CrewForm({ onJobCreated }) {
         }]);
         onJobCreated(res.job_id);
       } else {
+        console.error("任务创建失败，没有返回job_id");
         setError('提交失败，请重试');
       }
     } catch (err) {
@@ -141,18 +230,18 @@ export default function CrewForm({ onJobCreated }) {
         )}
         <div ref={messagesEndRef} />
       </div>
-      
+
       <form onSubmit={handleSendMessage} className="input-container">
         <input
           type="text"
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
-          placeholder="请输入您的需求..."
-          disabled={isLoading || formData !== null}
+          placeholder={testScenario ? "已选择测试场景..." : "请输入您的需求..."}
+          disabled={isLoading || formData !== null || testScenario !== null}
         />
         <button 
           type="submit" 
-          disabled={isLoading || !userInput.trim() || formData !== null}
+          disabled={isLoading || !userInput.trim() || formData !== null || testScenario !== null}
         >
           发送
         </button>
@@ -234,6 +323,11 @@ export default function CrewForm({ onJobCreated }) {
           font-size: 14px;
         }
         
+        input:disabled {
+          background: #f5f5f5;
+          cursor: not-allowed;
+        }
+        
         button {
           padding: 12px 20px;
           background: #1890ff;
@@ -255,13 +349,13 @@ export default function CrewForm({ onJobCreated }) {
           text-align: center;
           padding: 8px;
         }
-        
+
         .typing {
           display: flex;
           align-items: center;
           height: 24px;
         }
-        
+
         .dot {
           display: inline-block;
           width: 8px;
@@ -271,7 +365,7 @@ export default function CrewForm({ onJobCreated }) {
           margin: 0 3px;
           animation: typing 1.4s infinite both;
         }
-        
+
         .dot:nth-child(2) {
           animation-delay: 0.2s;
         }

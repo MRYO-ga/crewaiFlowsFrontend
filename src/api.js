@@ -3,24 +3,64 @@ export async function submitCrewRequest(data) {
   
   // 确保数据包含所有必要的字段
   const requestData = {
-    operation_type: data.operation_type || '',
-    category: data.category || '护肤',
     requirements: data.requirements || '',
-    account_id: data.account_id || '',
-    keywords: data.keywords || [],
-    // 如果存在crew字段，添加到请求中
-    ...(data.crew && { crew: data.crew }),
-    ...(data.task_type && { task_type: data.task_type })
+    reference_urls: data.reference_urls || [],
+    additional_data: data.additional_data || {},
+    crew: data.crew || {}
   };
+  
+  // 打印完整的crew配置结构
+  console.log('crew配置结构:', JSON.stringify(requestData.crew, null, 2));
+  
+  // 确保crew配置格式正确
+  if (requestData.crew && typeof requestData.crew === 'object') {
+    // 处理persona_management字段
+    if (requestData.crew.persona_management && 
+        typeof requestData.crew.persona_management === 'object' &&
+        !Array.isArray(requestData.crew.persona_management)) {
+      console.log('发现persona_management对象配置:', requestData.crew.persona_management);
+    }
+    
+    // 处理competitor_analysis字段
+    if (requestData.crew.competitor_analysis && 
+        typeof requestData.crew.competitor_analysis === 'object' &&
+        !Array.isArray(requestData.crew.competitor_analysis)) {
+      console.log('发现competitor_analysis对象配置:', requestData.crew.competitor_analysis);
+    }
+    
+    // 处理content_creation字段
+    if (requestData.crew.content_creation && 
+        typeof requestData.crew.content_creation === 'object' &&
+        !Array.isArray(requestData.crew.content_creation)) {
+      console.log('发现content_creation对象配置:', requestData.crew.content_creation);
+    }
+  }
   
   console.log('格式化后的请求数据:', requestData);
   
-  const res = await fetch('http://localhost:9000/api/crew', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(requestData)
-  });
-  return res.json();
+  try {
+    const res = await fetch('http://localhost:9000/api/crew', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestData)
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('API请求失败:', errorText);
+      try {
+        const errorJson = JSON.parse(errorText);
+        throw new Error(JSON.stringify(errorJson));
+      } catch (e) {
+        throw new Error(errorText || '请求失败');
+      }
+    }
+    
+    return res.json();
+  } catch (error) {
+    console.error('请求错误:', error);
+    throw error;
+  }
 }
 
 export async function getJobStatus(jobId) {

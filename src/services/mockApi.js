@@ -893,7 +893,419 @@ const mockData = {
 4. **团队建设**：建立专业团队，提高运营效率
 `
     }
-  ]
+  ],
+
+  // 小红书账号周期运营SOP数据
+  operationSOP: {
+    title: '小红书账号周期运营 SOP（3 个月版）',
+    cycles: [
+      {
+        id: 'cold-start',
+        title: '冷启动期',
+        subtitle: '第1-4周：账号定位与测试',
+        duration: '4周',
+        status: 'process',
+        icon: 'RocketOutlined',
+        color: '#1890ff',
+        progress: 75,
+        goal: '完成账号基建，测试内容模型，锁定核心人群',
+        weeks: [
+          {
+            id: 'week-1',
+            title: '第1周：账号装修与内容储备（基建搭建）',
+            status: 'finish',
+            tasks: [
+              {
+                id: 'daily-checklist-1',
+                category: '每日执行清单（第1-7天）',
+                completed: false,
+                items: [
+                  {
+                    id: 'account-setup',
+                    time: '第1-2天',
+                    action: '账号装修',
+                    content: '头图：3宫格设计（选购3步曲图标 + 场景图轮播 + IP形象）简介：突出「年轻人睡眠解决方案」+ 导流钩子',
+                    example: '头图文案：点击解锁→3步选对床垫简介：帮1000+租房党选到梦中情垫',
+                    publishTime: '随时完成',
+                    reason: '建立专业形象，引导用户互动',
+                    completed: true
+                  },
+                  {
+                    id: 'content-production',
+                    time: '第3-5天',
+                    action: '内容生产',
+                    content: '储备10篇泛用户内容：3篇萌宠图文、2条租房视频、2条剧情口播、2篇数据图文、1套场景海报',
+                    example: '《猫主子认证！这款床垫让我告别每天除毛》《20㎡出租屋改造：800元床垫逆袭指南》',
+                    publishTime: '生产完成即存草稿',
+                    reason: '提前储备内容，避免断更风险',
+                    completed: true
+                  },
+                  {
+                    id: 'account-verification',
+                    time: '第6-7天',
+                    action: '账号认证与权限开通',
+                    content: '完成企业/个人认证，开通「商品目录」「薯条投放」权限',
+                    example: '-',
+                    publishTime: '平台审核期',
+                    reason: '为后续流量投放和转化铺路',
+                    completed: false
+                  }
+                ]
+              },
+              {
+                id: 'key-results',
+                category: '关键成果验收',
+                completed: false,
+                items: [
+                  {
+                    id: 'account-decoration',
+                    content: '账号装修完成（头图/简介/置顶笔记）',
+                    completed: true
+                  },
+                  {
+                    id: 'content-library',
+                    content: '内容素材库建立（按「萌宠/租房/数据」分类）',
+                    completed: true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'week-2-3',
+            title: '第2-3周：内容赛马与模型筛选（每日双更测试）',
+            status: 'process',
+            tasks: [
+              {
+                id: 'daily-template',
+                category: '每日执行模板（第8-21天）',
+                completed: false,
+                items: [
+                  {
+                    id: 'morning-content',
+                    time: '早7:30-8:30',
+                    action: '发布泛用户内容',
+                    content: '萌宠/剧情视频',
+                    example: '《月薪3千买的床垫，同事居然问我要链接》《猫抓3个月没破！这款床垫让我敢让宠物上床了》',
+                    publishTime: '固定早高峰',
+                    reason: '通勤时段用户活跃度高，适合吸睛内容',
+                    completed: false
+                  },
+                  {
+                    id: 'evening-content',
+                    time: '晚20:00-21:00',
+                    action: '发布场景化内容',
+                    content: '租房图文/测评',
+                    example: '《房东床垫太烂？我花1000元换了张「会呼吸」的床垫》《宿舍床垫选购表：500-1500元高性价比款对比》',
+                    publishTime: '固定晚高峰',
+                    reason: '睡前浏览黄金期，用户有耐心看干货',
+                    completed: false
+                  },
+                  {
+                    id: 'data-tracking',
+                    time: '全天',
+                    action: '数据台账记录',
+                    content: '建立《内容效果表》',
+                    example: '记录每篇笔记的点击率、互动率、搜索流量占比',
+                    publishTime: '实时更新',
+                    reason: '通过数据量化内容效果，淘汰低效模型',
+                    completed: false
+                  }
+                ]
+              },
+              {
+                id: 'weekly-actions',
+                category: '每周关键动作',
+                completed: false,
+                items: [
+                  {
+                    id: 'data-analysis',
+                    content: '周一/周四：分析上周数据，淘汰互动率＜5%的内容模板',
+                    completed: false
+                  },
+                  {
+                    id: 'copy-success',
+                    content: '周二/周五：复制爆款要素（如高点击率封面多含「对比图+数字」）',
+                    completed: false
+                  },
+                  {
+                    id: 'test-new',
+                    content: '周三/周六：测试新内容形态（如用户UGC二次创作、数据可视化图文）',
+                    completed: false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'week-4',
+            title: '第4周：人群定位与策略调整（精准聚焦）',
+            status: 'wait',
+            tasks: [
+              {
+                id: 'execution-steps',
+                category: '执行步骤',
+                completed: false,
+                items: [
+                  {
+                    id: 'audience-analysis',
+                    time: '第22-23天',
+                    action: '粉丝画像分析',
+                    content: '工具：小红书后台「粉丝数据」+ 新红数据「人群分析」',
+                    example: '输出：年龄/性别/地域分布表 + 兴趣标签TOP5（如「租房改造」「学生党好物」）',
+                    completed: false
+                  },
+                  {
+                    id: 'content-adjustment',
+                    time: '第24-28天',
+                    action: '内容比例调整',
+                    content: '泛用户60%：新增「独居生活」「职场新人租房」场景内容；潜在用户40%：聚焦「折叠床垫测评」「房东床垫替换方案」',
+                    example: '匹配粉丝主流身份（22-28岁租房女性）',
+                    completed: false
+                  }
+                ]
+              },
+              {
+                id: 'account-weight',
+                category: '账号权重提升',
+                completed: false,
+                items: [
+                  {
+                    id: 'weekly-collection',
+                    content: '固定每周五发布1篇「合集类」内容（如《618租房床垫选购清单（附避坑指南）》）',
+                    completed: false
+                  },
+                  {
+                    id: 'comment-guide',
+                    content: '评论区置顶「点击主页看更多场景攻略」，提升主页访问率30%+',
+                    completed: false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'growth',
+        title: '成长期',
+        subtitle: '第5-8周：粉丝增长与转化加速',
+        duration: '4周',
+        status: 'wait',
+        icon: 'LineChartOutlined',
+        color: '#52c41a',
+        progress: 0,
+        goal: '扩大曝光量，激活潜在用户，搭建转化路径',
+        weeks: [
+          {
+            id: 'week-5-6',
+            title: '第5-6周：泛用户破圈（场景化内容矩阵）',
+            status: 'wait',
+            tasks: [
+              {
+                id: 'fixed-columns',
+                category: '固定栏目运营（每周三/六更新）',
+                completed: false,
+                items: [
+                  {
+                    id: 'sleep-lab',
+                    content: '睡眠生活实验室：《996程序员实测：办公室折叠床垫能不能睡整觉？》',
+                    publishTime: '周三12:00',
+                    reason: '拓展非典型场景，触达跨圈层用户',
+                    completed: false
+                  },
+                  {
+                    id: 'pet-diary',
+                    content: '萌宠选垫日记：《我家狗睡了半年的床垫：这3个细节让我决定回购》',
+                    publishTime: '周六18:00',
+                    reason: '利用宠物流量属性，增强内容亲和力',
+                    completed: false
+                  }
+                ]
+              },
+              {
+                id: 'viral-copy',
+                category: '爆款复制策略',
+                completed: false,
+                items: [
+                  {
+                    id: 'rental-renovation',
+                    content: '针对冷启动期跑出的「租房改造」爆款（互动率12%），每周复制1篇同类型内容',
+                    example: '《15㎡老破小逆袭：1200元床垫让卧室颜值翻倍》（附前后对比图）',
+                    completed: false
+                  },
+                  {
+                    id: 'title-formula',
+                    content: '标题公式：《XX㎡出租屋改造：XX元床垫解决XX痛点》',
+                    completed: false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'week-7-8',
+            title: '第7-8周：潜在用户拦截（痛点解决方案）',
+            status: 'wait',
+            tasks: [
+              {
+                id: 'review-content',
+                category: '测评类内容标准化生产（每周二/四更新）',
+                completed: false,
+                items: [
+                  {
+                    id: 'pain-point-review',
+                    content: '痛点型测评：《床垫越睡越累？90%是因为选错支撑力（附测试方法）》',
+                    publishTime: '周二20:00',
+                    reason: '直击用户使用中的隐性痛点',
+                    completed: false
+                  },
+                  {
+                    id: 'scenario-recommendation',
+                    content: '场景化推荐：《学生党必看！500-1500元宿舍床垫红黑榜（含链接）》',
+                    publishTime: '周四19:00',
+                    reason: '满足细分场景需求，提升转化效率',
+                    completed: false
+                  }
+                ]
+              },
+              {
+                id: 'live-conversion',
+                category: '直播转化启动（每月第2周周六20:00）',
+                completed: false,
+                items: [
+                  {
+                    id: 'benefit-distribution',
+                    time: '0-10分钟',
+                    action: '发放50元直播专属券（限前100名）',
+                    reason: '用即时利益吸引用户停留',
+                    completed: false
+                  },
+                  {
+                    id: 'product-breakdown',
+                    time: '10-20分钟',
+                    action: '用压力测试仪展示床垫支撑力差异',
+                    reason: '专业可视化增强购买信任',
+                    completed: false
+                  },
+                  {
+                    id: 'limited-promotion',
+                    time: '20-30分钟',
+                    action: '主推「租房套餐」（床垫+床笠，立减200元）',
+                    reason: '制造稀缺感，促成即时决策',
+                    completed: false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'mature',
+        title: '成熟期',
+        subtitle: '第9-12周：精细化运营与品牌溢价',
+        duration: '4周',
+        status: 'wait',
+        icon: 'AimOutlined',
+        color: '#faad14',
+        progress: 0,
+        goal: '强化IP人设，沉淀私域用户，提升复购与溢价',
+        weeks: [
+          {
+            id: 'week-9-10',
+            title: '第9-10周：IP化升级（打造「睡眠顾问」人设）',
+            status: 'wait',
+            tasks: [
+              {
+                id: 'persona-content',
+                category: '人设内容标准化（每周一/五更新）',
+                completed: false,
+                items: [
+                  {
+                    id: 'knowledge-popularization',
+                    content: '知识科普：《弹簧床垫怎么选？记住这3个参数就够了》',
+                    publishTime: '周一11:00',
+                    reason: '建立专业权威形象',
+                    completed: false
+                  },
+                  {
+                    id: 'user-qa',
+                    content: '用户答疑：《床垫太软怎么办？3种解决方案一次说清》',
+                    publishTime: '周五17:00',
+                    reason: '通过互动提升用户信任度',
+                    completed: false
+                  }
+                ]
+              },
+              {
+                id: 'private-domain',
+                category: '私域导流策略',
+                completed: false,
+                items: [
+                  {
+                    id: 'content-hook',
+                    content: '每篇笔记末尾增加「钩子」："私信回复「选垫」，免费领取《床垫选购手册》+1对1咨询"',
+                    completed: false
+                  },
+                  {
+                    id: 'auto-reply',
+                    content: '企业微信自动回复："你好～我是你的睡眠顾问XX！刚看到你关注了宿舍床垫，这是整理好的《学生党床垫清单》，需要哪款详细测评可以告诉我哦～"',
+                    completed: false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'week-11-12',
+            title: '第11-12周：数据反哺与闭环运营',
+            status: 'wait',
+            tasks: [
+              {
+                id: 'pain-point-conversion',
+                category: '痛点转化流程（每周三执行）',
+                completed: false,
+                items: [
+                  {
+                    id: 'data-collection',
+                    content: '数据收集：新红数据抓取评论区高频词（如「腰背痛」「搬家难」）；客服导出上周咨询记录，分类整理TOP3痛点',
+                    completed: false
+                  },
+                  {
+                    id: 'content-response',
+                    content: '内容响应：针对租房搬家难：《可卷包床垫实测：一个人轻松搬上6楼（附对比视频）》；针对宠物抓坏：《防猫抓床垫真的有用吗？实测2个月后我总结了这3点》',
+                    completed: false
+                  }
+                ]
+              },
+              {
+                id: 'milestone-sprint',
+                category: '里程碑冲刺（第12周重点动作）',
+                completed: false,
+                items: [
+                  {
+                    id: 'fans-breakthrough',
+                    content: '粉丝破5万：联合3个5万粉KOL转发爆款笔记',
+                    time: '第12周周一',
+                    reason: '借势外部流量突破粉丝瓶颈',
+                    completed: false
+                  },
+                  {
+                    id: 'gmv-breakthrough',
+                    content: 'GMV破5万：提前3天私域预告+直播专属福袋',
+                    time: '第12周周六',
+                    reason: '集中资源冲刺阶段目标',
+                    completed: false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 };
 
 // 模拟API函数

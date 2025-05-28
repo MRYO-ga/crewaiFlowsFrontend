@@ -1,0 +1,787 @@
+.schedule-page {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  /* 自定义滚动条样式 */
+  scrollbar-width: thin;
+  scrollbar-color: #bfbfbf #f5f5f5;
+}
+
+/* Webkit浏览器滚动条样式 */
+.schedule-page::-webkit-scrollbar {
+  width: 8px;
+}
+
+.schedule-page::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.schedule-page::-webkit-scrollbar-thumb {
+  background: #bfbfbf;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.schedule-page::-webkit-scrollbar-thumb:hover {
+  background: #8c8c8c;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.page-header h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: #8c8c8c;
+  margin: 0;
+}
+
+/* 加载容器 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  background: white;
+  border-radius: 12px;
+  margin: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* 总体进度概览 */
+.overview-stats {
+  margin-bottom: 24px;
+}
+
+.overview-stats .ant-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.overview-stats .ant-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.overview-stats .ant-statistic-title {
+  font-size: 14px;
+  color: #8c8c8c;
+  margin-bottom: 8px;
+}
+
+.overview-stats .ant-statistic-content {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* 运营周期总览 */
+.cycle-overview {
+  margin-bottom: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: none;
+}
+
+.cycle-overview .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 24px;
+}
+
+.cycle-overview .ant-card-head-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+}
+
+/* 简化版运营周期总览 */
+.simplified-cycle-overview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 32px 24px;
+  background: #fafafa;
+  border-radius: 12px;
+  overflow-x: auto;
+  min-height: 120px;
+}
+
+.simple-cycle-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  border: 2px solid #f0f0f0;
+  transition: all 0.3s ease;
+  min-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  position: relative;
+  cursor: pointer;
+}
+
+.simple-cycle-item.active {
+  border-color: #1890ff;
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.2);
+}
+
+.simple-cycle-item.finish {
+  border-color: #52c41a;
+  background: linear-gradient(135deg, #f6ffed 0%, #ffffff 100%);
+}
+
+.simple-cycle-item.process {
+  border-color: #1890ff;
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+}
+
+.simple-cycle-item.wait {
+  border-color: #d9d9d9;
+  background: #fafafa;
+}
+
+.simple-cycle-item:hover {
+  border-color: #1890ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.simple-cycle-icon {
+  font-size: 28px;
+  color: #1890ff;
+  margin-bottom: 12px;
+}
+
+.simple-cycle-item.finish .simple-cycle-icon {
+  color: #52c41a;
+}
+
+.simple-cycle-item.wait .simple-cycle-icon {
+  color: #8c8c8c;
+}
+
+.simple-cycle-content {
+  text-align: center;
+  width: 100%;
+}
+
+.simple-cycle-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 4px;
+}
+
+.simple-cycle-subtitle {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.simple-cycle-progress {
+  width: 100%;
+}
+
+.simple-cycle-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+}
+
+.simple-cycle-arrow {
+  font-size: 20px;
+  color: #1890ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* 周期卡片 */
+.cycles-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cycle-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  border: none;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.cycle-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.cycle-card.current {
+  border-color: #1890ff !important;
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%) !important;
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.15) !important;
+}
+
+.cycle-card.process {
+  border-left: 4px solid #1890ff;
+}
+
+.cycle-card.finish {
+  border-left: 4px solid #52c41a;
+}
+
+.cycle-card.wait {
+  border-left: 4px solid #d9d9d9;
+}
+
+.cycle-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cycle-title .anticon {
+  font-size: 20px;
+  color: #1890ff;
+}
+
+.cycle-title span {
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.cycle-progress {
+  flex: 1;
+  margin-left: 16px;
+  min-width: 120px;
+}
+
+.cycle-subtitle {
+  font-size: 14px;
+  color: #8c8c8c;
+  margin-bottom: 8px;
+}
+
+.cycle-goal {
+  font-size: 14px;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #1890ff;
+}
+
+/* 时间线样式 */
+.week-timeline {
+  margin-top: 16px;
+}
+
+.week-timeline .ant-timeline-item {
+  padding-bottom: 24px;
+}
+
+.week-timeline .ant-timeline-item-tail {
+  border-left: 2px solid #f0f0f0;
+}
+
+.week-item {
+  position: relative;
+}
+
+.week-content {
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.week-content:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.week-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.week-expand-icon {
+  font-size: 14px;
+  color: #8c8c8c;
+  transition: all 0.3s ease;
+}
+
+.week-expand-icon.expanded {
+  transform: rotate(90deg);
+  color: #1890ff;
+}
+
+.week-title {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+  color: #262626;
+  line-height: 1.4;
+}
+
+.week-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.week-stats .ant-progress {
+  min-width: 80px;
+}
+
+/* 周展开内容 */
+.week-expanded-content {
+  margin-top: 16px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+  max-height: 600px;
+  overflow-y: auto;
+  /* 自定义滚动条 */
+  scrollbar-width: thin;
+  scrollbar-color: #d9d9d9 #fafafa;
+}
+
+.week-expanded-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.week-expanded-content::-webkit-scrollbar-track {
+  background: #fafafa;
+  border-radius: 3px;
+}
+
+.week-expanded-content::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 3px;
+}
+
+.week-expanded-content::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
+}
+
+/* 任务容器 */
+.task-container {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.task-container:last-child {
+  margin-bottom: 0;
+}
+
+.task-container:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+}
+
+/* 任务头部 */
+.task-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.task-header:hover {
+  background: #f8f9fa;
+}
+
+.task-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.task-info {
+  flex: 1;
+}
+
+.task-info .ant-typography {
+  margin: 0;
+}
+
+.task-stats {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-expand-icon {
+  font-size: 14px;
+  color: #8c8c8c;
+  transition: all 0.3s ease;
+}
+
+.task-expand-icon.expanded {
+  transform: rotate(90deg);
+  color: #1890ff;
+}
+
+.task-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 120px;
+}
+
+.task-header-right .ant-progress {
+  flex: 1;
+}
+
+/* 任务内容 */
+.task-content {
+  padding: 0 16px 16px;
+  background: #fafafa;
+  max-height: 400px;
+  overflow-y: auto;
+  /* 自定义滚动条 */
+  scrollbar-width: thin;
+  scrollbar-color: #d9d9d9 #fafafa;
+}
+
+.task-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.task-content::-webkit-scrollbar-track {
+  background: #fafafa;
+  border-radius: 3px;
+}
+
+.task-content::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 3px;
+}
+
+.task-content::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
+}
+
+/* 任务项目行 */
+.task-item-row {
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: white;
+  border: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.task-item-row:last-child {
+  margin-bottom: 0;
+}
+
+.task-item-row:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.1);
+  transform: translateX(2px);
+}
+
+.task-item-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.task-details {
+  flex: 1;
+}
+
+.task-time-tag {
+  margin-bottom: 8px;
+}
+
+.task-action {
+  display: block;
+  margin-bottom: 8px;
+  color: #262626;
+}
+
+.task-content-text {
+  margin-bottom: 8px;
+  line-height: 1.6;
+  color: #595959;
+}
+
+.task-example {
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: #f0f9ff;
+  border-radius: 4px;
+  border-left: 3px solid #1890ff;
+}
+
+.task-publish-time {
+  margin-bottom: 4px;
+}
+
+.task-reason {
+  margin-bottom: 4px;
+}
+
+/* 完成状态样式 */
+.task-item-completed {
+  opacity: 0.7;
+  background: #f6ffed !important;
+  border-color: #b7eb8f !important;
+}
+
+.task-item-completed .task-content-text {
+  text-decoration: line-through;
+  color: #8c8c8c;
+}
+
+.completed-text {
+  text-decoration: line-through;
+  color: #8c8c8c !important;
+}
+
+/* 周状态样式 */
+.week-item.finish .week-content {
+  border-color: #52c41a;
+  background: linear-gradient(135deg, #f6ffed 0%, #ffffff 100%);
+}
+
+.week-item.process .week-content {
+  border-color: #1890ff;
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+}
+
+.week-item.wait .week-content {
+  border-color: #d9d9d9;
+  background: #fafafa;
+}
+
+/* 复选框样式优化 */
+.ant-checkbox-wrapper {
+  margin-right: 0;
+}
+
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #52c41a;
+  border-color: #52c41a;
+}
+
+.ant-checkbox-wrapper:hover .ant-checkbox-inner {
+  border-color: #1890ff;
+}
+
+/* 标签样式 */
+.ant-tag {
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 2px 8px;
+  margin-right: 8px;
+}
+
+/* 动画效果 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cycle-card:nth-child(1) { animation-delay: 0.1s; }
+.cycle-card:nth-child(2) { animation-delay: 0.2s; }
+.cycle-card:nth-child(3) { animation-delay: 0.3s; }
+
+/* 进度条样式优化 */
+.ant-progress-bg {
+  border-radius: 4px !important;
+}
+
+.ant-statistic-title {
+  font-size: 14px;
+  color: #8c8c8c;
+  margin-bottom: 8px;
+}
+
+.ant-statistic-content {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.ant-statistic-content-prefix {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+/* 时间线图标样式 */
+.ant-timeline-item-head {
+  border: 2px solid #f0f0f0;
+  background: white;
+}
+
+/* 按钮样式优化 */
+.ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.ant-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .simplified-cycle-overview {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .simple-cycle-item {
+    min-width: 100%;
+  }
+
+  .simple-cycle-arrow {
+    transform: rotate(90deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .schedule-page {
+    padding: 16px;
+  }
+
+  .overview-stats .ant-col {
+    margin-bottom: 16px;
+  }
+
+  .cycle-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .cycle-progress {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .week-content {
+    padding: 12px;
+  }
+
+  .week-item:hover .week-content {
+    transform: none;
+  }
+
+  .task-item-row {
+    padding: 8px;
+  }
+
+  .week-expanded-content {
+    max-height: 300px;
+  }
+
+  .task-content {
+    max-height: 200px;
+  }
+
+  .simplified-cycle-overview {
+    padding: 16px;
+  }
+
+  .simple-cycle-item {
+    min-width: 150px;
+  }
+
+  .simple-cycle-icon {
+    font-size: 24px;
+  }
+
+  .simple-cycle-title {
+    font-size: 14px;
+  }
+
+  .simple-cycle-subtitle {
+    font-size: 11px;
+  }
+}
+
+/* 滚动条样式统一 */
+.simplified-cycle-overview::-webkit-scrollbar {
+  height: 6px;
+}
+
+.simplified-cycle-overview::-webkit-scrollbar-track {
+  background: #fafafa;
+  border-radius: 3px;
+}
+
+.simplified-cycle-overview::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 3px;
+}
+
+.simplified-cycle-overview::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
+}
+
+/* 简化周期项目动画 */
+.simple-cycle-item {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.simple-cycle-item:nth-child(1) { animation-delay: 0.1s; }
+.simple-cycle-item:nth-child(3) { animation-delay: 0.2s; }
+.simple-cycle-item:nth-child(5) { animation-delay: 0.3s; }

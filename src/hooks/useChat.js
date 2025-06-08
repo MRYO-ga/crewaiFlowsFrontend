@@ -26,7 +26,7 @@ const useChat = () => {
     }
   }, []);
 
-  // 发送消息
+  // 发送消息 - 增强版，支持智能意图识别
   const sendMessage = useCallback(async (messageText) => {
     if (!messageText.trim()) return;
 
@@ -40,35 +40,26 @@ const useChat = () => {
     };
     
     setMessages(prev => [...prev, userMessage]);
-    
-    // 添加AI消息占位符，显示加载状态
-    const tempAiMessage = {
-      id: `temp-${Date.now()}`,
-      content: '',
-      sender: 'ai',
-      timestamp: new Date().toISOString(),
-      status: 'loading'
-    };
-    
-    setMessages(prev => [...prev, tempAiMessage]);
     setSendingMessage(true);
 
     try {
       const response = await chatApi.sendMessage(messageText);
       
-      // 更新AI消息
-      setMessages(prev => prev.map(msg => 
-        msg.id === tempAiMessage.id 
-          ? { 
-              id: response.id || tempAiMessage.id,
-              content: response.content,
-              sender: 'ai',
-              timestamp: response.timestamp || new Date().toISOString(),
-              status: 'received',
-              references: response.references || []
-            }
-          : msg
-      ));
+      // 创建AI回复消息，包含智能分析结果
+      const aiMessage = {
+        id: response.id || `ai-${Date.now()}`,
+        content: response.content,
+        sender: 'ai',
+        timestamp: response.timestamp || new Date().toISOString(),
+        status: 'received',
+        intent: response.intent,
+        hasData: response.hasData,
+        dataType: response.dataType,
+        references: response.references || [],
+        analysisData: response.analysisData
+      };
+      
+      setMessages(prev => [...prev, aiMessage]);
 
       // 如果有引用资料，更新引用列表
       if (response.references && response.references.length > 0) {
@@ -77,17 +68,16 @@ const useChat = () => {
 
       return response;
     } catch (err) {
-      // 更新AI消息为错误状态
-      setMessages(prev => prev.map(msg => 
-        msg.id === tempAiMessage.id 
-          ? { 
-              ...msg, 
-              content: '消息发送失败，请重试。', 
-              status: 'error' 
-            }
-          : msg
-      ));
+      // 添加错误消息
+      const errorMessage = {
+        id: `error-${Date.now()}`,
+        content: '抱歉，我遇到了一些问题。请稍后重试。',
+        sender: 'ai',
+        timestamp: new Date().toISOString(),
+        status: 'error'
+      };
       
+      setMessages(prev => [...prev, errorMessage]);
       setError(err.message || '发送消息失败');
       toast.error('发送消息失败');
       return null;
@@ -96,69 +86,91 @@ const useChat = () => {
     }
   }, []);
 
-  // 上传文件
+  // 上传文件 - 增强版，支持更好的文件分析
   const uploadFile = useCallback(async (file) => {
     if (!file) return null;
 
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
       setSendingMessage(true);
-      const response = await chatApi.uploadFile(formData);
       
-      // 添加文件消息
+      // 先显示文件上传消息
       const fileMessage = {
-        id: response.id || Date.now().toString(),
-        content: response.content || '文件上传成功',
+        id: `file-${Date.now()}`,
+        content: `📎 正在上传文件：${file.name}`,
         sender: 'user',
-        timestamp: response.timestamp || new Date().toISOString(),
-        fileUrl: response.fileUrl,
+        timestamp: new Date().toISOString(),
+        status: 'uploading',
         fileName: file.name,
         fileSize: file.size,
-        fileType: file.type,
-        status: 'sent'
+        fileType: file.type
       };
       
       setMessages(prev => [...prev, fileMessage]);
       
-      // 添加AI响应占位符
-      const tempAiMessage = {
-        id: `temp-${Date.now()}`,
-        content: '',
-        sender: 'ai',
-        timestamp: new Date().toISOString(),
-        status: 'loading'
-      };
+      // 调用上传API
+      const response = await chatApi.uploadFile(file);
       
-      setMessages(prev => [...prev, tempAiMessage]);
-      
-      // 等待AI回复
-      const aiResponse = await chatApi.getFileAnalysis(response.fileId);
-      
-      // 更新AI消息
+      // 更新文件消息状态
       setMessages(prev => prev.map(msg => 
-        msg.id === tempAiMessage.id 
+        msg.id === fileMessage.id 
           ? { 
-              id: aiResponse.id || tempAiMessage.id,
-              content: aiResponse.content,
-              sender: 'ai',
-              timestamp: aiResponse.timestamp || new Date().toISOString(),
-              status: 'received',
-              references: aiResponse.references || []
+              ...msg, 
+              content: response.content,
+              status: 'sent',
+              fileUrl: response.fileUrl
             }
           : msg
       ));
 
-      // 如果有引用资料，更新引用列表
-      if (aiResponse.references && aiResponse.references.length > 0) {
-        addReferences(aiResponse.references);
+      return response;
+    } catch (err) {
+      // 更新为错误状态
+      setMessages(prev => prev.map(msg => 
+        msg.id.startsWith('file-') && msg.status === 'uploading'
+          ? { 
+              ...msg, 
+              content: `❌ 文件上传失败：${err.message}`,
+              status: 'error'
+            }
+          : msg
+      ));
+      
+      setError(err.message || '上传文件失败');
+      toast.error('上传文件失败');
+      return null;
+    } finally {
+      setSendingMessage(false);
+    }
+  }, []);
+
+  // 获取文件分析结果
+  const getFileAnalysis = useCallback(async (fileId) => {
+    try {
+      setSendingMessage(true);
+      const response = await chatApi.getFileAnalysis(fileId);
+      
+      const analysisMessage = {
+        id: response.id || `analysis-${Date.now()}`,
+        content: response.content,
+        sender: 'ai',
+        timestamp: response.timestamp || new Date().toISOString(),
+        status: 'received',
+        hasData: true,
+        dataType: 'file_analysis',
+        analysisData: response.analysisData,
+        references: response.references || []
+      };
+      
+      setMessages(prev => [...prev, analysisMessage]);
+
+      if (response.references && response.references.length > 0) {
+        addReferences(response.references);
       }
 
       return response;
     } catch (err) {
-      setError(err.message || '上传文件失败');
-      toast.error('上传文件失败');
+      setError(err.message || '获取文件分析失败');
+      toast.error('获取文件分析失败');
       return null;
     } finally {
       setSendingMessage(false);
@@ -170,6 +182,8 @@ const useChat = () => {
     try {
       await chatApi.clearHistory();
       setMessages([]);
+      setReferences([]);
+      setError(null);
       toast.success('聊天记录已清空');
     } catch (err) {
       setError(err.message || '清空聊天记录失败');
@@ -181,61 +195,140 @@ const useChat = () => {
   const exportChat = useCallback(async (format = 'txt') => {
     try {
       const blob = await chatApi.exportChat(format);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `chat-export-${new Date().toISOString().slice(0, 10)}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      toast.success('聊天记录导出成功');
+      return blob;
     } catch (err) {
       setError(err.message || '导出聊天记录失败');
       toast.error('导出聊天记录失败');
+      throw err;
     }
   }, []);
 
   // 添加引用资料
   const addReferences = useCallback((newReferences) => {
-    if (!Array.isArray(newReferences) || newReferences.length === 0) return;
-    
     setReferences(prev => {
-      // 合并引用，避免重复
-      const combined = [...prev];
-      newReferences.forEach(newRef => {
-        const existingIndex = combined.findIndex(ref => ref.id === newRef.id);
-        if (existingIndex === -1) {
-          combined.push(newRef);
-        }
-      });
-      return combined;
+      const existingIds = new Set(prev.map(ref => ref.id));
+      const uniqueNewRefs = newReferences.filter(ref => !existingIds.has(ref.id));
+      return [...prev, ...uniqueNewRefs];
     });
   }, []);
 
-  // 引用参考资料
-  const insertReference = useCallback((referenceId) => {
-    // 返回引用文本，可以在输入框中插入
-    return `@${referenceId}`;
+  // 移除引用资料
+  const removeReference = useCallback((referenceId) => {
+    setReferences(prev => prev.filter(ref => ref.id !== referenceId));
   }, []);
 
-  // 初始化加载历史消息
+  // 获取智能建议
+  const getSmartSuggestions = useCallback(async (context) => {
+    try {
+      const response = await chatApi.getSmartSuggestions(context);
+      return response;
+    } catch (err) {
+      console.error('获取智能建议失败:', err);
+      return { suggestions: [] };
+    }
+  }, []);
+
+  // 快速数据查询
+  const quickDataQuery = useCallback(async (queryType) => {
+    try {
+      const response = await chatApi.quickDataQuery(queryType);
+      return response;
+    } catch (err) {
+      console.error('快速数据查询失败:', err);
+      return null;
+    }
+  }, []);
+
+  // 重新生成回复
+  const regenerateResponse = useCallback(async (messageId) => {
+    const targetMessage = messages.find(msg => msg.id === messageId);
+    if (!targetMessage || targetMessage.sender !== 'user') return;
+
+    setSendingMessage(true);
+    try {
+      const response = await chatApi.sendMessage(targetMessage.content);
+      
+      const newAiMessage = {
+        id: `regen-${Date.now()}`,
+        content: response.content,
+        sender: 'ai',
+        timestamp: new Date().toISOString(),
+        status: 'received',
+        intent: response.intent,
+        hasData: response.hasData,
+        dataType: response.dataType,
+        references: response.references || [],
+        analysisData: response.analysisData,
+        isRegenerated: true
+      };
+      
+      setMessages(prev => [...prev, newAiMessage]);
+
+      if (response.references && response.references.length > 0) {
+        addReferences(response.references);
+      }
+
+      return response;
+    } catch (err) {
+      setError(err.message || '重新生成回复失败');
+      toast.error('重新生成回复失败');
+      return null;
+    } finally {
+      setSendingMessage(false);
+    }
+  }, [messages]);
+
+  // 点赞/点踩消息
+  const rateMessage = useCallback(async (messageId, rating) => {
+    try {
+      // 这里可以调用API记录用户反馈
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, userRating: rating }
+          : msg
+      ));
+      
+      if (rating === 'like') {
+        toast.success('感谢您的反馈！');
+      }
+    } catch (err) {
+      console.error('评价失败:', err);
+    }
+  }, []);
+
+  // 初始化时加载历史消息
   useEffect(() => {
-    loadHistory(1, 20);
+    loadHistory();
   }, [loadHistory]);
 
   return {
+    // 状态
     messages,
     loading,
     sendingMessage,
     error,
     references,
+    
+    // 基础操作
     sendMessage,
     uploadFile,
+    getFileAnalysis,
     clearChat,
     exportChat,
     loadHistory,
-    insertReference
+    
+    // 引用管理
+    addReferences,
+    removeReference,
+    
+    // 智能功能
+    getSmartSuggestions,
+    quickDataQuery,
+    regenerateResponse,
+    rateMessage,
+    
+    // 辅助函数
+    setError
   };
 };
 

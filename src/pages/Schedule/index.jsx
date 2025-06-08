@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Card, Steps, Button, Collapse, Progress, Tag, Timeline, Divider, Row, Col, Statistic, Checkbox, Space, Typography, Tooltip, Badge, message, Spin, Alert } from 'antd';
+import { Card, Steps, Button, Collapse, Progress, Tag, Timeline, Divider, Row, Col, Statistic, Checkbox, Space, Typography, Tooltip, Badge, message, Spin, Alert, Modal, Form, Input, Select, Popconfirm, DatePicker, TimePicker, Tabs, Avatar, Descriptions, Switch, Table } from 'antd';
 import { 
   PlayCircleOutlined, 
   CheckCircleOutlined, 
@@ -15,16 +15,35 @@ import {
   ReloadOutlined,
   FireOutlined,
   StarOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  PlusOutlined,
+  CalendarOutlined,
+  EyeOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ExperimentOutlined,
+  CopyOutlined,
+  SettingOutlined
 } from '@ant-design/icons';
-import { mockApi } from '../../services/mockApi';
+import { mockApi, scheduleApi, contentApi, accountApi } from '../../services/api';
+import { toast } from 'react-toastify';
+import { useLocation, useSearchParams } from 'react-router-dom';
+import moment from 'moment';
 import './index.css';
 
 const { Step } = Steps;
 const { Panel } = Collapse;
 const { Title, Text } = Typography;
+const { Option } = Select;
+const { TextArea } = Input;
+const { TabPane } = Tabs;
+const { RangePicker } = DatePicker;
 
 const SchedulePage = () => {
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get('highlight');
+  
   const [currentStage, setCurrentStage] = useState(0);
   const [sopData, setSopData] = useState(null);
   const [expandedWeeks, setExpandedWeeks] = useState({});
@@ -34,6 +53,14 @@ const SchedulePage = () => {
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [schedules, setSchedules] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [contents, setContents] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [abTestModalVisible, setAbTestModalVisible] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [form] = Form.useForm();
+  const [abTestForm] = Form.useForm();
 
   // 查找任务 - 移到最前面，避免初始化顺序问题
   const findTask = useCallback((cycleId, weekId, taskId) => {
@@ -43,6 +70,134 @@ const SchedulePage = () => {
     const week = cycle?.weeks?.find(w => w.id === weekId);
     return week?.tasks?.find(t => t.id === taskId);
   }, [sopData]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [schedulesData, accountsData, contentsData] = await Promise.all([
+        scheduleApi.getSchedules(),
+        accountApi.getAccounts(),
+        contentApi.getContents()
+      ]);
+      setSchedules(schedulesData.schedules || []);
+      setAccounts(accountsData || []);
+      setContents(contentsData.list || []);
+    } catch (error) {
+      toast.error('获取数据失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 创建发布计划
+  const handleCreateSchedule = async (values) => {
+    try {
+      const scheduleData = {
+        ...values,
+        publishTime: values.publishTime.format('YYYY-MM-DD HH:mm:ss'),
+        status: 'pending',
+        type: values.type || 'single'
+      };
+      
+      await scheduleApi.createSchedule(scheduleData);
+      toast.success('创建发布计划成功');
+      setModalVisible(false);
+      form.resetFields();
+      fetchData();
+    } catch (error) {
+      toast.error('创建发布计划失败');
+    }
+  };
+
+  // 创建A/B测试计划
+  const handleCreateAbTest = async (values) => {
+    try {
+      const abTestData = {
+        ...values,
+        type: 'ab_test',
+        publishTime: values.publishTime.format('YYYY-MM-DD HH:mm:ss'),
+        status: 'pending',
+        testConfig: {
+          accounts: values.accounts,
+          contents: values.contents,
+          testDuration: values.testDuration,
+          metrics: values.metrics
+        }
+      };
+      
+      await scheduleApi.createSchedule(abTestData);
+      toast.success('创建A/B测试计划成功');
+      setAbTestModalVisible(false);
+      abTestForm.resetFields();
+      fetchData();
+    } catch (error) {
+      toast.error('创建A/B测试计划失败');
+    }
+  };
+
+  // 删除计划
+  const handleDeleteSchedule = async (scheduleId) => {
+    try {
+      await scheduleApi.deleteSchedule(scheduleId);
+      toast.success('删除计划成功');
+      fetchData();
+    } catch (error) {
+      toast.error('删除计划失败');
+    }
+  };
+
+  // 立即发布
+  const handlePublishNow = async (scheduleId) => {
+    try {
+      await scheduleApi.publishNow(scheduleId);
+      toast.success('发布成功');
+      fetchData();
+    } catch (error) {
+      toast.error('发布失败');
+    }
+  };
+
+  // 获取状态标签
+  const getStatusTag = (status) => {
+    switch (status) {
+      case 'pending':
+        return <Tag color="orange" icon={<ClockCircleOutlined />}>待发布</Tag>;
+      case 'published':
+        return <Tag color="success" icon={<CheckCircleOutlined />}>已发布</Tag>;
+      case 'running':
+        return <Tag color="processing" icon={<PlayCircleOutlined />}>进行中</Tag>;
+      case 'paused':
+        return <Tag color="default" icon={<PauseCircleOutlined />}>已暂停</Tag>;
+      case 'completed':
+        return <Tag color="success" icon={<CheckCircleOutlined />}>已完成</Tag>;
+      default:
+        return <Tag color="default">未知</Tag>;
+    }
+  };
+
+  // 获取计划类型标签
+  const getTypeTag = (type) => {
+    switch (type) {
+      case 'single':
+        return <Tag color="blue">单次发布</Tag>;
+      case 'batch':
+        return <Tag color="purple">批量发布</Tag>;
+      case 'ab_test':
+        return <Tag color="orange" icon={<ExperimentOutlined />}>A/B测试</Tag>;
+      case 'recurring':
+        return <Tag color="green">定期发布</Tag>;
+      default:
+        return <Tag color="default">普通</Tag>;
+    }
+  };
+
+
+
+
 
   // 初始化数据
   useEffect(() => {
@@ -694,49 +849,7 @@ const SchedulePage = () => {
     );
   }, [expandedWeeks, completedItems, getStatusIcon, handleWeekToggle, renderTask]);
 
-  // 渲染简化的运营周期总览
-  const renderSimplifiedCycleOverview = useCallback(() => {
-    if (!sopData) return null;
-    
-    return (
-      <div className="simplified-cycle-overview">
-        {sopData.cycles.map((cycle, cycleIndex) => {
-          const progress = calculateCycleProgress(cycle);
-          const isActive = cycleIndex === currentStage;
-          
-          return (
-            <React.Fragment key={cycle.id}>
-              <div className={`simple-cycle-item ${isActive ? 'active' : ''} ${cycle.status}`}>
-                <div className="simple-cycle-icon">
-                  {getIconComponent(cycle.icon)}
-                </div>
-                <div className="simple-cycle-content">
-                  <div className="simple-cycle-title">{cycle.title}</div>
-                  <div className="simple-cycle-subtitle">{cycle.subtitle}</div>
-                  <div className="simple-cycle-progress">
-                    <Progress 
-                      percent={progress}
-                      size="small"
-                      strokeColor={cycle.color}
-                      showInfo={true}
-                      format={(percent) => `${percent}%`}
-                    />
-                  </div>
-                </div>
-                {progress === 100 && <Badge status="success" text="已完成" className="simple-cycle-badge" />}
-              </div>
-              
-              {cycleIndex < sopData.cycles.length - 1 && (
-                <div className="simple-cycle-arrow">
-                  <CaretRightOutlined />
-                </div>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </div>
-    );
-  }, [sopData, calculateCycleProgress, currentStage, getIconComponent]);
+
 
   // 错误状态渲染
   if (error) {
@@ -797,123 +910,500 @@ const SchedulePage = () => {
 
   return (
     <div className="schedule-page">
+      {/* 页面头部 */}
       <div className="page-header">
-        <Title level={1}>{sopData.title}</Title>
-        <Text className="page-subtitle">系统化的账号运营流程管理</Text>
+        <div className="header-content">
+          <div className="header-left">
+            <div className="page-title">
+              <Title level={2} style={{ margin: 0 }}>
+                {sopData?.title || '小红书账号周期运营 SOP'}
+              </Title>
+              <Text type="secondary" className="page-subtitle">
+                系统化运营流程，助力账号快速成长
+              </Text>
+            </div>
+          </div>
+          <div className="header-right">
+            <Space size="middle">
+              <Button icon={<ExperimentOutlined />} onClick={() => setAbTestModalVisible(true)}>
+                A/B测试
+              </Button>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)}>
+                创建计划
+              </Button>
+            </Space>
+          </div>
+        </div>
       </div>
 
-      {/* 总体进度概览 */}
-      <Row gutter={24} className="overview-stats">
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="当前周期"
-              value={getCurrentStageName()}
-              prefix={<TrophyOutlined />}
-              suffix={
-                <Badge 
-                  status={currentStageStatus === 'finish' ? 'success' : currentStageStatus === 'process' ? 'processing' : 'default'} 
-                  text={currentStageStatus === 'finish' ? '已完成' : currentStageStatus === 'process' ? '进行中' : '待开始'}
-                />
-              }
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="总体进度"
-              value={progress.overallProgress}
-              suffix="%"
-              prefix={<LineChartOutlined />}
-              valueStyle={{ color: progress.overallProgress === 100 ? '#52c41a' : '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="已完成任务"
-              value={progress.completedTasks}
-              suffix={`/ ${progress.totalTasks}`}
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: progress.completedTasks === progress.totalTasks ? '#52c41a' : '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="已完成项目"
-              value={progress.completedItems}
-              suffix={`/ ${progress.totalItems}`}
-              prefix={<CheckOutlined />}
-              valueStyle={{ color: progress.completedItems === progress.totalItems ? '#52c41a' : '#1890ff' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* 运营周期总览 */}
-      <Card className="cycle-overview" title="运营周期总览">
-        {renderSimplifiedCycleOverview()}
-      </Card>
-
-      {/* 详细阶段展示 */}
-      <div className="cycles-detail">
-        {sopData.cycles.map((cycle, cycleIndex) => {
-          const cycleProgress = calculateCycleProgress(cycle);
-          return (
-            <Card 
-              key={cycle.id}
-              className={`cycle-card ${cycle.status} ${cycleIndex === currentStage ? 'current' : ''}`}
-              title={
-                <div className="cycle-title">
-                  {getIconComponent(cycle.icon)}
-                  <span>{cycle.title}</span>
-                  <Tag color={cycle.color}>{cycle.duration}</Tag>
-                  <div className="cycle-progress">
-                    <Progress 
-                      percent={cycleProgress} 
-                      size="small" 
-                      strokeColor={cycle.color}
-                      showInfo={true}
-                      format={(percent) => `${percent}%`}
-                    />
-                  </div>
-                  {cycleProgress === 100 && <Badge status="success" text="已完成" />}
-                </div>
-              }
-              extra={
-                <Button 
-                  type={getStageButtonType(cycle, cycleIndex)}
-                  loading={loading}
-                  onClick={() => handleStageAction(cycleIndex)}
-                  icon={
-                    cycleProgress === 100 ? <CheckCircleOutlined /> :
-                    cycleProgress > 0 ? <PlayCircleOutlined /> :
-                    cycleIndex === currentStage ? <PauseCircleOutlined /> :
-                    <RocketOutlined />
-                  }
-                >
-                  {getStageButtonText(cycle, cycleIndex)}
-                </Button>
-              }
-            >
-              <div className="cycle-subtitle">{cycle.subtitle}</div>
-              <div className="cycle-goal">
-                <Text type="secondary">目标：{cycle.goal}</Text>
-              </div>
-              
-              <Timeline className="week-timeline">
-                {cycle.weeks && cycle.weeks.map(week => 
-                  renderWeek(week, cycle.id)
-                )}
-              </Timeline>
+      {/* 进度概览 */}
+      <div className="progress-overview">
+        <Row gutter={24}>
+          <Col span={6}>
+            <Card className="stat-card">
+              <Statistic
+                title="总体进度"
+                value={progress.overallProgress}
+                suffix="%"
+                prefix={<TrophyOutlined />}
+                valueStyle={{ color: progress.overallProgress === 100 ? '#52c41a' : '#1890ff' }}
+              />
+              <Progress 
+                percent={progress.overallProgress} 
+                size="small" 
+                showInfo={false}
+                strokeColor={progress.overallProgress === 100 ? '#52c41a' : '#1890ff'}
+              />
             </Card>
-          );
-        })}
+          </Col>
+          <Col span={6}>
+            <Card className="stat-card">
+              <Statistic
+                title="已完成任务"
+                value={progress.completedTasks}
+                suffix={`/ ${progress.totalTasks}`}
+                prefix={<CheckCircleOutlined />}
+                valueStyle={{ color: '#52c41a' }}
+              />
+            </Card>
+          </Col>
+          <Col span={6}>
+            <Card className="stat-card">
+              <Statistic
+                title="当前阶段"
+                value={getCurrentStageName()}
+                prefix={getStatusIcon(getCurrentStageStatus())}
+                valueStyle={{ 
+                  color: getCurrentStageStatus() === 'process' ? '#1890ff' : '#8c8c8c',
+                  fontSize: '16px'
+                }}
+              />
+            </Card>
+          </Col>
+          <Col span={6}>
+            <Card className="stat-card">
+              <Statistic
+                title="执行项目"
+                value={progress.completedItems}
+                suffix={`/ ${progress.totalItems}`}
+                prefix={<FireOutlined />}
+                valueStyle={{ color: '#fa8c16' }}
+              />
+            </Card>
+          </Col>
+        </Row>
       </div>
+
+      {/* 运营周期流程 */}
+      <div className="sop-content">
+        <Card className="cycle-overview-card">
+          <div className="cycle-overview-header">
+            <Title level={3} style={{ margin: 0 }}>
+              运营周期总览
+            </Title>
+            <Text type="secondary">
+              3个月系统化运营计划，分阶段实现账号成长目标
+            </Text>
+          </div>
+          
+          <div className="cycle-steps">
+            <Steps 
+              current={currentStage} 
+              size="default"
+              direction="horizontal"
+            >
+              {sopData?.cycles.map((cycle, index) => (
+                <Step
+                  key={cycle.id}
+                  title={cycle.title}
+                  description={cycle.subtitle}
+                  status={
+                    calculateCycleProgress(cycle) === 100 ? 'finish' :
+                    index === currentStage ? 'process' : 'wait'
+                  }
+                  icon={getIconComponent(cycle.icon)}
+                />
+              ))}
+            </Steps>
+          </div>
+
+          <div className="cycle-cards">
+            <Row gutter={24}>
+              {sopData?.cycles.map((cycle, cycleIndex) => {
+                const progress = calculateCycleProgress(cycle);
+                const isActive = cycleIndex === currentStage;
+                
+                return (
+                  <Col span={8} key={cycle.id}>
+                    <Card 
+                      className={`cycle-card ${isActive ? 'active' : ''} ${cycle.status}`}
+                      hoverable
+                    >
+                      <div className="cycle-card-header">
+                        <div className="cycle-icon" style={{ color: cycle.color }}>
+                          {getIconComponent(cycle.icon)}
+                        </div>
+                        <div className="cycle-info">
+                          <Title level={4} style={{ margin: 0, color: cycle.color }}>
+                            {cycle.title}
+                          </Title>
+                          <Text type="secondary">{cycle.duration}</Text>
+                        </div>
+                        {progress === 100 && (
+                          <Badge status="success" text="已完成" />
+                        )}
+                      </div>
+                      
+                      <div className="cycle-goal">
+                        <Text strong>目标：</Text>
+                        <Text>{cycle.goal}</Text>
+                      </div>
+                      
+                      <div className="cycle-progress">
+                        <div className="progress-info">
+                          <Text type="secondary">完成进度</Text>
+                          <Text strong>{progress}%</Text>
+                        </div>
+                        <Progress 
+                          percent={progress}
+                          strokeColor={cycle.color}
+                          trailColor="#f0f0f0"
+                          showInfo={false}
+                        />
+                      </div>
+                      
+                      <div className="cycle-actions">
+                        <Button 
+                          type={getStageButtonType(cycle, cycleIndex)}
+                          size="small"
+                          loading={loading && currentStage === cycleIndex}
+                          onClick={() => handleStageAction(cycleIndex)}
+                          block
+                        >
+                          {getStageButtonText(cycle, cycleIndex)}
+                        </Button>
+                      </div>
+                    </Card>
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+        </Card>
+
+        {/* 详细执行计划 */}
+        <Card className="execution-plan-card">
+          <div className="execution-header">
+            <Title level={3} style={{ margin: 0 }}>
+              详细执行计划
+            </Title>
+            <Text type="secondary">
+              当前阶段：{getCurrentStageName()}
+            </Text>
+          </div>
+          
+          <Collapse 
+            defaultActiveKey={sopData?.cycles.map(cycle => cycle.id)}
+            className="cycle-collapse"
+          >
+            {sopData?.cycles.map((cycle, cycleIndex) => {
+              const progress = calculateCycleProgress(cycle);
+              const isActive = cycleIndex === currentStage;
+              
+              return (
+                <Panel
+                  key={cycle.id}
+                  header={
+                    <div className="cycle-panel-header">
+                      <div className="panel-left">
+                        <div className="cycle-icon" style={{ color: cycle.color }}>
+                          {getIconComponent(cycle.icon)}
+                        </div>
+                        <div className="cycle-info">
+                          <Text strong className={isActive ? 'active-text' : ''}>
+                            {cycle.title}
+                          </Text>
+                          <Text type="secondary" className="cycle-subtitle">
+                            {cycle.subtitle}
+                          </Text>
+                        </div>
+                      </div>
+                      <div className="panel-right">
+                        <div className="progress-display">
+                          <Progress 
+                            percent={progress}
+                            size="small"
+                            strokeColor={cycle.color}
+                            showInfo={true}
+                            format={(percent) => `${percent}%`}
+                          />
+                        </div>
+                        {progress === 100 && (
+                          <Badge status="success" text="已完成" />
+                        )}
+                        {isActive && (
+                          <Badge status="processing" text="进行中" />
+                        )}
+                      </div>
+                    </div>
+                  }
+                  className={`cycle-panel ${isActive ? 'active-panel' : ''}`}
+                >
+                  <div className="cycle-content">
+                    <Timeline className="week-timeline">
+                      {cycle.weeks?.map(week => renderWeek(week, cycle.id))}
+                    </Timeline>
+                  </div>
+                </Panel>
+              );
+            })}
+          </Collapse>
+        </Card>
+      </div>
+
+      {/* 创建计划弹窗 */}
+      <Modal
+        title="创建发布计划"
+        open={modalVisible}
+        onCancel={() => {
+          setModalVisible(false);
+          setSelectedSchedule(null);
+          form.resetFields();
+        }}
+        footer={null}
+        width={800}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleCreateSchedule}
+        >
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="title"
+                label="计划标题"
+                rules={[{ required: true, message: '请输入计划标题' }]}
+              >
+                <Input placeholder="请输入计划标题" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="type"
+                label="计划类型"
+                rules={[{ required: true, message: '请选择计划类型' }]}
+              >
+                <Select placeholder="请选择计划类型">
+                  <Option value="single">单次发布</Option>
+                  <Option value="batch">批量发布</Option>
+                  <Option value="recurring">定期发布</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="description"
+            label="计划描述"
+          >
+            <TextArea rows={3} placeholder="请输入计划描述" />
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="accountId"
+                label="选择账号"
+                rules={[{ required: true, message: '请选择账号' }]}
+              >
+                <Select placeholder="请选择账号">
+                  {accounts.map(account => (
+                    <Option key={account.id} value={account.id}>
+                      <div className="flex items-center space-x-2">
+                        <Avatar src={account.avatar} size={20} />
+                        <span>{account.name}</span>
+                      </div>
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="contentId"
+                label="选择内容"
+                rules={[{ required: true, message: '请选择内容' }]}
+              >
+                <Select placeholder="请选择内容">
+                  {contents.map(content => (
+                    <Option key={content.id} value={content.id}>
+                      <div className="flex items-center space-x-2">
+                        <img src={content.cover} alt="" className="w-5 h-5 rounded object-cover" />
+                        <span className="truncate">{content.title}</span>
+                      </div>
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="publishTime"
+            label="发布时间"
+            rules={[{ required: true, message: '请选择发布时间' }]}
+          >
+            <DatePicker 
+              showTime 
+              placeholder="选择发布时间"
+              style={{ width: '100%' }}
+              disabledDate={(current) => current && current < moment().startOf('day')}
+            />
+          </Form.Item>
+
+          <Form.Item className="mb-0 flex justify-end">
+            <Space>
+              <Button onClick={() => {
+                setModalVisible(false);
+                setSelectedSchedule(null);
+                form.resetFields();
+              }}>
+                取消
+              </Button>
+              <Button type="primary" htmlType="submit">
+                {selectedSchedule ? '更新' : '创建'}
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* A/B测试计划弹窗 */}
+      <Modal
+        title="创建A/B测试计划"
+        open={abTestModalVisible}
+        onCancel={() => {
+          setAbTestModalVisible(false);
+          abTestForm.resetFields();
+        }}
+        footer={null}
+        width={900}
+      >
+        <Form
+          form={abTestForm}
+          layout="vertical"
+          onFinish={handleCreateAbTest}
+        >
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="title"
+                label="测试标题"
+                rules={[{ required: true, message: '请输入测试标题' }]}
+              >
+                <Input placeholder="请输入测试标题" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="testDuration"
+                label="测试时长(小时)"
+                rules={[{ required: true, message: '请输入测试时长' }]}
+              >
+                <Input type="number" placeholder="24" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="description"
+            label="测试描述"
+          >
+            <TextArea rows={3} placeholder="请输入测试描述和目标" />
+          </Form.Item>
+
+          <Form.Item
+            name="accounts"
+            label="参与测试的账号"
+            rules={[{ required: true, message: '请选择至少2个账号' }]}
+          >
+            <Select mode="multiple" placeholder="请选择参与测试的账号">
+              {accounts.map(account => (
+                <Option key={account.id} value={account.id}>
+                  <div className="flex items-center space-x-2">
+                    <Avatar src={account.avatar} size={20} />
+                    <span>{account.name}</span>
+                  </div>
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="contents"
+            label="测试内容版本"
+            rules={[{ required: true, message: '请选择测试内容' }]}
+          >
+            <Select mode="multiple" placeholder="请选择不同版本的内容">
+              {contents.map(content => (
+                <Option key={content.id} value={content.id}>
+                  <div className="flex items-center space-x-2">
+                    <img src={content.cover} alt="" className="w-5 h-5 rounded object-cover" />
+                    <span className="truncate">{content.title}</span>
+                  </div>
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="metrics"
+            label="测试指标"
+            rules={[{ required: true, message: '请选择测试指标' }]}
+          >
+            <Checkbox.Group>
+              <Row>
+                <Col span={6}><Checkbox value="views">浏览量</Checkbox></Col>
+                <Col span={6}><Checkbox value="likes">点赞数</Checkbox></Col>
+                <Col span={6}><Checkbox value="comments">评论数</Checkbox></Col>
+                <Col span={6}><Checkbox value="shares">分享数</Checkbox></Col>
+                <Col span={6}><Checkbox value="engagement">互动率</Checkbox></Col>
+                <Col span={6}><Checkbox value="conversion">转化率</Checkbox></Col>
+              </Row>
+            </Checkbox.Group>
+          </Form.Item>
+
+          <Form.Item
+            name="publishTime"
+            label="开始时间"
+            rules={[{ required: true, message: '请选择开始时间' }]}
+          >
+            <DatePicker 
+              showTime 
+              placeholder="选择测试开始时间"
+              style={{ width: '100%' }}
+              disabledDate={(current) => current && current < moment().startOf('day')}
+            />
+          </Form.Item>
+
+          <Form.Item className="mb-0 flex justify-end">
+            <Space>
+              <Button onClick={() => {
+                setAbTestModalVisible(false);
+                abTestForm.resetFields();
+              }}>
+                取消
+              </Button>
+              <Button type="primary" htmlType="submit">
+                创建A/B测试
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+
     </div>
   );
 };

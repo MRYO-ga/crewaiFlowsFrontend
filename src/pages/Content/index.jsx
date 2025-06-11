@@ -50,11 +50,13 @@ const ContentPage = () => {
   const fetchAccounts = async () => {
     try {
       setAccountsLoading(true);
-      const data = await accountApi.getAccounts();
-      setAccounts(data);
-      if (data.length > 0 && !selectedAccount) {
-        setSelectedAccount(data[0]);
-      }
+      const data = await accountApi.get();
+              // 确保返回的数据是数组格式
+        const accountsList = Array.isArray(data) ? data : (data.accounts || []);
+        setAccounts(accountsList);
+        if (accountsList.length > 0 && !selectedAccount) {
+          setSelectedAccount(accountsList[0]);
+        }
     } catch (error) {
       console.error('获取账号列表失败：', error);
       toast.error('获取账号列表失败');
@@ -68,16 +70,42 @@ const ContentPage = () => {
     
     try {
       setLoading(true);
-      const response = await contentApi.getContents({
-        ...filters,
-        accountId: selectedAccount.id,
-        page: pagination.current,
-        pageSize: pagination.pageSize
-      });
-      setContents(response.list);
+      
+      // 构建API参数
+      const apiParams = {
+        account_id: selectedAccount.id,
+        limit: 100 // 暂时获取更多数据，前端做分页
+      };
+      
+      // 只在有具体筛选值时添加参数
+      if (filters.status && filters.status !== 'all') {
+        apiParams.status = filters.status;
+      }
+      if (filters.category && filters.category !== 'all') {
+        apiParams.category = filters.category;
+      }
+      if (selectedAccount.platform) {
+        apiParams.platform = selectedAccount.platform;
+      }
+      
+      const response = await contentApi.get('', apiParams);
+      console.log('API响应:', response); // 调试日志
+      
+      // 确保返回的数据是数组格式
+      let contentsList = Array.isArray(response) ? response : (response.list || []);
+      
+      // 前端搜索过滤
+      if (filters.keyword) {
+        contentsList = contentsList.filter(content => 
+          content.title?.toLowerCase().includes(filters.keyword.toLowerCase()) ||
+          content.description?.toLowerCase().includes(filters.keyword.toLowerCase())
+        );
+      }
+      
+      setContents(contentsList);
       setPagination(prev => ({
         ...prev,
-        total: response.total
+        total: contentsList.length
       }));
     } catch (error) {
       console.error('获取内容列表失败：', error);
@@ -89,8 +117,10 @@ const ContentPage = () => {
 
   const fetchSchedules = async () => {
     try {
-      const response = await scheduleApi.getSchedules();
-      setSchedules(response.schedules || []);
+              const response = await scheduleApi.get();
+      // 确保返回的数据是数组格式
+      const schedulesList = Array.isArray(response) ? response : (response.schedules || []);
+      setSchedules(schedulesList);
     } catch (error) {
       console.error('获取发布计划失败：', error);
     }
@@ -146,12 +176,12 @@ const ContentPage = () => {
     try {
       const contentData = {
         ...values,
-        accountId: selectedAccount.id,
+        account_id: selectedAccount.id,
         status: 'draft',
-        createdAt: moment().format('YYYY-MM-DD HH:mm:ss')
+        created_at: moment().format('YYYY-MM-DD HH:mm:ss')
       };
       
-      await contentApi.createContent(contentData);
+      await contentApi.post('', contentData);
       toast.success('创建内容成功');
       setCreateModalVisible(false);
       form.resetFields();
@@ -165,15 +195,15 @@ const ContentPage = () => {
   const handleScheduleContent = async (values) => {
     try {
       const scheduleData = {
-        contentId: selectedContent.id,
-        accountId: selectedAccount.id,
-        publishTime: values.publishTime.format('YYYY-MM-DD HH:mm:ss'),
+        content_id: selectedContent.id,
+        account_id: selectedAccount.id,
+        publish_time: values.publishTime.format('YYYY-MM-DD HH:mm:ss'),
         platform: selectedAccount.platform,
         note: values.note
       };
       
-      await scheduleApi.createSchedule(scheduleData);
-      await contentApi.updateContent(selectedContent.id, { status: 'scheduled' });
+              await scheduleApi.post('', scheduleData);
+              await contentApi.put(`/${selectedContent.id}`, { status: 'scheduled' });
       
       toast.success('发布计划创建成功');
       setScheduleModalVisible(false);
@@ -193,7 +223,7 @@ const ContentPage = () => {
   // 删除内容
   const handleDeleteContent = async (contentId) => {
     try {
-      await contentApi.deleteContent(contentId);
+      await contentApi.delete(`/${contentId}`);
       toast.success('删除内容成功');
       fetchContents();
     } catch (error) {
@@ -219,7 +249,7 @@ const ContentPage = () => {
 
   // 获取账号统计数据
   const getAccountStats = () => {
-    if (!selectedAccount || !contents.length) return null;
+    if (!selectedAccount || !contents || !Array.isArray(contents) || contents.length === 0) return null;
     
     const stats = {
       total: contents.length,

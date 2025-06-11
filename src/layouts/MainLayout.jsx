@@ -34,6 +34,12 @@ const MainLayout = () => {
         { path: '/favorites', name: '收藏的分析', icon: 'fa-bookmark' },
         { path: '/history', name: '最近历史', icon: 'fa-clock-rotate-left' }
       ]
+    },
+    {
+      title: '开发工具',
+      items: [
+        { path: '/api-test', name: 'API接口测试', icon: 'fa-code' }
+      ]
     }
   ];
 

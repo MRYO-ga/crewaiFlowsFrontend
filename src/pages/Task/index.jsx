@@ -30,9 +30,24 @@ const TaskPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await taskApi.getTasks(filters);
-      setTasks(data.tasks);
-      setStats(data.stats);
+      
+      // 构建查询参数
+      const params = {};
+      if (filters.status && filters.status !== 'all') {
+        params.status = filters.status;
+      }
+      if (filters.type && filters.type !== 'all') {
+        params.type = filters.type;
+      }
+      
+      const data = await taskApi.get('', params);
+      // 确保返回的数据是数组格式
+      const tasksList = Array.isArray(data) ? data : (data?.tasks || []);
+      setTasks(tasksList);
+      
+      // 获取统计数据
+      const statsData = await taskApi.get('/stats');
+      setStats(statsData || {});
     } catch (err) {
       setError(err.message || '获取任务列表失败');
     } finally {
@@ -57,7 +72,7 @@ const TaskPage = () => {
 
   const handleDeleteTask = async (taskId) => {
     try {
-      await taskApi.deleteTask(taskId);
+      await taskApi.delete(`/${taskId}`);
       toast.success('删除任务成功');
       fetchTasks();
     } catch (error) {
@@ -67,7 +82,7 @@ const TaskPage = () => {
 
   const handleCompleteTask = async (taskId) => {
     try {
-      await taskApi.completeTask(taskId);
+      await taskApi.put(`/${taskId}`, { status: 'completed', progress: 100 });
       toast.success('任务已完成');
       fetchTasks();
     } catch (error) {
@@ -83,10 +98,10 @@ const TaskPage = () => {
       };
 
       if (editingTask) {
-        await taskApi.updateTask(editingTask.id, taskData);
+        await taskApi.put(`/${editingTask.id}`, taskData);
         toast.success('更新任务成功');
       } else {
-        await taskApi.createTask(taskData);
+        await taskApi.post('', taskData);
         toast.success('创建任务成功');
       }
       setModalVisible(false);

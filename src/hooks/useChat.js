@@ -14,7 +14,8 @@ const useChat = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await chatApi.getHistory(page, limit);
+      // 暂时使用空数据，因为后端没有历史记录API
+      const data = { messages: [] };
       setMessages(prev => page === 1 ? data.messages : [...prev, ...data.messages]);
       return data;
     } catch (err) {
@@ -43,7 +44,7 @@ const useChat = () => {
     setSendingMessage(true);
 
     try {
-      const response = await chatApi.sendMessage(messageText);
+      const response = await chatApi.post('', { message: messageText, user_id: 'test_user' });
       
       // 创建AI回复消息，包含智能分析结果
       const aiMessage = {
@@ -107,8 +108,11 @@ const useChat = () => {
       
       setMessages(prev => [...prev, fileMessage]);
       
-      // 调用上传API
-      const response = await chatApi.uploadFile(file);
+      // 模拟文件上传，实际应该调用后端API
+      const response = {
+        content: `✅ 文件上传成功：${file.name}`,
+        fileUrl: URL.createObjectURL(file)
+      };
       
       // 更新文件消息状态
       setMessages(prev => prev.map(msg => 
@@ -147,7 +151,12 @@ const useChat = () => {
   const getFileAnalysis = useCallback(async (fileId) => {
     try {
       setSendingMessage(true);
-      const response = await chatApi.getFileAnalysis(fileId);
+      // 模拟文件分析，实际应该调用后端API
+      const response = {
+        content: '文件分析完成，这是一个示例分析结果。',
+        analysisData: { type: 'document', summary: '文档摘要' },
+        references: []
+      };
       
       const analysisMessage = {
         id: response.id || `analysis-${Date.now()}`,
@@ -180,7 +189,7 @@ const useChat = () => {
   // 清空聊天记录
   const clearChat = useCallback(async () => {
     try {
-      await chatApi.clearHistory();
+      // 只清空本地状态，因为后端没有清空历史的API
       setMessages([]);
       setReferences([]);
       setError(null);
@@ -194,7 +203,11 @@ const useChat = () => {
   // 导出聊天记录
   const exportChat = useCallback(async (format = 'txt') => {
     try {
-      const blob = await chatApi.exportChat(format);
+      // 创建本地导出
+      const chatText = messages.map(msg => 
+        `[${msg.timestamp}] ${msg.sender}: ${msg.content}`
+      ).join('\n');
+      const blob = new Blob([chatText], { type: 'text/plain' });
       return blob;
     } catch (err) {
       setError(err.message || '导出聊天记录失败');

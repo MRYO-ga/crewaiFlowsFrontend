@@ -27,7 +27,7 @@ const AccountPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await accountApi.getAccounts();
+      const data = await accountApi.get();
       setAccounts(data);
     } catch (err) {
       setError(err.message || '获取账号列表失败');
@@ -57,7 +57,7 @@ const AccountPage = () => {
 
   const handleDeleteAccount = async (accountId) => {
     try {
-      await accountApi.deleteAccount(accountId);
+      await accountApi.delete(`/${accountId}`);
       toast.success('删除账号成功');
       fetchAccounts();
     } catch (error) {
@@ -68,10 +68,10 @@ const AccountPage = () => {
   const handleSubmit = async (values) => {
     try {
       if (editingAccount) {
-        await accountApi.updateAccount(editingAccount.id, values);
+        await accountApi.put(`/${editingAccount.id}`, values);
         toast.success('更新账号成功');
       } else {
-        await accountApi.addAccount(values);
+        await accountApi.post('', values);
         toast.success('添加账号成功');
       }
       setModalVisible(false);
@@ -593,8 +593,14 @@ const AccountPage = () => {
             verified: false
           }}
         >
-          <Tabs defaultActiveKey="1">
-            <Tabs.TabPane tab="基础信息" key="1">
+          <Tabs 
+            defaultActiveKey="1"
+            items={[
+              {
+                key: '1',
+                label: '基础信息',
+                children: (
+                  <div>
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
@@ -700,9 +706,14 @@ const AccountPage = () => {
                   <Option value="美食">美食</Option>
                 </Select>
               </Form.Item>
-            </Tabs.TabPane>
-
-            <Tabs.TabPane tab="用户画像" key="2">
+                  </div>
+                )
+              },
+              {
+                key: '2',
+                label: '用户画像',
+                children: (
+                  <div>
               <Form.Item name={['targetAudience', 'ageRange']} label="年龄范围">
                 <Select>
                   <Option value="18-25岁">18-25岁</Option>
@@ -750,9 +761,14 @@ const AccountPage = () => {
                   <Option value="口碑">口碑</Option>
                 </Select>
               </Form.Item>
-            </Tabs.TabPane>
-
-            <Tabs.TabPane tab="账号定位" key="3">
+                  </div>
+                )
+              },
+              {
+                key: '3',
+                label: '账号定位',
+                children: (
+                  <div>
               <Form.Item name={['positioning', 'style']} label="账号风格">
                 <Select mode="tags" placeholder="选择账号风格">
                   <Option value="清新自然">清新自然</Option>
@@ -781,9 +797,14 @@ const AccountPage = () => {
                   maxLength={300}
                 />
               </Form.Item>
-            </Tabs.TabPane>
-
-            <Tabs.TabPane tab="商业化" key="4">
+                  </div>
+                )
+              },
+              {
+                key: '4',
+                label: '商业化',
+                children: (
+                  <div>
               <Row gutter={16}>
                 <Col span={8}>
                   <Form.Item name={['monetization', 'monthlyIncome']} label="月收入(元)">
@@ -811,8 +832,11 @@ const AccountPage = () => {
                   <Option value="联名合作">联名合作</Option>
                 </Select>
               </Form.Item>
-            </Tabs.TabPane>
-          </Tabs>
+                  </div>
+                )
+              }
+            ]}
+          />
 
           <Form.Item className="mb-0 flex justify-end mt-6">
             <Space>

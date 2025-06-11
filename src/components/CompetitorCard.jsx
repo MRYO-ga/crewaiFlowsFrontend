@@ -339,17 +339,20 @@ const CompetitorCard = ({ competitor, onDelete, onViewProfile }) => {
   };
 
   const handleExportPDF = () => {
-    const content = `# ${competitor.name} 竞品分析报告\n\n${competitor.analysisDocument}`;
+    const content = `# ${competitor.name} 竞品分析报告\n\n${competitor.analysis_document}`;
+    
+    // 创建临时链接下载文件
     const blob = new Blob([content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${competitor.name}_竞品分析报告.md`;
+    a.download = `${competitor.name}_竞品分析.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success('分析报告已导出');
+    
+    toast.success('分析文档已导出');
   };
 
   return (
@@ -436,13 +439,13 @@ const CompetitorCard = ({ competitor, onDelete, onViewProfile }) => {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h5 className="font-medium text-gray-900">热门笔记分析</h5>
-                  <span className="text-sm text-gray-500">共 {notesData.notes.length} 篇笔记</span>
+                  <span className="text-sm text-gray-500">共 {notesData?.length || 0} 篇笔记</span>
                 </div>
                 
                 {/* 水平滚动的笔记卡片 */}
                 <div className="relative">
                   <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
-                    {notesData.notes.map((note) => (
+                    {notesData?.map((note) => (
                       <div 
                         key={note.id} 
                         className="flex-shrink-0 w-80 bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group"
@@ -496,14 +499,14 @@ const CompetitorCard = ({ competitor, onDelete, onViewProfile }) => {
 
                           {/* 标签 */}
                           <div className="flex flex-wrap gap-1 mb-3">
-                            {note.tags.slice(0, 3).map((tag, index) => (
+                            {note.topics?.slice(0, 3).map((tag, index) => (
                               <span key={index} className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded">
                                 #{tag}
                               </span>
                             ))}
-                            {note.tags.length > 3 && (
+                            {note.topics?.length > 3 && (
                               <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
-                                +{note.tags.length - 3}
+                                +{note.topics.length - 3}
                               </span>
                             )}
                           </div>
@@ -540,7 +543,7 @@ const CompetitorCard = ({ competitor, onDelete, onViewProfile }) => {
         )}
 
         {/* 可折叠的分析文档 */}
-        {competitor.analysisDocument && (
+        {competitor.analysis_document && (
           <Collapse 
             onChange={handleExpandChange}
             ghost
@@ -557,7 +560,7 @@ const CompetitorCard = ({ competitor, onDelete, onViewProfile }) => {
                   <i className="fa-solid fa-file-text text-primary"></i>
                   <span className="font-medium text-primary">查看深度分析文档</span>
                   <span className="text-xs text-gray-400 ml-2">
-                    ({Math.ceil(competitor.analysisDocument.length / 100)} 千字)
+                    ({Math.ceil(competitor.analysis_document.length / 100)} 千字)
                   </span>
                 </div>
               } 
@@ -625,7 +628,7 @@ const CompetitorCard = ({ competitor, onDelete, onViewProfile }) => {
                       )
                     }}
                   >
-                    {competitor.analysisDocument}
+                    {competitor.analysis_document}
                   </ReactMarkdown>
                 </div>
                 
@@ -779,16 +782,7 @@ const CompetitorCard = ({ competitor, onDelete, onViewProfile }) => {
         </div>
       )}
 
-      {/* 自定义滚动条样式 */}
-      <style jsx>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
+      {/* 自定义滚动条样式 - 移动到全局CSS中 */}
     </div>
   );
 };

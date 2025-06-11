@@ -10,6 +10,7 @@ import SchedulePage from './pages/Schedule';
 import FavoritesPage from './pages/Favorites';
 import HistoryPage from './pages/History';
 import AccountPage from './pages/Account';
+import ApiTestPage from './pages/ApiTest';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="favorites" element={<FavoritesPage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="account" element={<AccountPage />} />
+          <Route path="api-test" element={<ApiTestPage />} />
         </Route>
       </Routes>
     </Router>

@@ -40,19 +40,55 @@ const CompetitorPage = () => {
       setLoading(true);
       setError(null);
       
-      const [competitorsData, knowledgeData, statsData] = await Promise.all([
-        competitorApi.getCompetitors({ ...filters, page: pagination.current, pageSize: pagination.pageSize }),
-        competitorApi.getKnowledgeBase(),
-        competitorApi.getStats()
-      ]);
-
-      setCompetitors(competitorsData.list || []);
+      // 获取竞品列表
+      const params = new URLSearchParams();
+      if (filters.category && filters.category !== 'all') {
+        params.append('category', filters.category);
+      }
+      if (filters.keyword) {
+        params.append('keyword', filters.keyword);
+      }
+      params.append('limit', pagination.pageSize.toString());
+      
+      const competitorsData = await competitorApi.get('', Object.fromEntries(params));
+      // 确保返回的数据是数组格式
+      const competitorsList = Array.isArray(competitorsData) ? competitorsData : (competitorsData?.competitors || []);
+      setCompetitors(competitorsList);
       setPagination({
         ...pagination,
-        total: competitorsData.total || 0
+        total: competitorsList.length
       });
-      setKnowledgeBase(knowledgeData.documents || []);
-      setStats(statsData);
+      
+      // 设置模拟的统计数据
+      setStats({
+        totalAccounts: competitorsList.length,
+        monthlyExplosions: 12,
+        avgExplosionRate: 6.8,
+        newCompetitors: 3,
+        knowledgeDocs: 2
+      });
+      
+      // 设置模拟的知识库数据
+      setKnowledgeBase([
+        {
+          id: '1',
+          type: 'explosion_analysis',
+          title: '美妆博主爆款分析',
+          summary: '分析美妆类内容的爆款规律，总结成功要素',
+          updateTime: '2024-03-20',
+          relatedAccount: '美妆达人小红',
+          tags: ['美妆', '爆款', '分析']
+        },
+        {
+          id: '2',
+          type: 'account_breakdown',
+          title: '护肤博主账号拆解',
+          summary: '深度拆解头部护肤博主的内容策略和变现路径',
+          updateTime: '2024-03-19',
+          relatedAccount: '护肤专家',
+          tags: ['护肤', '拆解', '策略']
+        }
+      ]);
     } catch (err) {
       setError(err.message || '获取竞品数据失败');
     } finally {
@@ -62,7 +98,7 @@ const CompetitorPage = () => {
 
   const handleAddCompetitor = async (competitorData) => {
     try {
-      await competitorApi.addCompetitor(competitorData);
+      await competitorApi.post('', competitorData);
       toast.success('添加竞品成功');
       setModalVisible(false);
       fetchAllData();
@@ -73,7 +109,7 @@ const CompetitorPage = () => {
 
   const handleDeleteCompetitor = async (competitorId) => {
     try {
-      await competitorApi.deleteCompetitor(competitorId);
+      await competitorApi.delete(`/${competitorId}`);
       toast.success('删除竞品成功');
       fetchAllData();
     } catch (error) {

@@ -1,10 +1,9 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import mockApi from './mockApi';
 
 // 创建axios实例
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:9000',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
@@ -60,31 +59,76 @@ api.interceptors.response.use(
   }
 );
 
-// 聊天相关API
-export const chatApi = mockApi.chat;
+// 创建真实API方法
+const createRealApi = (endpoint) => ({
+  get: (path = '', params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const url = `${endpoint}${path}${queryString ? '?' + queryString : ''}`;
+    return api.get(url);
+  },
+  post: (path = '', data = {}) => api.post(`${endpoint}${path}`, data),
+  put: (path = '', data = {}) => api.put(`${endpoint}${path}`, data),
+  delete: (path = '') => api.delete(`${endpoint}${path}`)
+});
 
-// 账号相关API
-export const accountApi = mockApi.accounts;
+// 聊天相关API - 使用真实API
+export const chatApi = createRealApi('/api/chat');
 
-// 任务相关API
-export const taskApi = mockApi.tasks;
+// 账号相关API - 使用真实API
+export const accountApi = createRealApi('/api/accounts');
 
-// 竞品相关API
-export const competitorApi = mockApi.competitors;
+// 任务相关API - 使用真实API
+export const taskApi = createRealApi('/api/tasks');
 
-// 内容相关API
-export const contentApi = mockApi.contents;
+// 竞品相关API - 使用真实API
+export const competitorApi = {
+  ...createRealApi('/api/competitors'),
+  // 获取竞品笔记分析数据
+  getBloggerNoteAnalysis: (competitorId) => api.get(`/api/competitors/${competitorId}/notes`)
+};
 
-// 发布计划相关API
-export const scheduleApi = mockApi.schedules;
+// 内容相关API - 使用真实API
+export const contentApi = createRealApi('/api/contents');
 
-// 收藏相关API
-export const favoritesApi = mockApi.favorites;
+// 发布计划相关API - 使用真实API
+export const scheduleApi = createRealApi('/api/schedules');
 
-// 历史记录相关API
-export const historyApi = mockApi.history;
+// SOP相关API - 使用真实API
+export const sopApi = {
+  ...createRealApi('/api/sops'),
+  // 获取SOP列表
+  getList: (params = {}) => api.get('/api/sops', { params }),
+  // 获取SOP详情
+  getDetail: (sopId) => api.get(`/api/sops/${sopId}`),
+  // 更新任务项状态
+  updateTaskItem: (itemId, completed) => api.put(`/api/sops/task-items/${itemId}/status`, null, { params: { completed } }),
+  // 获取SOP进度
+  getProgress: (sopId) => api.get(`/api/sops/${sopId}/progress`),
+  // 导入JSON数据
+  importJson: (jsonData) => api.post('/api/sops/import-json', jsonData)
+};
 
-// 数据分析相关API
-export const analyticsApi = mockApi.analytics;
+// 收藏相关API - 暂时使用模拟数据，后续可以扩展为真实API
+export const favoritesApi = {
+  get: () => Promise.resolve([]),
+  getFavorites: () => Promise.resolve([]),
+  post: (data) => Promise.resolve(data),
+  addFavorite: (data) => Promise.resolve(data),
+  delete: (id) => Promise.resolve({ success: true }),
+  removeFavorite: (id) => Promise.resolve({ success: true })
+};
+
+// 历史记录相关API - 暂时使用模拟数据，后续可以扩展为真实API
+export const historyApi = {
+  get: () => Promise.resolve([]),
+  getHistory: () => Promise.resolve([]),
+  post: (data) => Promise.resolve(data),
+  addHistory: (data) => Promise.resolve(data),
+  delete: (id) => Promise.resolve({ success: true }),
+  removeHistory: (id) => Promise.resolve({ success: true })
+};
+
+// 数据分析相关API - 使用真实API
+export const analyticsApi = createRealApi('/api/analytics');
 
 export default api; 

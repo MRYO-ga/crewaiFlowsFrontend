@@ -1,4 +1,5 @@
 import React from 'react';
+import MCPStatusIndicator from './MCPStatusIndicator';
 
 const Navbar = () => {
   return (
@@ -30,6 +31,10 @@ const Navbar = () => {
           
           {/* 右侧用户信息 */}
           <div className="flex items-center space-x-4">
+            {/* MCP状态指示器 */}
+            <div className="hidden sm:block">
+              <MCPStatusIndicator compact />
+            </div>
             <button className="p-2 rounded-full hover:bg-gray-100 transition-colors relative">
               <i className="fa-solid fa-bell text-gray-500"></i>
               <span className="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>

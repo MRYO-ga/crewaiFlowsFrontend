@@ -672,23 +672,23 @@ const SmartChatPage = () => {
               </Button>
             </Tooltip>
             <Tooltip title="数据面板">
-              <Button 
-                type="text" 
+                <Button
+                  type="text"
                 icon={<DatabaseOutlined />}
                 onClick={() => setShowDataPanel(true)}
-                className="text-gray-500 hover:text-blue-500"
-                size="small"
-              >
+                  className="text-gray-500 hover:text-blue-500"
+                  size="small"
+                >
                 数据面板
-              </Button>
+                </Button>
             </Tooltip>
             <Tooltip title="刷新数据">
-              <Button 
-                type="text" 
+                <Button
+                  type="text"
                 icon={<ReloadOutlined />}
                 onClick={loadComprehensiveData}
                 loading={contextLoading}
-                className="text-gray-500 hover:text-green-500"
+                  className="text-gray-500 hover:text-green-500"
                 size="small"
               >
                 刷新数据
@@ -748,7 +748,7 @@ const SmartChatPage = () => {
 
             {!userContext && !contextLoading && (
               <div className="mt-6">
-                <Button 
+                <Button
                   type="primary" 
                   icon={<DatabaseOutlined />}
                   onClick={loadComprehensiveData}
@@ -770,13 +770,13 @@ const SmartChatPage = () => {
               <div className="bg-gray-100 px-4 py-3 rounded-lg">
                 <Spin size="small" className="mr-2" />
                 <span className="text-gray-600">正在分析您的数据...</span>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
+        </div>
       </div>
+                  </div>
+                )}
+
+        <div ref={messagesEndRef} />
+                  </div>
 
       {/* 优化数据展示 */}
       {optimizationData && optimizationData.optimization_result && (
@@ -799,7 +799,7 @@ const SmartChatPage = () => {
         </div>
       )}
 
-      {/* 输入区域 */}
+              {/* 输入区域 */}
       <div className="px-4 py-3 border-t border-gray-200">
         {/* 已附加的数据标签 */}
         {attachedData.length > 0 && (
@@ -818,9 +818,9 @@ const SmartChatPage = () => {
                 </Tag>
               ))}
             </Space>
-          </div>
-        )}
-        
+                      </div>
+                    )}
+
         <div className="flex space-x-2">
           {/* 数据选择按钮 */}
           <Popover
@@ -833,7 +833,7 @@ const SmartChatPage = () => {
             overlayStyle={{ width: '400px' }}
           >
             <Tooltip title="选择数据">
-              <Button
+                        <Button
                 icon={<DatabaseOutlined />}
                 className="h-auto"
                 disabled={loading}
@@ -847,40 +847,40 @@ const SmartChatPage = () => {
             ref={inputRef}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
+                          onKeyDown={handleKeyDown}
             placeholder="输入您的问题，例如：请分析一下我的账号数据..."
             autoSize={{ minRows: 1, maxRows: 4 }}
             className="flex-1"
-            disabled={loading}
-          />
-          
-          <Button
-            type="primary"
-            icon={<SendOutlined />}
+                          disabled={loading}
+                        />
+
+                      <Button
+                        type="primary"
+                        icon={<SendOutlined />}
             onClick={sendMessage}
             loading={loading}
             disabled={!inputValue.trim()}
             className="h-auto"
-          >
-            发送
-          </Button>
-        </div>
-        
-        <div className="text-xs text-gray-400 mt-2">
+                      >
+                        发送
+                      </Button>
+                    </div>
+
+                      <div className="text-xs text-gray-400 mt-2">
           按 Enter 发送，Shift + Enter 换行 | 💡 选择数据后再提问可获得更精准的分析建议
-        </div>
-      </div>
+                  </div>
+                </div>
 
       {/* 数据面板抽屉 */}
-      <Drawer
+            <Drawer
         title="📊 用户数据面板"
-        placement="right"
+              placement="right"
         onClose={() => setShowDataPanel(false)}
         open={showDataPanel}
         width={600}
       >
         {(userContext || comprehensiveData) ? (
-          <div className="space-y-4">
+                <div className="space-y-4">
             {/* 账号信息 */}
             {userContext?.account_info && (
               <Card 
@@ -912,10 +912,10 @@ const SmartChatPage = () => {
                   <div className="mb-2"><strong>总内容数:</strong> {comprehensiveData.contents.length}</div>
                   {comprehensiveData.contents.slice(0, 3).map((content, index) => (
                     <div key={index} className="p-2 bg-gray-50 rounded mb-2 flex justify-between items-center">
-                      <div>
+                  <div>
                         <div className="font-medium">{content.title}</div>
                         <div className="text-xs text-gray-500">{content.category} | {content.status}</div>
-                      </div>
+                  </div>
                       <Button 
                         size="small" 
                         type="link"
@@ -928,7 +928,7 @@ const SmartChatPage = () => {
                   {comprehensiveData.contents.length > 3 && (
                     <div className="text-xs text-gray-500">还有 {comprehensiveData.contents.length - 3} 篇内容...</div>
                   )}
-                </div>
+                  </div>
               </Card>
             )}
 
@@ -939,7 +939,7 @@ const SmartChatPage = () => {
                   <div className="mb-2"><strong>待办数量:</strong> {comprehensiveData.tasks.length}</div>
                   {comprehensiveData.tasks.slice(0, 3).map((task, index) => (
                     <div key={index} className="p-2 bg-gray-50 rounded mb-2 flex justify-between items-center">
-                      <div>
+                  <div>
                         <div className="font-medium">{task.title}</div>
                         <div className="text-xs text-gray-500">
                           {task.priority} | {task.status} | {task.progress}%完成

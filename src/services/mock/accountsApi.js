@@ -1,56 +1,31 @@
-// 账号管理API
+// 账号管理API - 现在使用真实API
 import { delay, createId, format } from './utils.js';
-import { accountsData } from './mockData.js';
 
+// 不再使用静态模拟数据，直接返回空数组或从后端获取
 export const accountsApi = {
   getAccounts: async () => {
     await delay(600);
-    return accountsData;
+    // 返回空数组，让系统使用真实API数据
+    return [];
   },
 
   getAccountDetail: async (accountId) => {
     await delay(400);
-    const account = accountsData.find(a => a.id === accountId);
-    if (!account) {
-      throw new Error('未找到该账号');
-    }
-    return account;
+    throw new Error('请使用真实API获取账号详情');
   },
 
   addAccount: async (data) => {
     await delay(1000);
-    const newAccount = {
-      id: createId(),
-      ...data,
-      createdAt: format(new Date(), 'yyyy-MM-dd'),
-      followers: '0',
-      notes: 0,
-      engagement: 0
-    };
-    accountsData.push(newAccount);
-    return newAccount;
+    throw new Error('请使用真实API添加账号');
   },
 
   updateAccount: async (accountId, data) => {
     await delay(800);
-    const index = accountsData.findIndex(a => a.id === accountId);
-    if (index === -1) {
-      throw new Error('未找到该账号');
-    }
-    accountsData[index] = {
-      ...accountsData[index],
-      ...data
-    };
-    return accountsData[index];
+    throw new Error('请使用真实API更新账号');
   },
 
   deleteAccount: async (accountId) => {
     await delay(500);
-    const index = accountsData.findIndex(a => a.id === accountId);
-    if (index === -1) {
-      throw new Error('未找到该账号');
-    }
-    accountsData.splice(index, 1);
-    return { success: true };
+    throw new Error('请使用真实API删除账号');
   }
 }; 

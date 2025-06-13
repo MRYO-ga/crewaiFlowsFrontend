@@ -78,4 +78,83 @@ export async function chatWithAgent(message, history) {
     })
   });
   return res.json();
+}
+
+// MCP 相关 API 函数
+export async function getMCPServers() {
+  const res = await fetch('http://localhost:9000/api/mcp/servers');
+  if (!res.ok) {
+    throw new Error('获取MCP服务器列表失败');
+  }
+  return res.json();
+}
+
+export async function getMCPStatus() {
+  const res = await fetch('http://localhost:9000/api/mcp/status');
+  if (!res.ok) {
+    throw new Error('获取MCP状态失败');
+  }
+  return res.json();
+}
+
+export async function enableMCPServer(serverName) {
+  const res = await fetch(`http://localhost:9000/api/mcp/servers/${serverName}/enable`, {
+    method: 'POST'
+  });
+  if (!res.ok) {
+    throw new Error(`启用服务器 ${serverName} 失败`);
+  }
+  return res.json();
+}
+
+export async function disableMCPServer(serverName) {
+  const res = await fetch(`http://localhost:9000/api/mcp/servers/${serverName}/disable`, {
+    method: 'POST'
+  });
+  if (!res.ok) {
+    throw new Error(`禁用服务器 ${serverName} 失败`);
+  }
+  return res.json();
+}
+
+export async function connectMCPServer(serverName) {
+  const res = await fetch('http://localhost:9000/api/mcp/connect-by-name', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ server_name: serverName })
+  });
+  if (!res.ok) {
+    throw new Error(`连接服务器 ${serverName} 失败`);
+  }
+  return res.json();
+}
+
+export async function autoConnectMCP() {
+  const res = await fetch('http://localhost:9000/api/mcp/auto-connect', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ force_reconnect: false })
+  });
+  if (!res.ok) {
+    throw new Error('自动连接MCP失败');
+  }
+  return res.json();
+}
+
+export async function refreshMCPServers() {
+  const res = await fetch('http://localhost:9000/api/mcp/refresh-servers', {
+    method: 'POST'
+  });
+  if (!res.ok) {
+    throw new Error('刷新MCP服务器列表失败');
+  }
+  return res.json();
+}
+
+export async function getMCPTools() {
+  const res = await fetch('http://localhost:9000/api/mcp/tools');
+  if (!res.ok) {
+    throw new Error('获取MCP工具列表失败');
+  }
+  return res.json();
 } 

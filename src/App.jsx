@@ -11,6 +11,7 @@ import FavoritesPage from './pages/Favorites';
 import HistoryPage from './pages/History';
 import AccountPage from './pages/Account';
 import ApiTestPage from './pages/ApiTest';
+import MCPPage from './pages/MCP';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="history" element={<HistoryPage />} />
           <Route path="account" element={<AccountPage />} />
           <Route path="api-test" element={<ApiTestPage />} />
+          <Route path="mcp" element={<MCPPage />} />
         </Route>
       </Routes>
     </Router>

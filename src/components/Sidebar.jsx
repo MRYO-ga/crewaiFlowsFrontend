@@ -19,6 +19,12 @@ const menuItems = [
       { name: '收藏的分析', icon: 'fa-bookmark', path: '/favorites' },
       { name: '最近历史', icon: 'fa-clock-rotate-left', path: '/history' },
     ]
+  },
+  {
+    title: '系统管理',
+    items: [
+      { name: 'MCP 管理', icon: 'fa-plug', path: '/mcp' },
+    ]
   }
 ];
 

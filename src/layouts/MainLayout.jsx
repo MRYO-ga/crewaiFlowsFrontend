@@ -15,7 +15,6 @@ const MainLayout = () => {
       title: '主功能区', 
       items: [
         { path: '/chat', name: '智能对话', icon: 'fa-comments' },
-        { path: '/mcp', name: 'MCP工具', icon: 'fa-gear' },
         { path: '/task', name: '任务中心', icon: 'fa-clipboard-list' },
         { path: '/analytics', name: '数据分析', icon: 'fa-chart-line' },
         { path: '/competitor', name: '竞品分析', icon: 'fa-magnifying-glass-chart' },

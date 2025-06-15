@@ -19,7 +19,8 @@ const MainLayout = () => {
         { path: '/analytics', name: '数据分析', icon: 'fa-chart-line' },
         { path: '/competitor', name: '竞品分析', icon: 'fa-magnifying-glass-chart' },
         { path: '/content', name: '内容库', icon: 'fa-file-lines' },
-        { path: '/schedule', name: '发布计划', icon: 'fa-calendar' }
+        { path: '/schedule', name: '发布计划', icon: 'fa-calendar' },
+        { path: '/mcp-test', name: 'MCP测试', icon: 'fa-plug' },
       ]
     },
     {

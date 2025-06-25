@@ -12,6 +12,7 @@ import HistoryPage from './pages/History';
 import AccountPage from './pages/Account';
 import ApiTestPage from './pages/ApiTest';
 import MCPTestPage from './pages/MCP/MCPTest';
+import XhsManagementPage from './pages/XHS';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="account" element={<AccountPage />} />
           <Route path="api-test" element={<ApiTestPage />} />
           <Route path="mcp-test" element={<MCPTestPage />} />
+          <Route path="xhs" element={<XhsManagementPage />} />
         </Route>
       </Routes>
     </Router>

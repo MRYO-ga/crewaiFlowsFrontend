@@ -12,7 +12,7 @@ import {
   DatabaseOutlined, BarChartOutlined, BulbOutlined,
   HistoryOutlined, SaveOutlined, PlusOutlined,
   FileTextOutlined, TeamOutlined, CalendarOutlined,
-  RiseOutlined, UnorderedListOutlined
+  RiseOutlined, UnorderedListOutlined, SearchOutlined
 } from '@ant-design/icons';
 import smartChatService from '../../services/smartChatService';
 
@@ -21,6 +21,11 @@ const { Text, Paragraph } = Typography;
 const { Panel } = Collapse;
 
 const ChatPage = () => {
+  // 获取用户ID的方法
+  const getUserId = () => {
+    return localStorage.getItem('userId') || 'default_user';
+  };
+  
   // 基础状态
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
@@ -54,6 +59,10 @@ const ChatPage = () => {
   const [attachedData, setAttachedData] = useState([]);
   const [showDataSelector, setShowDataSelector] = useState(false);
   
+  // 缓存数据状态
+  const [cacheData, setCacheData] = useState(null);
+  const [cacheLoading, setCacheLoading] = useState(false);
+  
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const executionTimerRef = useRef(null);
@@ -69,9 +78,10 @@ const ChatPage = () => {
 
   // 页面加载时获取MCP状态
   useEffect(() => {
-    loadMcpStatus();
+    initializeMcpConnection();
     loadComprehensiveData();
     loadChatHistory();
+    loadCacheData();
   }, []);
 
   // 执行时间计时器
@@ -130,24 +140,75 @@ const ChatPage = () => {
     }
   };
 
-  // 重新连接MCP
+  // 初始化MCP连接 - 启动时自动连接所有服务器
+  const initializeMcpConnection = async () => {
+    try {
+      setMcpLoading(true);
+      
+      // 首先检查当前状态
+      await loadMcpStatus();
+      
+      // 如果没有连接，自动连接所有MCP服务器
+      const statusResponse = await fetch('http://localhost:9000/api/chat/mcp-status');
+      const statusData = await statusResponse.json();
+      
+      if (!statusData.data?.connected || statusData.data?.tools_count === 0) {
+        console.log('🔄 检测到MCP未连接，正在自动连接所有服务器...');
+        message.loading('正在自动连接开发工具 (SQL数据库 + 小红书工具)...', 0);
+        
+        // 连接所有MCP服务器（包括SQL和小红书）
+        const connectResponse = await fetch('http://localhost:9000/api/mcp/multi-connect', {
+          method: 'POST'
+        });
+        const connectData = await connectResponse.json();
+        
+        message.destroy();
+        
+        if (connectData.success) {
+          message.success(`✅ 成功连接开发工具: ${connectData.connected_servers.join(' + ')}`);
+          // 重新加载状态
+          await loadMcpStatus();
+        } else {
+          message.warning('⚠️ 开发工具连接失败，数据库和小红书功能可能受限');
+        }
+      } else {
+        console.log('✅ MCP服务器已连接，工具数量:', statusData.data.tools_count);
+      }
+    } catch (error) {
+      console.error('❌ 初始化MCP连接出错:', error);
+      message.error('MCP连接初始化失败');
+    } finally {
+      setMcpLoading(false);
+    }
+  };
+
+  // 重新连接MCP - 优化为连接所有服务器
   const reconnectMcp = async () => {
     try {
       setMcpLoading(true);
-      message.loading('正在重新连接MCP服务器...', 0);
+      message.loading('正在连接开发工具 (SQL数据库 + 小红书工具)...', 0);
       
-      const response = await fetch('http://localhost:9000/api/chat/mcp-reconnect', {
+      // 连接所有MCP服务器
+      const response = await fetch('http://localhost:9000/api/mcp/multi-connect', {
         method: 'POST'
       });
       const data = await response.json();
       
       message.destroy();
       
-      if (data.status === 'success') {
-        setMcpStatus(data.data);
-        message.success('MCP重新连接成功');
+      if (data.success) {
+        setMcpStatus({
+          connected: true,
+          tools_count: data.total_servers,
+          tools: [],
+          connected_servers: data.connected_servers
+        });
+        message.success(`✅ 成功连接开发工具: ${data.connected_servers.join(' + ')}`);
+        
+        // 重新加载完整状态
+        await loadMcpStatus();
       } else {
-        message.error(`MCP重新连接失败: ${data.message || data.error}`);
+        message.error(`❌ 开发工具连接失败: ${data.message}`);
       }
     } catch (error) {
       message.destroy();
@@ -209,17 +270,18 @@ const ChatPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_input: currentInput + (currentAttachedData.length > 0 ? 
-            '\n\n附加数据:\n' + currentAttachedData.map(item => 
-              `${item.type} - ${item.name}:\n${JSON.stringify(item.data, null, 2)}`
-            ).join('\n\n') : ''
-          ),
-          user_id: 'current_user',
+          user_input: currentInput,
+          user_id: getUserId(),
           conversation_history: messages.slice(-5).map(msg => ({
             role: msg.type === 'user' ? 'user' : 'assistant',
             content: msg.content
           })),
-          attached_data: currentAttachedData.length > 0 ? currentAttachedData : null
+          attached_data: currentAttachedData.length > 0 ? currentAttachedData : null,
+          data_references: currentAttachedData.length > 0 ? currentAttachedData.map(item => ({
+            type: item.type,
+            id: item.data.note_id || item.data.id || 'unknown',
+            name: item.name
+          })) : null
         }),
         signal: controller.signal
       });
@@ -419,13 +481,12 @@ const ChatPage = () => {
   };
 
   // 数据面板功能函数
-  const userId = "current_user";
-
+  
   // 加载综合用户数据
   const loadComprehensiveData = async () => {
     setContextLoading(true);
     try {
-      const data = await smartChatService.getComprehensiveUserData(userId);
+      const data = await smartChatService.getComprehensiveUserData(getUserId());
       setComprehensiveData(data);
       setUserContext(data.userContext);
       
@@ -450,7 +511,7 @@ const ChatPage = () => {
   // 加载聊天历史
   const loadChatHistory = async () => {
     try {
-      const history = await smartChatService.getChatHistory(userId, 20);
+      const history = await smartChatService.getChatHistory(getUserId(), 20);
       setChatHistory(history);
       // 如果有历史记录，恢复最近的对话
       if (history.length > 0) {
@@ -465,6 +526,26 @@ const ChatPage = () => {
       }
     } catch (error) {
       console.error('加载聊天历史失败:', error);
+    }
+  };
+
+  // 加载缓存数据
+  const loadCacheData = async () => {
+    try {
+      setCacheLoading(true);
+      
+      // 获取引用数据分类
+      const response = await fetch(`http://localhost:9000/api/chat/reference-categories/${getUserId()}`);
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        setCacheData(data.data);
+        console.log('缓存数据加载成功:', data.data);
+      }
+    } catch (error) {
+      console.error('加载缓存数据失败:', error);
+    } finally {
+      setCacheLoading(false);
     }
   };
 
@@ -579,6 +660,40 @@ const ChatPage = () => {
       });
     }
 
+    // 小红书缓存笔记数据
+    if (cacheData?.xiaohongshu_notes && cacheData.xiaohongshu_notes.length > 0) {
+      const sortedNotes = cacheData.xiaohongshu_notes
+        .sort((a, b) => (b.liked_count || 0) - (a.liked_count || 0))
+        .slice(0, 20);
+        
+      dataOptions.push({
+        category: '小红书笔记',
+        icon: <FileTextOutlined />,
+        description: '分析小红书笔记数据，生成内容策略',
+        items: sortedNotes.map(note => ({
+          type: 'xiaohongshu_note',
+          name: note.title || '无标题笔记',
+          subInfo: `${note.author || '未知作者'} | ${note.liked_count || 0}赞 ${note.comment_count || 0}评`,
+          data: note
+        }))
+      });
+    }
+
+    // 小红书搜索历史
+    if (cacheData?.xiaohongshu_searches && cacheData.xiaohongshu_searches.length > 0) {
+      dataOptions.push({
+        category: '搜索历史',
+        icon: <SearchOutlined />,
+        description: '基于历史搜索数据优化内容发现',
+        items: cacheData.xiaohongshu_searches.slice(0, 10).map(search => ({
+          type: 'xiaohongshu_search',
+          name: search.search_keywords || '未知关键词',
+          subInfo: `搜索结果 ${search.result_count || 0} 条`,
+          data: search
+        }))
+      });
+    }
+
     return dataOptions;
   };
 
@@ -591,15 +706,25 @@ const ChatPage = () => {
         <div className="p-4 text-center text-gray-500">
           <DatabaseOutlined className="text-2xl mb-2" />
           <div className="mb-2">暂无可选择的数据</div>
-          <Button 
-            type="primary" 
-            size="small" 
-            onClick={loadComprehensiveData}
-            loading={contextLoading}
-            icon={<ReloadOutlined />}
-          >
-            重新加载数据
-          </Button>
+          <Space>
+            <Button 
+              type="primary" 
+              size="small" 
+              onClick={loadComprehensiveData}
+              loading={contextLoading}
+              icon={<ReloadOutlined />}
+            >
+              重新加载数据
+            </Button>
+            <Button 
+              size="small" 
+              onClick={loadCacheData}
+              loading={cacheLoading}
+              icon={<DatabaseOutlined />}
+            >
+              刷新缓存
+            </Button>
+          </Space>
         </div>
       );
     }
@@ -1294,51 +1419,91 @@ const ChatPage = () => {
   // 渲染MCP设置面板
   const renderMcpSettings = () => (
     <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-                            <Badge 
-            status={mcpStatus.connected ? "success" : "error"} 
-            text={mcpStatus.connected ? "已连接" : "未连接"}
-          />
-          {mcpLoading && <Spin size="small" />}
-                          </div>
-              <Button 
-          type="primary" 
-                size="small"
-                icon={<ReloadOutlined />}
-          onClick={reconnectMcp}
-          loading={mcpLoading}
-        >
-          重新连接
-              </Button>
-      </div>
-
-      <Divider />
-
-                          <div>
-        <Text strong>可用工具 ({mcpStatus.tools_count})</Text>
-        <div className="mt-2 space-y-2 max-h-60 overflow-y-auto">
-          {mcpStatus.tools.length > 0 ? (
-            mcpStatus.tools.map((tool, index) => (
-              <Card key={index} size="small" className="mb-2">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <Text strong className="text-sm">{tool.name}</Text>
-                    <Paragraph 
-                      className="text-xs text-gray-600 mt-1 mb-0" 
-                      ellipsis={{ rows: 2, expandable: true }}
-                >
-                      {tool.description}
-                    </Paragraph>
-            </div>
-                  <CheckCircleOutlined className="text-green-500 ml-2" />
+        {/* 连接状态和控制区域 */}
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full ${mcpStatus.connected ? 'bg-green-500' : 'bg-red-500'} ${mcpStatus.connected ? 'animate-pulse' : ''}`}></div>
+                <Text strong className={mcpStatus.connected ? 'text-green-600' : 'text-red-600'}>
+                  MCP开发工具 {mcpStatus.connected ? '已连接' : '未连接'}
+                </Text>
               </div>
-              </Card>
-            ))
-          ) : (
-            <div className="text-center text-gray-500 py-4">
-              <CloseCircleOutlined className="text-2xl mb-2" />
-              <div>暂无可用工具</div>
+            </div>
+            {mcpLoading && <Spin size="small" />}
+          </div>
+          
+          {/* 连接的服务器信息 */}
+          {mcpStatus.connected && mcpStatus.connected_servers && mcpStatus.connected_servers.length > 0 && (
+            <div className="mb-3">
+              <Text className="text-xs text-gray-600">已连接服务器:</Text>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {mcpStatus.connected_servers.map((server, index) => (
+                  <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">
+                    {server}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* 控制按钮 */}
+          <div className="space-y-2">
+            <Button 
+              type="primary" 
+              size="small"
+              icon={<ReloadOutlined />}
+              onClick={reconnectMcp}
+              loading={mcpLoading}
+              className="w-full"
+            >
+              {mcpStatus.connected ? '重新连接所有工具' : '连接MCP开发工具'}
+            </Button>
+            
+            {!mcpStatus.connected && (
+              <div className="text-xs text-gray-500 text-center">
+                🔧 包含SQL数据库操作和小红书数据分析工具
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 工具列表 */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <Text strong>可用工具</Text>
+            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+              {mcpStatus.tools_count || 0}
+            </span>
+          </div>
+          
+          <div className="space-y-2 max-h-60 overflow-y-auto">
+            {mcpStatus.tools && mcpStatus.tools.length > 0 ? (
+              mcpStatus.tools.map((tool, index) => (
+                <Card key={index} size="small" className="mb-2 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2">
+                        <Text strong className="text-sm">{tool.name}</Text>
+                        <span className="px-1 py-0.5 bg-green-100 text-green-700 rounded text-xs">✓</span>
+                      </div>
+                      <Paragraph 
+                        className="text-xs text-gray-600 mt-1 mb-0" 
+                        ellipsis={{ rows: 2, expandable: true }}
+                      >
+                        {tool.description}
+                      </Paragraph>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center text-gray-500 py-6 bg-gray-50 rounded-lg">
+                <div className="text-3xl mb-2">🔌</div>
+                <div className="text-sm">暂无可用工具</div>
+                <div className="text-xs mt-1">
+                  {mcpStatus.connected ? '请检查MCP服务器配置' : '点击上方按钮连接开发工具'}
+                </div>
               </div>
             )}
           </div>
@@ -1398,6 +1563,21 @@ const ChatPage = () => {
           to {
             opacity: 1;
             transform: translateX(0);
+          }
+        }
+        
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+          }
+          70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+          }
+          100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
           }
         }
         
@@ -1762,17 +1942,22 @@ const ChatPage = () => {
             />
             </Tooltip>
           
-          <Tooltip title="重新连接开发工具">
+          <Tooltip title={mcpStatus.connected ? "重新连接开发工具" : "连接SQL和小红书工具"}>
                       <Button
-              type="text" 
+              type={mcpStatus.connected ? "text" : "primary"}
               icon={<ReloadOutlined />}
               loading={mcpLoading}
               onClick={reconnectMcp}
               style={{ 
-                color: 'white',
-                border: '1px solid rgba(255,255,255,0.3)'
+                color: mcpStatus.connected ? 'white' : undefined,
+                border: mcpStatus.connected ? '1px solid rgba(255,255,255,0.3)' : undefined,
+                backgroundColor: mcpStatus.connected ? 'transparent' : '#ffc107',
+                borderColor: mcpStatus.connected ? 'rgba(255,255,255,0.3)' : '#ffc107',
+                animation: mcpStatus.connected ? 'none' : 'pulse 2s infinite'
               }}
-            />
+            >
+              {!mcpStatus.connected && '连接工具'}
+            </Button>
           </Tooltip>
           
           <Tooltip title="刷新数据">

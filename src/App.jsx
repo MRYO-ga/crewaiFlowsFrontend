@@ -13,6 +13,7 @@ import AccountPage from './pages/Account';
 import ApiTestPage from './pages/ApiTest';
 import MCPTestPage from './pages/MCP/MCPTest';
 import XhsManagementPage from './pages/XHS';
+import ExamplesPage from './pages/Examples';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="competitor" element={<CompetitorPage />} />
           <Route path="content" element={<ContentPage />} />
           <Route path="schedule" element={<SchedulePage />} />
+          <Route path="examples" element={<ExamplesPage />} />
           <Route path="favorites" element={<FavoritesPage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="account" element={<AccountPage />} />

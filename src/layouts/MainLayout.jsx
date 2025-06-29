@@ -20,6 +20,7 @@ const MainLayout = () => {
         { path: '/competitor', name: '竞品分析', icon: 'fa-magnifying-glass-chart' },
         { path: '/content', name: '内容库', icon: 'fa-file-lines' },
         { path: '/schedule', name: '发布计划', icon: 'fa-calendar' },
+        { path: '/examples', name: '功能样例', icon: 'fa-lightbulb' },
         { path: '/xhs', name: '小红书数据', icon: 'fa-database' },
         { path: '/mcp-test', name: 'MCP测试', icon: 'fa-plug' },
       ]

@@ -3,7 +3,7 @@ import {
   Card, Input, Button, Avatar, Spin, message, 
   Drawer, Divider, Typography, Space, Badge, 
   Tooltip, Switch, Tag, Alert, Row, Col, Statistic,
-  Progress, Empty, Popover, List, Collapse
+  Progress, Empty, Popover, List, Collapse, Select
 } from 'antd';
 import { 
   SendOutlined, RobotOutlined, UserOutlined, 
@@ -12,7 +12,8 @@ import {
   DatabaseOutlined, BarChartOutlined, BulbOutlined,
   HistoryOutlined, SaveOutlined, PlusOutlined,
   FileTextOutlined, TeamOutlined, CalendarOutlined,
-  RiseOutlined, UnorderedListOutlined, SearchOutlined
+  RiseOutlined, UnorderedListOutlined, SearchOutlined,
+  ExperimentOutlined
 } from '@ant-design/icons';
 import smartChatService from '../../services/smartChatService';
 
@@ -30,6 +31,20 @@ const ChatPage = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // 模型选择状态
+  const [selectedModel, setSelectedModel] = useState(
+    localStorage.getItem('selectedModel') || 'gpt-4o-mini'
+  );
+  const [availableModels, setAvailableModels] = useState([]);
+  const [modelsLoading, setModelsLoading] = useState(false);
+
+  // 保存模型选择到localStorage
+  const handleModelChange = (model) => {
+    setSelectedModel(model);
+    localStorage.setItem('selectedModel', model);
+    console.log('🔄 切换AI模型:', model);
+  };
   
   // MCP状态
   const [mcpStatus, setMcpStatus] = useState({
@@ -82,6 +97,11 @@ const ChatPage = () => {
     loadComprehensiveData();
     loadChatHistory();
     loadCacheData();
+    loadAvailableModels();
+    // 如果没有历史消息，显示欢迎和功能样例
+    if (messages.length === 0) {
+      showWelcomeMessage();
+    }
   }, []);
 
   // 执行时间计时器
@@ -137,6 +157,198 @@ const ChatPage = () => {
       message.error('无法连接到后端服务');
     } finally {
       setMcpLoading(false);
+    }
+  };
+
+  // 加载可用模型列表
+  const loadAvailableModels = async () => {
+    try {
+      setModelsLoading(true);
+      console.log('🔄 开始加载模型列表...');
+      
+      const response = await fetch('http://localhost:9000/api/chat/available-models');
+      console.log('📡 API响应状态:', response.status);
+      
+      const data = await response.json();
+      console.log('📡 API响应数据:', data);
+      
+      if (data.status === 'success' && data.models && data.models.length > 0) {
+        setAvailableModels(data.models);
+        console.log('✅ 模型列表加载成功:', data.models.length, '个模型');
+        console.log('📋 模型详情:', data.models);
+      } else {
+        console.error('❌ 模型列表加载失败或为空:', data);
+        // 使用完整的默认模型列表作为后备
+        const defaultModels = [
+          { 
+            value: 'gpt-4o-mini', 
+            label: 'GPT-4o Mini', 
+            provider: 'openai',
+            description: '快速、经济的模型，适合日常对话'
+          },
+          { 
+            value: 'gpt-4o', 
+            label: 'GPT-4o', 
+            provider: 'openai',
+            description: '更强大的推理能力，适合复杂任务'
+          },
+          { 
+            value: 'claude-sonnet-4-20250514', 
+            label: 'Claude Sonnet 4', 
+            provider: 'anthropic',
+            description: '最新Claude模型，优秀的推理和创作能力'
+          },
+          { 
+            value: 'claude-3-7-sonnet-20250219-thinking', 
+            label: 'Claude 3.7 Sonnet (Thinking)', 
+            provider: 'anthropic',
+            description: '具有深度思考能力的Claude模型'
+          },
+          { 
+            value: 'claude-3-5-sonnet-20241022', 
+            label: 'Claude 3.5 Sonnet', 
+            provider: 'anthropic',
+            description: '平衡性能和速度的Claude模型'
+          },
+          { 
+            value: 'deepseek-r1-2025-01-20', 
+            label: 'DeepSeek R1', 
+            provider: 'deepseek',
+            description: '中文优化的强推理模型'
+          }
+        ];
+        setAvailableModels(defaultModels);
+        console.log('🔄 使用默认模型列表:', defaultModels.length, '个模型');
+      }
+      
+      // 临时：无论API如何，强制使用完整模型列表用于测试
+      const forceModels = [
+        { 
+          value: 'gpt-4o-mini', 
+          label: 'GPT-4o Mini', 
+          provider: 'openai',
+          description: '快速、经济的模型，适合日常对话'
+        },
+        { 
+          value: 'gpt-4o', 
+          label: 'GPT-4o', 
+          provider: 'openai',
+          description: '更强大的推理能力，适合复杂任务'
+        },
+        { 
+          value: 'claude-sonnet-4-20250514', 
+          label: 'Claude Sonnet 4', 
+          provider: 'anthropic',
+          description: '最新Claude模型，优秀的推理和创作能力'
+        },
+        { 
+          value: 'claude-3-7-sonnet-20250219-thinking', 
+          label: 'Claude 3.7 Sonnet (Thinking)', 
+          provider: 'anthropic',
+          description: '具有深度思考能力的Claude模型'
+        },
+        { 
+          value: 'claude-3-5-sonnet-20241022', 
+          label: 'Claude 3.5 Sonnet', 
+          provider: 'anthropic',
+          description: '平衡性能和速度的Claude模型'
+        },
+        { 
+          value: 'deepseek-r1-2025-01-20', 
+          label: 'DeepSeek R1', 
+          provider: 'deepseek',
+          description: '中文优化的强推理模型'
+        }
+      ];
+      setAvailableModels(forceModels);
+      console.log('🔧 强制设置模型列表用于测试:', forceModels.length, '个模型');
+    } catch (error) {
+      console.error('❌ 模型列表加载出错:', error);
+      // 使用完整的默认模型列表作为后备
+      const defaultModels = [
+        { 
+          value: 'gpt-4o-mini', 
+          label: 'GPT-4o Mini', 
+          provider: 'openai',
+          description: '快速、经济的模型，适合日常对话'
+        },
+        { 
+          value: 'gpt-4o', 
+          label: 'GPT-4o', 
+          provider: 'openai',
+          description: '更强大的推理能力，适合复杂任务'
+        },
+        { 
+          value: 'claude-sonnet-4-20250514', 
+          label: 'Claude Sonnet 4', 
+          provider: 'anthropic',
+          description: '最新Claude模型，优秀的推理和创作能力'
+        },
+        { 
+          value: 'claude-3-7-sonnet-20250219-thinking', 
+          label: 'Claude 3.7 Sonnet (Thinking)', 
+          provider: 'anthropic',
+          description: '具有深度思考能力的Claude模型'
+        },
+        { 
+          value: 'claude-3-5-sonnet-20241022', 
+          label: 'Claude 3.5 Sonnet', 
+          provider: 'anthropic',
+          description: '平衡性能和速度的Claude模型'
+        },
+        { 
+          value: 'deepseek-r1-2025-01-20', 
+          label: 'DeepSeek R1', 
+          provider: 'deepseek',
+          description: '中文优化的强推理模型'
+        }
+      ];
+      setAvailableModels(defaultModels);
+      console.log('🔄 网络错误，使用默认模型列表:', defaultModels.length, '个模型');
+      
+      // 临时：强制设置完整模型列表
+      const forceModels = [
+        { 
+          value: 'gpt-4o-mini', 
+          label: 'GPT-4o Mini', 
+          provider: 'openai',
+          description: '快速、经济的模型，适合日常对话'
+        },
+        { 
+          value: 'gpt-4o', 
+          label: 'GPT-4o', 
+          provider: 'openai',
+          description: '更强大的推理能力，适合复杂任务'
+        },
+        { 
+          value: 'claude-sonnet-4-20250514', 
+          label: 'Claude Sonnet 4', 
+          provider: 'anthropic',
+          description: '最新Claude模型，优秀的推理和创作能力'
+        },
+        { 
+          value: 'claude-3-7-sonnet-20250219-thinking', 
+          label: 'Claude 3.7 Sonnet (Thinking)', 
+          provider: 'anthropic',
+          description: '具有深度思考能力的Claude模型'
+        },
+        { 
+          value: 'claude-3-5-sonnet-20241022', 
+          label: 'Claude 3.5 Sonnet', 
+          provider: 'anthropic',
+          description: '平衡性能和速度的Claude模型'
+        },
+        { 
+          value: 'deepseek-r1-2025-01-20', 
+          label: 'DeepSeek R1', 
+          provider: 'deepseek',
+          description: '中文优化的强推理模型'
+        }
+      ];
+      setAvailableModels(forceModels);
+      console.log('🔧 强制设置模型列表用于测试(catch):', forceModels.length, '个模型');
+    } finally {
+      setModelsLoading(false);
     }
   };
 
@@ -219,6 +431,281 @@ const ChatPage = () => {
     }
   };
 
+  // 显示欢迎消息和功能样例
+  const showWelcomeMessage = () => {
+    const welcomeMessage = {
+      id: Date.now(),
+      type: 'assistant',
+      content: '🎉 欢迎使用SocialPulse AI - 智能社交媒体运营助手！\n\n我已经为您连接了强大的MCP工具，包括：\n• 📊 SQLite数据库工具（查询数据、管理表格）\n• 🔍 小红书平台工具（搜索笔记、分析内容）\n\n您可以通过自然语言对话来使用这些工具，我会自动调用相应的功能来帮助您。\n\n快速试试以下功能样例：',
+      timestamp: new Date().toLocaleTimeString(),
+      suggestions: [
+        {
+          title: '📊 查看数据库结构',
+          description: '了解当前数据库有哪些表和数据',
+          query: '帮我查看数据库里有哪些表，以及每个表的结构'
+        },
+        {
+          title: '🔍 小红书内容搜索',
+          description: '搜索小红书平台的热门内容',
+          query: '帮我搜索小红书上关于"美妆测评"的最新笔记内容'
+        },
+        {
+          title: '💡 账号数据分析',
+          description: '分析现有账号的运营数据',
+          query: '帮我分析一下当前账号的数据情况，包括用户数、内容数等统计信息'
+        },
+        {
+          title: '📈 竞品分析报告',
+          description: '获取竞品账号的分析数据',
+          query: '请帮我查看竞品分析数据，并生成一份详细的分析报告'
+        }
+      ]
+    };
+    setMessages([welcomeMessage]);
+  };
+
+  // 快速发送预设查询
+  const sendQuickQuery = (query) => {
+    setInputValue(query);
+    // 直接发送查询，不依赖setTimeout
+    if (query.trim()) {
+      sendMessageWithQuery(query);
+    }
+  };
+
+  // 使用指定查询发送消息
+  const sendMessageWithQuery = async (queryToSend) => {
+    if (!queryToSend.trim()) return;
+
+    const userMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: queryToSend,
+      timestamp: new Date().toLocaleTimeString(),
+      attachedData: attachedData.length > 0 ? [...attachedData] : null
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    const currentAttachedData = [...attachedData];
+    setInputValue('');
+    setAttachedData([]);
+    setIsLoading(true);
+
+    // 调用实际的发送逻辑
+    await performMessageSending(queryToSend, currentAttachedData);
+  };
+
+  // 实际的消息发送逻辑（从原sendMessage函数提取）
+  const performMessageSending = async (queryContent, currentAttachedData) => {
+    // 创建取消控制器
+    const controller = new AbortController();
+    setAbortController(controller);
+    
+    // 创建流式消息
+    const streamingId = Date.now();
+    const streamingMessage = {
+      id: streamingId,
+      type: 'assistant',
+      content: '',
+      timestamp: new Date().toLocaleTimeString(),
+      startTime: Date.now(),
+      status: 'processing',
+      steps: []
+    };
+    
+    setStreamingMessage(streamingMessage);
+    setCurrentTask({
+      id: streamingId,
+      query: queryContent,
+      status: 'running',
+      startTime: Date.now(),
+      steps: []
+    });
+
+    try {
+      const response = await fetch('http://localhost:9000/api/chat/stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_input: queryContent,
+          user_id: getUserId(),
+          model: selectedModel,
+          conversation_history: messages.slice(-5).map(msg => ({
+            role: msg.type === 'user' ? 'user' : 'assistant',
+            content: msg.content
+          })),
+          attached_data: currentAttachedData.length > 0 ? currentAttachedData : null,
+          data_references: currentAttachedData.length > 0 ? currentAttachedData.map(item => ({
+            type: item.type,
+            id: item.data.note_id || item.data.id || 'unknown',
+            name: item.name
+          })) : null
+        }),
+        signal: controller.signal
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let finalContent = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const text = decoder.decode(value);
+        const lines = text.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              console.log('📡 收到流式数据:', data);
+              
+              // 更新任务历史
+              const stepInfo = {
+                timestamp: Date.now(),
+                type: data.type,
+                content: data.content,
+                data: data.data
+              };
+              
+              setTaskHistory(prev => [...prev, stepInfo]);
+              
+              // 更新流式消息
+              setStreamingMessage(prev => {
+                if (!prev) return null;
+                
+                const updated = { ...prev };
+                updated.steps = [...(updated.steps || []), stepInfo];
+                
+                switch (data.type) {
+                  case 'start':
+                    updated.status = 'processing';
+                    updated.content = data.content;
+                      break;
+                      
+                  case 'tools_loading':
+                    updated.status = 'loading_tools';
+                    updated.content = data.content;
+                      break;
+                      
+                  case 'tools_loaded':
+                    updated.status = 'tools_ready';
+                    updated.content = `${data.content}，开始处理...`;
+                    updated.toolsInfo = data.data;
+                      break;
+                      
+                  case 'llm_thinking':
+                    updated.status = 'thinking';
+                    updated.content = data.content;
+                      break;
+                      
+                  case 'ai_message':
+                    // AI的说明文字，累积显示
+                    updated.status = 'ai_explaining';
+                    if (updated.aiExplanation) {
+                      updated.aiExplanation += '\n\n' + data.content;
+                    } else {
+                      updated.aiExplanation = data.content;
+                    }
+                    updated.content = updated.aiExplanation;
+                      break;
+                      
+                  case 'tool_call':
+                    updated.status = 'calling_tool';
+                    // 保持之前的AI说明文字
+                    if (updated.aiExplanation) {
+                      updated.content = updated.aiExplanation + '\n\n' + data.content;
+                    } else {
+                      updated.content = data.content;
+                    }
+                    updated.currentTool = data.data;
+                      break;
+                      
+                  case 'tool_result':
+                    updated.status = 'tool_completed';
+                    updated.content = data.content;
+                    updated.toolResult = data.data?.result || '执行完成';
+                      break;
+                      
+                  case 'final_answer':
+                    updated.status = 'generating_answer';
+                    finalContent = data.content;
+                    updated.content = data.content;
+                    // 保留之前的工具调用结果
+                    // updated.toolResult 和 updated.currentTool 保持不变
+                      break;
+                      
+                    case 'complete':
+                    // 标记任务完成，将流式消息转换为历史消息
+                    updated.status = 'complete';
+                    updated.isCompleted = true;
+                    finalContent = finalContent || updated.content;
+                    updated.content = finalContent;
+                    
+                    // 将完成的流式消息添加到历史消息中
+                    setTimeout(() => {
+                      setStreamingMessage(prev => {
+                        if (prev && prev.id === streamingId) {
+                          // 创建完整的助手消息，包含所有对话流内容
+                          const completedMessage = {
+                            id: streamingId,
+                            type: 'assistant',
+                            content: prev.content || '任务完成',
+                            timestamp: prev.timestamp,
+                            steps: prev.steps || [],
+                            executionTime: Math.floor((Date.now() - prev.startTime) / 1000),
+                            isCompleted: true
+                          };
+                          
+                          // 添加到历史消息
+                          setMessages(prevMessages => [...prevMessages, completedMessage]);
+                          
+                          return null; // 清除流式消息
+                        }
+                        return prev;
+                      });
+                      setCurrentTask(null);
+                      setAbortController(null);
+                    }, 500);
+                      break;
+                      
+                  default:
+                    console.log('未知的流式数据类型:', data.type);
+                }
+                
+                return updated;
+              });
+            } catch (e) {
+              console.error('解析流式数据失败:', e);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log('任务已取消');
+        message.info('任务已取消');
+      } else {
+        console.error('发送消息失败:', error);
+        message.error('发送失败，请检查网络连接');
+      }
+      
+      // 出错时清理状态
+      setStreamingMessage(null);
+      setCurrentTask(null);
+      setAbortController(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 发送消息（流式）
   const sendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -228,7 +715,8 @@ const ChatPage = () => {
       type: 'user',
       content: inputValue,
       timestamp: new Date().toLocaleTimeString(),
-      attachedData: attachedData.length > 0 ? [...attachedData] : null
+      attachedData: attachedData.length > 0 ? [...attachedData] : null,
+      model: selectedModel
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -272,6 +760,7 @@ const ChatPage = () => {
         body: JSON.stringify({
           user_input: currentInput,
           user_id: getUserId(),
+          model: selectedModel,
           conversation_history: messages.slice(-5).map(msg => ({
             role: msg.type === 'user' ? 'user' : 'assistant',
             content: msg.content
@@ -909,6 +1398,40 @@ const ChatPage = () => {
                   }}>
                     {message.content}
                   </Paragraph>
+                )}
+                
+                {/* 显示功能样例建议按钮 */}
+                {message.suggestions && message.suggestions.length > 0 && (
+                  <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid #f0f0f0' }}>
+                    <Text style={{ fontSize: '12px', color: '#8c8c8c', display: 'block', marginBottom: 8 }}>
+                      💡 点击下方按钮快速体验：
+                    </Text>
+                    <div style={{ display: 'grid', gap: 8, gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+                      {message.suggestions.map((suggestion, index) => (
+                        <Card 
+                          key={index}
+                          size="small"
+                          hoverable
+                          onClick={() => sendQuickQuery(suggestion.query)}
+                          style={{ 
+                            cursor: 'pointer',
+                            transition: 'all 0.3s',
+                            border: '1px solid #d9d9d9',
+                            borderRadius: 8
+                          }}
+                        >
+                          <div style={{ padding: '4px 0' }}>
+                            <Text strong style={{ fontSize: '13px', color: '#1890ff', display: 'block' }}>
+                              {suggestion.title}
+                            </Text>
+                            <Text style={{ fontSize: '11px', color: '#8c8c8c', marginTop: 4, display: 'block' }}>
+                              {suggestion.description}
+                            </Text>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
                 )}
                         </div>
                       )}
@@ -2083,15 +2606,52 @@ const ChatPage = () => {
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
+              justifyContent: 'space-between',
               marginBottom: 8 
             }}>
-              <Text strong style={{ fontSize: '12px', color: '#666' }}>
-                💬 描述您的开发需求
-              </Text>
-              <Text type="secondary" style={{ marginLeft: 8, fontSize: '11px' }}>
-                AI将分析需求并调用相应的开发工具和数据
-              </Text>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Text strong style={{ fontSize: '12px', color: '#666' }}>
+                  💬 描述您的开发需求
+                </Text>
+                <Text type="secondary" style={{ marginLeft: 8, fontSize: '11px' }}>
+                  AI将分析需求并调用相应的开发工具和数据
+                </Text>
+              </div>
+              
+              {/* 模型选择器 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Text style={{ fontSize: '11px', color: '#999' }}>模型：</Text>
+                <Select
+                  value={selectedModel}
+                  onChange={handleModelChange}
+                  size="small"
+                  style={{ width: 160 }}
+                  placeholder="选择AI模型"
+                  loading={modelsLoading}
+                  disabled={modelsLoading || availableModels.length === 0}
+                  optionLabelProp="label"
+                  onDropdownVisibleChange={(open) => {
+                    if (open) {
+                      console.log('🔍 下拉框打开，当前可用模型:', availableModels.length, '个');
+                      console.log('📋 模型列表:', availableModels);
+                    }
+                  }}
+                >
+                  {availableModels.map((model, index) => {
+                    return (
+                      <Select.Option key={model.value} value={model.value} label={model.label}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Text style={{ fontSize: '12px' }}>{model.label}</Text>
+                          <Tag color="blue" style={{ fontSize: '10px', margin: 0 }}>
+                            {model.provider}
+                          </Tag>
                         </div>
+                      </Select.Option>
+                    );
+                  })}
+                </Select>
+              </div>
+            </div>
             <TextArea
               ref={inputRef}
               value={inputValue}
@@ -2195,7 +2755,68 @@ const ChatPage = () => {
         open={showSettings}
         onClose={() => setShowSettings(false)}
           >
-        <Collapse defaultActiveKey={['mcp', 'data']} ghost>
+        <Collapse defaultActiveKey={['model', 'mcp', 'data']} ghost>
+          <Panel header="🤖 AI模型设置" key="model">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Text strong>当前模型</Text>
+                <Badge 
+                  status="processing" 
+                  text={selectedModel}
+                />
+              </div>
+              
+              <Divider />
+              
+              {availableModels.length > 0 && (
+                <div>
+                  <Text strong>可用模型 ({availableModels.length}个)</Text>
+                  <div className="mt-2 space-y-2">
+                    {availableModels.map(model => (
+                      <Card 
+                        key={model.value} 
+                        size="small"
+                        className={model.value === selectedModel ? 'border-blue-500' : ''}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <ExperimentOutlined />
+                              <Text strong>{model.label}</Text>
+                              <Tag color="blue" style={{ fontSize: '10px' }}>
+                                {model.provider}
+                              </Tag>
+                            </div>
+                            <Text type="secondary" style={{ fontSize: '11px', display: 'block', marginTop: 4 }}>
+                              {model.description}
+                            </Text>
+                          </div>
+                          {model.value === selectedModel && (
+                            <CheckCircleOutlined style={{ color: '#1890ff' }} />
+                          )}
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <Divider />
+              
+              <div className="text-center">
+                <Button 
+                  type="primary" 
+                  icon={<ReloadOutlined />}
+                  onClick={loadAvailableModels}
+                  loading={modelsLoading}
+                  block
+                >
+                  刷新模型列表
+                </Button>
+              </div>
+            </div>
+          </Panel>
+          
           <Panel header="🔧 MCP开发工具" key="mcp">
             {renderMcpSettings()}
           </Panel>

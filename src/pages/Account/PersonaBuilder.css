@@ -1,0 +1,722 @@
+/* AI人设构建Modal样式 */
+.persona-builder-modal .ant-modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px 8px 0 0;
+  border: none;
+}
+
+.persona-builder-modal .ant-modal-title {
+  color: white;
+}
+
+.persona-builder-modal .ant-modal-close-x {
+  color: white;
+}
+
+.persona-builder-modal .ant-steps-item-finish .ant-steps-item-icon {
+  background-color: #52c41a;
+  border-color: #52c41a;
+}
+
+.persona-builder-modal .ant-steps-item-process .ant-steps-item-icon {
+  background-color: #1890ff;
+  border-color: #1890ff;
+}
+
+/* 对话气泡样式 */
+.chat-bubble-user {
+  background: linear-gradient(135deg, #FF2442 0%, #FF4757 100%);
+  border-radius: 18px 18px 4px 18px;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.chat-bubble-ai {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 18px 18px 18px 4px;
+  animation: slideInLeft 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 选项按钮样式 */
+.persona-option-button {
+  border: 1px solid #d9d9d9;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  margin: 4px;
+}
+
+.persona-option-button:hover {
+  border-color: #FF2442;
+  color: #FF2442;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 36, 66, 0.2);
+}
+
+.persona-option-button:active {
+  transform: translateY(0);
+}
+
+/* 人设预览卡片样式 */
+.persona-preview-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* 人设预览头像样式 */
+.persona-avatar {
+  border: 4px solid #FF2442;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.persona-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 36, 66, 0.3);
+}
+
+.persona-avatar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 36, 66, 0.1) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.persona-avatar:hover::after {
+  transform: translateX(100%);
+}
+
+/* 风格标签动画 */
+.persona-tag {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.persona-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 36, 66, 0.2);
+}
+
+/* 差异化卖点卡片 */
+.persona-advantage-card {
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.persona-advantage-card:hover {
+  border-color: #FF2442;
+  box-shadow: 0 4px 12px rgba(255, 36, 66, 0.1);
+}
+
+/* AI建议卡片动画 */
+.ai-suggestion-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.ai-suggestion-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 69, 19, 0.1);
+}
+
+/* 构建进度条样式 */
+.persona-progress .ant-progress-bg {
+  background: linear-gradient(135deg, #FF2442 0%, #FF4757 100%);
+}
+
+/* 快速操作按钮组 */
+.persona-quick-actions {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 1rem;
+}
+
+/* 人设预览标题图标 */
+.persona-section-icon {
+  color: #FF2442;
+}
+
+/* 步骤指示器自定义样式 */
+.persona-steps .ant-steps-item-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.persona-steps .ant-steps-item-description {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+/* 输入框样式 */
+.persona-input-area {
+  border-radius: 12px;
+  border: 2px solid #e8e8e8;
+  transition: all 0.3s ease;
+}
+
+.persona-input-area:focus {
+  border-color: #FF2442;
+  box-shadow: 0 0 0 3px rgba(255, 36, 66, 0.1);
+}
+
+/* 发送按钮样式 */
+.persona-send-button {
+  background: linear-gradient(135deg, #FF2442 0%, #FF4757 100%);
+  border: none;
+  border-radius: 8px;
+  height: 56px;
+  transition: all 0.3s ease;
+}
+
+.persona-send-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 36, 66, 0.3);
+}
+
+/* 完成按钮样式 */
+.persona-complete-button {
+  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.persona-complete-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(82, 196, 26, 0.3);
+}
+
+/* AI思考动画 */
+.ai-thinking {
+  animation: thinking 2s infinite;
+}
+
+@keyframes thinking {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .persona-builder-modal {
+    margin: 0;
+    padding: 0;
+    max-width: 100vw;
+  }
+  
+  .persona-builder-modal .ant-modal-content {
+    border-radius: 0;
+  }
+}
+
+/* 人设构建器样式 */
+.persona-builder-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0;
+}
+
+.persona-builder-content {
+  min-height: 100vh;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+/* 自定义滚动条样式 */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+/* Webkit浏览器滚动条样式 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #888 0%, #999 100%);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #666 0%, #777 100%);
+  box-shadow: 0 2px 10px rgba(136, 136, 136, 0.3);
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: #f1f1f1;
+}
+
+/* Modal内部滚动条样式 */
+.ant-modal .ant-modal-body.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ant-modal .ant-modal-body.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #888 0%, #999 100%);
+  border-radius: 6px;
+}
+
+/* 主内容区域 */
+.main-content-area {
+  height: calc(100vh - 120px); /* 减去头部高度 */
+  overflow-y: auto;
+}
+
+/* 表单容器 */
+.form-container {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding-right: 12px; /* 为滚动条留出空间 */
+}
+
+/* 聊天区域滚动 */
+.chat-area {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.persona-steps {
+  border-bottom: 1px solid #e8e8e8;
+  margin-bottom: 2rem;
+}
+
+.persona-step {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.persona-step.active {
+  background: linear-gradient(135deg, #FF2442 0%, #FF4757 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 36, 66, 0.3);
+}
+
+.persona-step.completed {
+  background: #52c41a;
+  color: white;
+}
+
+.persona-step:hover:not(.active) {
+  background: #f5f5f5;
+  transform: translateY(-2px);
+}
+
+/* AI脉冲动画 */
+.ai-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(139, 69, 19, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(139, 69, 19, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(139, 69, 19, 0);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .persona-builder-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .persona-chat-section {
+    order: 2;
+  }
+  
+  .persona-preview-section {
+    order: 1;
+    position: relative;
+    top: auto;
+  }
+  
+  .form-container {
+    max-height: calc(100vh - 150px);
+    padding-right: 8px;
+  }
+  
+  .main-content-area {
+    height: calc(100vh - 100px);
+  }
+}
+
+/* 新增：选项按钮样式 */
+.option-button {
+  border: 2px solid #e8e8e8;
+  border-radius: 25px;
+  background: white;
+  color: #666;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  padding: 8px 16px;
+  margin: 4px;
+  display: inline-block;
+}
+
+.option-button:hover {
+  border-color: #FF2442;
+  color: #FF2442;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 36, 66, 0.2);
+}
+
+.option-button.selected {
+  background: #FF2442;
+  border-color: #FF2442;
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 36, 66, 0.3);
+}
+
+.option-button.selected:hover {
+  background: #FF4757;
+  border-color: #FF4757;
+}
+
+/* 选中标签样式 */
+.selected-tag {
+  background: linear-gradient(135deg, #FF2442 0%, #FF4757 100%);
+  color: white;
+  border-radius: 20px;
+  padding: 6px 12px;
+  margin: 4px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  animation: tagAppear 0.3s ease-out;
+}
+
+@keyframes tagAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.selected-tag .remove-btn {
+  margin-left: 8px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.selected-tag .remove-btn:hover {
+  opacity: 1;
+  color: #ffcccc;
+}
+
+/* 自定义输入框样式 */
+.custom-input-group {
+  display: flex;
+  margin-top: 12px;
+  border-radius: 25px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.custom-input {
+  flex: 1;
+  border: 2px solid #e8e8e8;
+  border-right: none;
+  padding: 10px 16px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  border-radius: 25px 0 0 25px;
+}
+
+.custom-input:focus {
+  outline: none;
+  border-color: #FF2442;
+  box-shadow: 0 0 0 3px rgba(255, 36, 66, 0.1);
+}
+
+.custom-input::placeholder {
+  color: #bbb;
+}
+
+.custom-add-btn {
+  background: #FF2442;
+  color: white;
+  border: 2px solid #FF2442;
+  padding: 10px 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 0 25px 25px 0;
+}
+
+.custom-add-btn:hover {
+  background: #FF4757;
+  border-color: #FF4757;
+  transform: translateY(-1px);
+}
+
+.custom-add-btn:active {
+  transform: translateY(0);
+}
+
+/* 选项区域布局 */
+.option-section {
+  margin-bottom: 24px;
+}
+
+.option-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.option-section-title::before {
+  content: '';
+  width: 4px;
+  height: 16px;
+  background: #FF2442;
+  margin-right: 8px;
+  border-radius: 2px;
+}
+
+.option-buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.selected-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+  min-height: 20px;
+}
+
+.selected-tags-container:empty::after {
+  content: '点击上方按钮或输入自定义选项';
+  color: #bbb;
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* 表单验证样式 */
+.form-validation-error {
+  border-color: #ff4757 !important;
+  box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.1) !important;
+}
+
+.form-validation-message {
+  color: #ff4757;
+  font-size: 12px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.form-validation-message::before {
+  content: '⚠';
+  margin-right: 4px;
+}
+
+/* 加载动画 */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 2px solid #FF2442;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 问题选项选择增强样式 */
+.question-option-selected {
+  background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+  border-color: #a855f7 !important;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+  transform: translateY(-2px);
+}
+
+.question-option-selected:hover {
+  background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+  border-color: #9333ea !important;
+  box-shadow: 0 6px 16px rgba(168, 85, 247, 0.3);
+}
+
+.question-option-check {
+  background: #a855f7;
+  border-color: #a855f7;
+  color: white;
+  font-weight: bold;
+  animation: checkAppear 0.3s ease-out;
+}
+
+@keyframes checkAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.question-selection-status {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 1px solid #3b82f6;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  animation: statusAppear 0.5s ease-out;
+}
+
+@keyframes statusAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.question-complete-indicator {
+  color: #10b981;
+  font-weight: 600;
+  animation: completeGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes completeGlow {
+  from {
+    text-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
+  }
+  to {
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+  }
+}
+
+.skip-button-hint {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #92400e;
+  animation: hintBounce 3s ease-in-out infinite;
+}
+
+@keyframes hintBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.auto-send-button {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  animation: buttonPulse 2s ease-in-out infinite;
+}
+
+@keyframes buttonPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  }
+}
+
+.auto-send-button:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+/* 用户输入提示样式 */
+.user-input-hint {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #0c4a6e;
+  animation: hintFadeIn 0.5s ease-out;
+}
+
+@keyframes hintFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.user-input-hint i {
+  color: #0ea5e9;
+  margin-right: 6px;
+}

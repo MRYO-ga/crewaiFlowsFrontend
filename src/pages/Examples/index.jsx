@@ -966,7 +966,9 @@ const ExamplesPage = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center mb-3">
-                      <img src="https://picsum.photos/id/1005/200/200" alt="用户头像" className="w-10 h-10 rounded-full mr-3" />
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center mr-3">
+                        <i className="fa-solid fa-user text-white text-sm"></i>
+                      </div>
                       <div>
                         <div className="font-medium">王开发</div>
                         <div className="text-sm text-gray-500">前端工程师</div>
@@ -977,7 +979,9 @@ const ExamplesPage = () => {
                   </div>
                   <div className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center mb-3">
-                      <img src="https://picsum.photos/id/1006/200/200" alt="用户头像" className="w-10 h-10 rounded-full mr-3" />
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center mr-3">
+                        <i className="fa-solid fa-user text-white text-sm"></i>
+                      </div>
                       <div>
                         <div className="font-medium">李数据</div>
                         <div className="text-sm text-gray-500">数据分析师</div>

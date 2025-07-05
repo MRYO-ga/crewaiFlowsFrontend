@@ -71,8 +71,43 @@ const createRealApi = (endpoint) => ({
   delete: (path = '') => api.delete(`${endpoint}${path}`)
 });
 
-// 聊天相关API - 使用真实API
-export const chatApi = createRealApi('/api/chat');
+// 聊天相关API - 使用真实API，并为人设构建设置更长超时时间
+export const chatApi = {
+  ...createRealApi('/api/chat'),
+  // 为人设构建场景设置更长的超时时间（120秒）
+  post: (path = '', data = {}) => {
+    // 检查是否是人设构建请求
+    const isPersonaRequest = data.attached_data?.some(item => 
+      item.type === 'persona_context' || 
+      item.data?.constructionPhase === 'persona_building_phase2'
+    );
+    
+    if (isPersonaRequest) {
+      // 为人设构建请求使用更长的超时时间
+      const personaApi = axios.create({
+        baseURL: process.env.REACT_APP_API_URL || 'http://localhost:9000',
+        timeout: 120000, // 120秒
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // 添加响应拦截器
+      personaApi.interceptors.response.use(
+        (response) => response.data,
+        (error) => {
+          console.error('人设构建API错误:', error);
+          return Promise.reject(error);
+        }
+      );
+      
+      return personaApi.post(`/api/chat${path}`, data);
+    } else {
+      // 普通聊天请求使用默认超时时间
+      return api.post(`/api/chat${path}`, data);
+    }
+  }
+};
 
 // 账号相关API - 使用真实API
 export const accountApi = createRealApi('/api/accounts');

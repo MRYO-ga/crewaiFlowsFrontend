@@ -163,7 +163,4 @@ export const historyApi = {
   removeHistory: (id) => Promise.resolve({ success: true })
 };
 
-// 数据分析相关API - 使用真实API
-export const analyticsApi = createRealApi('/api/analytics');
-
 export default api; 

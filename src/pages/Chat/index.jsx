@@ -15,11 +15,199 @@ import {
   RiseOutlined, UnorderedListOutlined, SearchOutlined,
   ExperimentOutlined
 } from '@ant-design/icons';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import mermaid from 'mermaid';
 import smartChatService from '../../services/smartChatService';
+import { personaService } from '../../services/personaApi';
 
 const { TextArea } = Input;
 const { Text, Paragraph } = Typography;
 const { Panel } = Collapse;
+
+// 初始化Mermaid
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'default',
+  securityLevel: 'loose',
+  fontFamily: 'Arial, sans-serif'
+});
+
+// 自定义Mermaid组件
+const MermaidDiagram = ({ chart }) => {
+  const [svg, setSvg] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const renderChart = async () => {
+      try {
+        const { svg } = await mermaid.render(`mermaid-${Date.now()}`, chart);
+        setSvg(svg);
+        setError('');
+      } catch (err) {
+        console.error('Mermaid渲染错误:', err);
+        setError('图表渲染失败');
+      }
+    };
+
+    if (chart) {
+      renderChart();
+    }
+  }, [chart]);
+
+  if (error) {
+    return (
+      <div style={{ 
+        padding: '12px', 
+        backgroundColor: '#fff2f0', 
+        border: '1px solid #ffccc7',
+        borderRadius: '6px',
+        color: '#cf1322'
+      }}>
+        {error}
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      style={{ 
+        textAlign: 'center', 
+        margin: '16px 0',
+        padding: '12px',
+        backgroundColor: '#fafafa',
+        borderRadius: '6px',
+        border: '1px solid #e8e8e8'
+      }}
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
+};
+
+// 创建增强的Markdown组件
+const EnhancedMarkdown = ({ children, fontSize = '13px' }) => {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        // 自定义样式
+        h1: ({children}) => <h1 style={{fontSize: '18px', fontWeight: 'bold', margin: '16px 0 8px 0', color: '#1890ff'}}>{children}</h1>,
+        h2: ({children}) => <h2 style={{fontSize: '16px', fontWeight: 'bold', margin: '14px 0 6px 0', color: '#1890ff'}}>{children}</h2>,
+        h3: ({children}) => <h3 style={{fontSize: '14px', fontWeight: 'bold', margin: '12px 0 4px 0', color: '#1890ff'}}>{children}</h3>,
+        p: ({children}) => <p style={{margin: '8px 0', lineHeight: 1.6, fontSize}}>{children}</p>,
+        ul: ({children}) => <ul style={{margin: '8px 0', paddingLeft: '20px'}}>{children}</ul>,
+        ol: ({children}) => <ol style={{margin: '8px 0', paddingLeft: '20px'}}>{children}</ol>,
+        li: ({children}) => <li style={{margin: '4px 0'}}>{children}</li>,
+        
+        // 表格样式
+        table: ({children}) => (
+          <table style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            margin: '16px 0',
+            fontSize: '12px',
+            border: '1px solid #e8e8e8'
+          }}>
+            {children}
+          </table>
+        ),
+        thead: ({children}) => (
+          <thead style={{backgroundColor: '#f5f5f5'}}>
+            {children}
+          </thead>
+        ),
+        tbody: ({children}) => (
+          <tbody>
+            {children}
+          </tbody>
+        ),
+        tr: ({children}) => (
+          <tr style={{borderBottom: '1px solid #e8e8e8'}}>
+            {children}
+          </tr>
+        ),
+        th: ({children}) => (
+          <th style={{
+            padding: '8px 12px',
+            textAlign: 'left',
+            fontWeight: 'bold',
+            backgroundColor: '#f5f5f5',
+            border: '1px solid #e8e8e8'
+          }}>
+            {children}
+          </th>
+        ),
+        td: ({children}) => (
+          <td style={{
+            padding: '8px 12px',
+            border: '1px solid #e8e8e8'
+          }}>
+            {children}
+          </td>
+        ),
+        
+        // 代码块
+        code: ({children, className, inline}) => {
+          const match = /language-(\w+)/.exec(className || '');
+          const language = match ? match[1] : '';
+          
+          // 检查是否是Mermaid图表
+          if (language === 'mermaid') {
+            return <MermaidDiagram chart={String(children).replace(/\n$/, '')} />;
+          }
+          
+          // 普通代码处理
+          if (inline) {
+            return (
+              <code style={{
+                backgroundColor: '#f5f5f5',
+                padding: '2px 4px',
+                borderRadius: '3px',
+                fontSize: '12px',
+                fontFamily: 'Monaco, Consolas, monospace'
+              }}>
+                {children}
+              </code>
+            );
+          }
+          
+          return (
+            <pre style={{
+              backgroundColor: '#f5f5f5',
+              padding: '12px',
+              borderRadius: '6px',
+              overflow: 'auto',
+              fontSize: '12px',
+              fontFamily: 'Monaco, Consolas, monospace',
+              margin: '8px 0'
+            }}>
+              <code>{children}</code>
+            </pre>
+          );
+        },
+        
+        // 引用块
+        blockquote: ({children}) => (
+          <blockquote style={{
+            borderLeft: '4px solid #1890ff',
+            paddingLeft: '12px',
+            margin: '8px 0',
+            fontStyle: 'italic',
+            color: '#666'
+          }}>
+            {children}
+          </blockquote>
+        ),
+        
+        // 强调文本
+        strong: ({children}) => <strong style={{fontWeight: 'bold', color: '#1890ff'}}>{children}</strong>,
+        em: ({children}) => <em style={{fontStyle: 'italic', color: '#666'}}>{children}</em>
+      }}
+    >
+      {children}
+    </ReactMarkdown>
+  );
+};
 
 const ChatPage = () => {
   // 获取用户ID的方法
@@ -78,6 +266,10 @@ const ChatPage = () => {
   const [cacheData, setCacheData] = useState(null);
   const [cacheLoading, setCacheLoading] = useState(false);
   
+  // 人设数据状态
+  const [personaData, setPersonaData] = useState(null);
+  const [personaLoading, setPersonaLoading] = useState(false);
+  
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const executionTimerRef = useRef(null);
@@ -95,8 +287,9 @@ const ChatPage = () => {
   useEffect(() => {
     initializeMcpConnection();
     loadComprehensiveData();
-    loadChatHistory();
+    // loadChatHistory(); // 暂时禁用聊天历史功能
     loadCacheData();
+    loadPersonaData();
     loadAvailableModels();
     // 如果没有历史消息，显示欢迎和功能样例
     if (messages.length === 0) {
@@ -710,6 +903,9 @@ const ChatPage = () => {
   const sendMessage = async () => {
     if (!inputValue.trim()) return;
 
+    console.log('📤 发送消息开始，当前attachedData:', attachedData);
+    console.log('📤 attachedData长度:', attachedData.length);
+
     const userMessage = {
       id: Date.now(),
       type: 'user',
@@ -722,6 +918,9 @@ const ChatPage = () => {
     setMessages(prev => [...prev, userMessage]);
     const currentInput = inputValue;
     const currentAttachedData = [...attachedData];
+    
+    console.log('📤 复制的currentAttachedData:', currentAttachedData);
+    
     setInputValue('');
     setAttachedData([]);
     setIsLoading(true);
@@ -773,6 +972,18 @@ const ChatPage = () => {
           })) : null
         }),
         signal: controller.signal
+      });
+
+      console.log('📤 发送给后端的数据:', {
+        user_input: currentInput,
+        user_id: getUserId(),
+        model: selectedModel,
+        attached_data: currentAttachedData,
+        data_references: currentAttachedData.length > 0 ? currentAttachedData.map(item => ({
+          type: item.type,
+          id: item.data.note_id || item.data.id || 'unknown',
+          name: item.name
+        })) : null
       });
 
       if (!response.ok) {
@@ -985,7 +1196,7 @@ const ChatPage = () => {
       
       console.log('综合用户数据加载成功:', data);
       
-      if (data.errors.length > 0) {
+      if (data.errors && data.errors.length > 0) {
         console.warn('部分数据加载失败:', data.errors);
         message.warning(`部分数据加载失败，但不影响主要功能使用`);
       }
@@ -1038,16 +1249,47 @@ const ChatPage = () => {
     }
   };
 
+  // 加载人设数据
+  const loadPersonaData = async () => {
+    try {
+      setPersonaLoading(true);
+      console.log('🎭 开始加载人设数据...');
+      
+      // 获取人设文档列表
+      const data = await personaService.getPersonaDocuments('persona_builder_user');
+      console.log('🎭 人设API返回数据:', data);
+      console.log('🎭 人设数据类型:', typeof data);
+      console.log('🎭 人设数据长度:', Array.isArray(data) ? data.length : '不是数组');
+      
+      setPersonaData(data);
+      console.log('🎭 人设数据加载成功，共', Array.isArray(data) ? data.length : 0, '条记录');
+    } catch (error) {
+      console.error('🎭 加载人设数据失败:', error);
+      console.error('🎭 错误详情:', error.response?.data || error.message);
+      setPersonaData([]);
+    } finally {
+      setPersonaLoading(false);
+    }
+  };
+
   // 附加数据到输入框
   const attachDataToInput = (dataType, dataItem) => {
+    console.log('🔗 添加数据到输入框:', { dataType, dataItem });
+    
     const dataReference = {
       id: Date.now(),
       type: dataType,
-      name: dataItem.name || dataItem.title || dataItem.account_name || '未知',
+      name: dataItem.title || dataItem.name || dataItem.account_name || '未知',
       data: dataItem
     };
     
-    setAttachedData(prev => [...prev, dataReference]);
+    console.log('🔗 创建的数据引用:', dataReference);
+    
+    setAttachedData(prev => {
+      const newData = [...prev, dataReference];
+      console.log('🔗 更新后的attachedData:', newData);
+      return newData;
+    });
     
     // 添加高亮标签到输入框
     const referenceTag = `@${dataType}:${dataReference.name} `;
@@ -1183,6 +1425,21 @@ const ChatPage = () => {
       });
     }
 
+    // 人设数据
+    if (personaData && personaData.length > 0) {
+      dataOptions.push({
+        category: '人设库',
+        icon: <UserOutlined />,
+        description: '使用已构建的人设进行个性化对话',
+        items: personaData.map(persona => ({
+          type: 'persona_context',
+          name: persona.title || '未命名人设',
+          subInfo: `${persona.summary || '人设文档'} | ${persona.tags?.join(', ') || '无标签'}`,
+          data: persona
+        }))
+      });
+    }
+
     return dataOptions;
   };
 
@@ -1212,6 +1469,14 @@ const ChatPage = () => {
               icon={<DatabaseOutlined />}
             >
               刷新缓存
+            </Button>
+            <Button 
+              size="small" 
+              onClick={loadPersonaData}
+              loading={personaLoading}
+              icon={<UserOutlined />}
+            >
+              刷新人设
             </Button>
           </Space>
         </div>
@@ -1389,15 +1654,16 @@ const ChatPage = () => {
                     {renderCompletedConversationFlow(message.steps)}
                   </div>
                 ) : (
-                  // 简单文本消息
-                  <Paragraph style={{ 
-                    margin: 0, 
+                  // 使用ReactMarkdown渲染Markdown内容
+                  <div style={{ 
                     fontSize: '13px', 
                     lineHeight: 1.6,
                     color: '#262626'
                   }}>
-                    {message.content}
-                  </Paragraph>
+                    <EnhancedMarkdown fontSize="13px">
+                      {message.content}
+                    </EnhancedMarkdown>
+                  </div>
                 )}
                 
                 {/* 显示功能样例建议按钮 */}
@@ -1521,14 +1787,15 @@ const ChatPage = () => {
                 padding: '8px 0',
                 lineHeight: 1.6 
               }}>
-                <Paragraph style={{ 
+                <div style={{ 
                   margin: 0, 
                   fontSize: '13px',
-                  color: '#262626',
-                  whiteSpace: 'pre-wrap'
+                  color: '#262626'
                 }}>
-                  {item.content}
-                </Paragraph>
+                  <EnhancedMarkdown fontSize="13px">
+                    {item.content}
+                  </EnhancedMarkdown>
+                </div>
               </div>
             ) : (
               // 工具调用 - 可折叠
@@ -1759,14 +2026,15 @@ const ChatPage = () => {
                       padding: '12px 0',
                       lineHeight: 1.6 
                     }}>
-                      <Paragraph style={{ 
+                      <div style={{ 
                         margin: 0, 
                         fontSize: '14px',
-                        color: '#262626',
-                        whiteSpace: 'pre-wrap'
+                        color: '#262626'
                       }}>
-                        {item.content}
-                      </Paragraph>
+                        <EnhancedMarkdown fontSize="14px">
+                          {item.content}
+                        </EnhancedMarkdown>
+                      </div>
                     </div>
                   ) : (
                     // 工具调用 - 可折叠

@@ -1,6 +1,6 @@
 // 智能聊天服务 - 处理与后端API的交互
 
-import { accountApi, contentApi, competitorApi, taskApi, scheduleApi, analyticsApi, sopApi } from './api';
+import { accountApi, contentApi, competitorApi, taskApi, scheduleApi, sopApi } from './api';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:9000';
 
@@ -350,47 +350,6 @@ class SmartChatService {
     }
   }
 
-  // 获取分析数据（使用真实API）
-  async getAnalytics(dateRange = {}) {
-    try {
-      const [overviewData, contentData, trendsData] = await Promise.all([
-        analyticsApi.get('/overview'),
-        analyticsApi.get('/content'),
-        analyticsApi.get('/trends', { metric: 'engagement', period: '30d' })
-      ]);
-      
-      return {
-        overview: {
-          total_followers: overviewData?.total_followers || 0,
-          followers_growth_rate: overviewData?.followers_growth_rate || 0,
-          total_content: overviewData?.total_content || 0,
-          content_growth_rate: overviewData?.content_growth_rate || 0,
-          avg_engagement_rate: overviewData?.avg_engagement_rate || 0,
-          engagement_growth_rate: overviewData?.engagement_growth_rate || 0,
-          total_views: overviewData?.total_views || 0,
-          views_growth_rate: overviewData?.views_growth_rate || 0
-        },
-        content_performance: Array.isArray(contentData) ? contentData : (contentData?.content || []),
-        trends: trendsData || {},
-        
-        // 计算的指标
-        performance_score: this.calculateOverallPerformance(overviewData),
-        growth_trend: this.analyzeGrowthTrend(overviewData),
-        content_effectiveness: this.analyzeContentEffectiveness(contentData)
-      };
-    } catch (error) {
-      console.error('获取分析数据失败:', error);
-      return {
-        overview: {},
-        content_performance: [],
-        trends: {},
-        performance_score: 0,
-        growth_trend: 'stable',
-        content_effectiveness: 'medium'
-      };
-    }
-  }
-
   // 获取SOP数据（使用真实API）
   async getSOPs(filters = {}) {
     try {
@@ -497,70 +456,49 @@ class SmartChatService {
   // 综合数据获取 - 一次性获取所有真实数据
   async getComprehensiveUserData(userId) {
     try {
-      console.log('开始获取综合用户数据...');
-      
+      // 并行获取所有数据
       const [
-        userContext,
         accounts,
         contents,
         competitors,
         tasks,
         schedules,
-        analytics,
         sops
       ] = await Promise.allSettled([
-        this.getUserContext(userId),
         this.getAccountInfo(userId),
-        this.getContentLibrary({ limit: 50 }),
-        this.getCompetitorAnalysis({ limit: 20 }),
-        this.getTasks({ limit: 20 }),
-        this.getSchedules({ limit: 20 }),
-        this.getAnalytics({ days: 30 }),
-        this.getSOPs({ status: 'active', limit: 10 })
+        this.getContentLibrary(),
+        this.getCompetitorAnalysis(),
+        this.getTasks(),
+        this.getSchedules(),
+        this.getSOPs()
       ]);
 
-      console.log('数据获取结果:', {
-        userContext: userContext.status,
-        accounts: accounts.status,
-        contents: contents.status,
-        competitors: competitors.status,
-        tasks: tasks.status,
-        schedules: schedules.status,
-        analytics: analytics.status,
-        sops: sops.status
-      });
-
-      return {
-        userContext: userContext.status === 'fulfilled' ? userContext.value.context : null,
+      // 构建综合数据对象
+      const comprehensiveData = {
         accounts: accounts.status === 'fulfilled' ? accounts.value : [],
         contents: contents.status === 'fulfilled' ? contents.value : [],
         competitors: competitors.status === 'fulfilled' ? competitors.value : [],
         tasks: tasks.status === 'fulfilled' ? tasks.value : [],
         schedules: schedules.status === 'fulfilled' ? schedules.value : [],
-        analytics: analytics.status === 'fulfilled' ? analytics.value : {},
-        sops: sops.status === 'fulfilled' ? sops.value : [],
-        errors: [
-          userContext.status === 'rejected' ? userContext.reason : null,
-          accounts.status === 'rejected' ? accounts.reason : null,
-          contents.status === 'rejected' ? contents.reason : null,
-          competitors.status === 'rejected' ? competitors.reason : null,
-          tasks.status === 'rejected' ? tasks.reason : null,
-          schedules.status === 'rejected' ? schedules.reason : null,
-          analytics.status === 'rejected' ? analytics.reason : null,
-          sops.status === 'rejected' ? sops.reason : null
-        ].filter(Boolean),
-        
-        // 数据统计
-        summary: {
-          total_accounts: accounts.status === 'fulfilled' ? accounts.value.length : 0,
-          total_contents: contents.status === 'fulfilled' ? contents.value.length : 0,
-          total_competitors: competitors.status === 'fulfilled' ? competitors.value.length : 0,
-          total_tasks: tasks.status === 'fulfilled' ? tasks.value.length : 0,
-          total_schedules: schedules.status === 'fulfilled' ? schedules.value.length : 0,
-          total_sops: sops.status === 'fulfilled' ? sops.value.length : 0,
-          last_updated: new Date().toISOString()
-        }
+        sops: sops.status === 'fulfilled' ? sops.value : []
       };
+
+      // 记录任何失败的请求
+      const errors = [
+        accounts,
+        contents,
+        competitors,
+        tasks,
+        schedules,
+        sops
+      ].filter(result => result.status === 'rejected')
+       .map(result => result.reason);
+
+      if (errors.length > 0) {
+        console.warn('部分数据获取失败:', errors);
+      }
+
+      return comprehensiveData;
     } catch (error) {
       console.error('获取综合用户数据失败:', error);
       throw error;
@@ -666,18 +604,6 @@ class SmartChatService {
           category: "schedule",
           priority: "medium"
         });
-      }
-
-      // 基于分析数据生成建议
-      if (comprehensiveData.analytics.overview) {
-        const growth = comprehensiveData.analytics.overview.followers_growth_rate;
-        if (growth < 0) {
-          suggestions.push({
-            text: "分析粉丝流失原因制定挽回策略",
-            category: "analytics",
-            priority: "high"
-          });
-        }
       }
 
       // 通用建议
@@ -803,32 +729,6 @@ class SmartChatService {
       similar_content_count: Math.floor(Math.random() * 50) + 10,
       recommendation: '建议调整发布时间以避开竞争高峰'
     };
-  }
-
-  // 辅助方法 - 计算整体表现分数
-  calculateOverallPerformance(overviewData) {
-    if (!overviewData) return 0;
-    const growthScore = Math.max(0, Math.min(10, (overviewData.followers_growth_rate || 0) * 10));
-    const engagementScore = Math.max(0, Math.min(10, (overviewData.avg_engagement_rate || 0) * 100));
-    return Math.round((growthScore + engagementScore) / 2);
-  }
-
-  // 辅助方法 - 分析增长趋势
-  analyzeGrowthTrend(overviewData) {
-    if (!overviewData) return 'stable';
-    const growth = overviewData.followers_growth_rate || 0;
-    if (growth > 0.05) return 'growing';
-    if (growth < -0.02) return 'declining';
-    return 'stable';
-  }
-
-  // 辅助方法 - 分析内容效果
-  analyzeContentEffectiveness(contentData) {
-    if (!Array.isArray(contentData) || contentData.length === 0) return 'unknown';
-    const avgPerformance = contentData.reduce((sum, item) => sum + (item.value || 0), 0) / contentData.length;
-    if (avgPerformance > 5000) return 'high';
-    if (avgPerformance > 1000) return 'medium';
-    return 'low';
   }
 
   // 辅助方法 - 计算SOP效果

@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import MainLayout from './layouts/MainLayout';
 import ChatPage from './pages/Chat';
 import TaskPage from './pages/Task';
-import AnalyticsPage from './pages/Analytics';
 import CompetitorPage from './pages/Competitor';
 import ContentPage from './pages/Content';
 import SchedulePage from './pages/Schedule';
@@ -23,7 +22,6 @@ function App() {
           <Route index element={<Navigate to="/chat" replace />} />
           <Route path="chat" element={<ChatPage />} />
           <Route path="task" element={<TaskPage />} />
-          <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="competitor" element={<CompetitorPage />} />
           <Route path="content" element={<ContentPage />} />
           <Route path="schedule" element={<SchedulePage />} />

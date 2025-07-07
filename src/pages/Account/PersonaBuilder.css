@@ -579,7 +579,7 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
+} 
 
 /* 问题选项选择增强样式 */
 .question-option-selected {
@@ -719,4 +719,137 @@
 .user-input-hint i {
   color: #0ea5e9;
   margin-right: 6px;
+}
+
+/* Markdown内容样式 */
+.markdown-content {
+  line-height: 1.6;
+  color: #333;
+}
+
+.markdown-content h1 {
+  font-size: 1.5em;
+  font-weight: 600;
+  margin: 1em 0 0.5em 0;
+  color: #1a1a1a;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.3em;
+}
+
+.markdown-content h2 {
+  font-size: 1.3em;
+  font-weight: 600;
+  margin: 1em 0 0.5em 0;
+  color: #2d3748;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.2em;
+}
+
+.markdown-content h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0.8em 0 0.4em 0;
+  color: #4a5568;
+}
+
+.markdown-content h4 {
+  font-size: 1em;
+  font-weight: 600;
+  margin: 0.6em 0 0.3em 0;
+  color: #718096;
+}
+
+.markdown-content p {
+  margin: 0.5em 0;
+  text-align: justify;
+}
+
+.markdown-content ul, .markdown-content ol {
+  margin: 0.5em 0;
+  padding-left: 2em;
+}
+
+.markdown-content li {
+  margin: 0.3em 0;
+}
+
+.markdown-content strong {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.markdown-content em {
+  font-style: italic;
+  color: #4a5568;
+}
+
+.markdown-content blockquote {
+  border-left: 4px solid #FF2442;
+  padding-left: 1em;
+  margin: 1em 0;
+  background-color: #f8fafc;
+  padding: 0.5em 1em;
+  border-radius: 0 4px 4px 0;
+}
+
+.markdown-content blockquote p {
+  margin: 0;
+  color: #4a5568;
+}
+
+.markdown-content code {
+  background-color: #f1f5f9;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #e53e3e;
+}
+
+.markdown-content pre {
+  background-color: #f8fafc;
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  margin: 1em 0;
+}
+
+.markdown-content pre code {
+  background-color: transparent;
+  padding: 0;
+  color: #2d3748;
+}
+
+.markdown-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.markdown-content th, .markdown-content td {
+  border: 1px solid #e2e8f0;
+  padding: 0.5em;
+  text-align: left;
+}
+
+.markdown-content th {
+  background-color: #f8fafc;
+  font-weight: 600;
+}
+
+.markdown-content hr {
+  border: none;
+  height: 1px;
+  background-color: #e2e8f0;
+  margin: 2em 0;
+}
+
+.markdown-content a {
+  color: #FF2442;
+  text-decoration: none;
+}
+
+.markdown-content a:hover {
+  text-decoration: underline;
 }

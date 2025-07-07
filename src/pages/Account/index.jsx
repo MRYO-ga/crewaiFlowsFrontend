@@ -857,11 +857,8 @@ ${basicInfo.homePageUrl ? `• 账号主页：${basicInfo.homePageUrl}` : ''}
           <Panel header="人设文档内容" key="1">
             <div className="bg-white p-4 rounded-lg">
               <div className="prose max-w-none">
-                <div 
-                  className="whitespace-pre-wrap text-sm leading-relaxed"
-                  style={{ fontFamily: 'inherit' }}
-                >
-                  {record.document_content || '暂无内容'}
+                <div className="markdown-content text-sm leading-relaxed">
+                  <ReactMarkdown>{record.document_content || '暂无内容'}</ReactMarkdown>
                     </div>
                   </div>
                 </div>
@@ -917,7 +914,7 @@ ${basicInfo.homePageUrl ? `• 账号主页：${basicInfo.homePageUrl}` : ''}
                 </div>
                 <div>
                   <h4 className="text-sm font-medium mb-2">标签</h4>
-                                      <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1">
                     {record.tags && record.tags.length > 0 ? (
                       Array.isArray(record.tags) 
                         ? record.tags.map((tag, index) => (
@@ -929,7 +926,7 @@ ${basicInfo.homePageUrl ? `• 账号主页：${basicInfo.homePageUrl}` : ''}
                             ))
                           : <span className="text-gray-500 text-sm">标签格式错误</span>
                     ) : <span className="text-gray-500 text-sm">暂无标签</span>}
-                  </div>
+                    </div>
                 </div>
                 </Col>
               </Row>
@@ -2034,19 +2031,19 @@ ${basicInfo.homePageUrl ? `• 账号主页：${basicInfo.homePageUrl}` : ''}
                 基本信息
               </h4>
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                  <div>
                   <span className="text-gray-600 text-sm">账号名称：</span>
                   <span className="font-medium">{viewingPersona.account_name}</span>
-                </div>
-                <div>
+                  </div>
+                  <div>
                   <span className="text-gray-600 text-sm">账号类型：</span>
                   <span className="font-medium">{viewingPersona.account_type || '未设置'}</span>
-                </div>
-                <div>
+                  </div>
+                  <div>
                   <span className="text-gray-600 text-sm">行业领域：</span>
                   <span className="font-medium">{viewingPersona.industry_field || '未设置'}</span>
-                </div>
-                <div>
+                  </div>
+                  <div>
                   <span className="text-gray-600 text-sm">平台：</span>
                   {getPlatformTag(viewingPersona.platform)}
                 </div>
@@ -2079,7 +2076,7 @@ ${basicInfo.homePageUrl ? `• 账号主页：${basicInfo.homePageUrl}` : ''}
                         ))
                       : <span className="text-gray-500 text-sm">标签格式错误</span>
                 ) : <span className="text-gray-500 text-sm">暂无标签</span>}
-              </div>
+                  </div>
             </div>
 
             {/* 摘要 */}
@@ -2102,9 +2099,9 @@ ${basicInfo.homePageUrl ? `• 账号主页：${basicInfo.homePageUrl}` : ''}
                 完整文档内容
               </h4>
               <div className="bg-white border rounded-lg p-4 max-h-96 overflow-y-auto">
-                <pre className="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">
-                  {viewingPersona.document_content}
-                </pre>
+                <div className="markdown-content text-sm text-gray-700 leading-relaxed">
+                  <ReactMarkdown>{viewingPersona.document_content}</ReactMarkdown>
+                </div>
               </div>
             </div>
           </div>

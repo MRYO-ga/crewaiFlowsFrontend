@@ -227,11 +227,67 @@ const ChatPage = () => {
   const [availableModels, setAvailableModels] = useState([]);
   const [modelsLoading, setModelsLoading] = useState(false);
 
+  // Agent选择状态
+  const [selectedAgent, setSelectedAgent] = useState(
+    localStorage.getItem('selectedAgent') || 'general_chat'
+  );
+
+  // Agent选项配置
+  const agentOptions = [
+    { 
+      value: 'general_chat', 
+      label: '默认（通用智能助手）', 
+      icon: '🤖', 
+      description: '全能AI助手，适合各类对话和任务',
+      defaultQuestion: '你好！我需要什么样的帮助？请介绍一下你的功能。'
+    },
+    { 
+      value: 'industry_keyword_extraction', 
+      label: '行业关键词提取策略', 
+      icon: '🔍', 
+      description: '专业挖掘行业核心关键词，助力内容定位',
+      defaultQuestion: '我想为我的美妆博主账号提取行业关键词，请帮我分析小红书上美妆领域的热门关键词和选题方向。'
+    },
+    { 
+      value: 'user_needs_capture', 
+      label: '用户需求精准捕捉', 
+      icon: '🎯', 
+      description: '深度分析用户痛点和情绪价值需求',
+      defaultQuestion: '我做的是职场穿搭内容，想要精准捕捉目标用户的真实需求和痛点，请帮我分析这个领域用户的核心需求。'
+    },
+    { 
+      value: 'data_driven_topic_mining', 
+      label: '数据驱动的选题规律挖掘', 
+      icon: '📊', 
+      description: '通过大数据发现蓝海选题机会',
+      defaultQuestion: '请帮我分析护肤领域的选题规律，挖掘哪些关键词组合是蓝海机会，有哪些数据驱动的选题建议？'
+    }
+  ];
+  
   // 保存模型选择到localStorage
   const handleModelChange = (model) => {
     setSelectedModel(model);
     localStorage.setItem('selectedModel', model);
     console.log('🔄 切换AI模型:', model);
+  };
+
+  // 保存Agent选择到localStorage
+  const handleAgentChange = (agent) => {
+    setSelectedAgent(agent);
+    localStorage.setItem('selectedAgent', agent);
+    console.log('🤖 切换Agent策略:', agent);
+    
+    // 自动填入该agent的默认提问
+    const selectedAgentOption = agentOptions.find(option => option.value === agent);
+    if (selectedAgentOption && selectedAgentOption.defaultQuestion) {
+      setInputValue(selectedAgentOption.defaultQuestion);
+      // 聚焦到输入框
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
+    }
   };
   
   // MCP状态
@@ -629,28 +685,28 @@ const ChatPage = () => {
     const welcomeMessage = {
       id: Date.now(),
       type: 'assistant',
-      content: '🎉 欢迎使用SocialPulse AI - 智能社交媒体运营助手！\n\n我已经为您连接了强大的MCP工具，包括：\n• 📊 SQLite数据库工具（查询数据、管理表格）\n• 🔍 小红书平台工具（搜索笔记、分析内容）\n\n您可以通过自然语言对话来使用这些工具，我会自动调用相应的功能来帮助您。\n\n快速试试以下功能样例：',
+      content: '🎉 **欢迎使用SocialPulse AI - 智能社交媒体运营助手！**\n\n我是你的专业社交媒体运营顾问，具备以下核心能力：\n\n🤖 **多元化AI策略**\n• 行业关键词提取策略 - 精准挖掘领域核心词\n• 用户需求精准捕捉 - 深度分析痛点情绪\n• 数据驱动选题挖掘 - 发现蓝海机会\n\n🛠️ **强大工具支持**\n• 📊 数据库分析工具（账号数据、用户画像）\n• 🔍 小红书平台工具（内容搜索、趋势分析）\n• 📈 智能分析引擎（竞品分析、选题建议）\n\n💡 **使用建议**\n1. 在右上角选择不同的AI策略\n2. 每种策略都有专属的默认提问\n3. 结合你的具体需求进行深度对话\n\n快速开始，试试以下功能：',
       timestamp: new Date().toLocaleTimeString(),
       suggestions: [
         {
-          title: '📊 查看数据库结构',
-          description: '了解当前数据库有哪些表和数据',
-          query: '帮我查看数据库里有哪些表，以及每个表的结构'
+          title: '🔍 行业关键词分析',
+          description: '分析特定领域的核心关键词',
+          query: '我想为我的美妆博主账号提取行业关键词，请帮我分析小红书上美妆领域的热门关键词和选题方向。'
         },
         {
-          title: '🔍 小红书内容搜索',
-          description: '搜索小红书平台的热门内容',
-          query: '帮我搜索小红书上关于"美妆测评"的最新笔记内容'
+          title: '🎯 用户需求洞察',
+          description: '深度挖掘目标用户的真实需求',
+          query: '我做的是职场穿搭内容，想要精准捕捉目标用户的真实需求和痛点，请帮我分析这个领域用户的核心需求。'
         },
         {
-          title: '💡 账号数据分析',
+          title: '📊 数据驱动选题',
+          description: '发现蓝海选题机会',
+          query: '请帮我分析护肤领域的选题规律，挖掘哪些关键词组合是蓝海机会，有哪些数据驱动的选题建议？'
+        },
+        {
+          title: '📈 账号数据分析',
           description: '分析现有账号的运营数据',
           query: '帮我分析一下当前账号的数据情况，包括用户数、内容数等统计信息'
-        },
-        {
-          title: '📈 竞品分析报告',
-          description: '获取竞品账号的分析数据',
-          query: '请帮我查看竞品分析数据，并生成一份详细的分析报告'
         }
       ]
     };
@@ -729,7 +785,14 @@ const ChatPage = () => {
             role: msg.type === 'user' ? 'user' : 'assistant',
             content: msg.content
           })),
-          attached_data: currentAttachedData.length > 0 ? currentAttachedData : null,
+          attached_data: [
+            ...(currentAttachedData.length > 0 ? currentAttachedData : []),
+            { 
+              type: 'persona_context', 
+              name: agentOptions.find(a => a.value === selectedAgent)?.label || 'Agent', 
+              data: { agent: selectedAgent } 
+            }
+          ],
           data_references: currentAttachedData.length > 0 ? currentAttachedData.map(item => ({
             type: item.type,
             id: item.data.note_id || item.data.id || 'unknown',
@@ -964,7 +1027,14 @@ const ChatPage = () => {
             role: msg.type === 'user' ? 'user' : 'assistant',
             content: msg.content
           })),
-          attached_data: currentAttachedData.length > 0 ? currentAttachedData : null,
+          attached_data: [
+            ...(currentAttachedData.length > 0 ? currentAttachedData : []),
+            { 
+              type: 'persona_context', 
+              name: agentOptions.find(a => a.value === selectedAgent)?.label || 'Agent', 
+              data: { agent: selectedAgent } 
+            }
+          ],
           data_references: currentAttachedData.length > 0 ? currentAttachedData.map(item => ({
             type: item.type,
             id: item.data.note_id || item.data.id || 'unknown',
@@ -2918,6 +2988,38 @@ const ChatPage = () => {
                     );
                   })}
                 </Select>
+              </div>
+
+              {/* Agent选择器 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Text style={{ fontSize: '11px', color: '#999' }}>策略：</Text>
+                <Select
+                  value={selectedAgent}
+                  onChange={handleAgentChange}
+                  size="small"
+                  style={{ width: 200 }}
+                  placeholder="选择对话策略"
+                  optionLabelProp="label"
+                >
+                  {agentOptions.map((agent) => (
+                    <Select.Option key={agent.value} value={agent.value} label={`${agent.icon} ${agent.label}`}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span>{agent.icon}</span>
+                          <Text style={{ fontSize: '12px' }}>{agent.label}</Text>
+                        </div>
+                        <Text type="secondary" style={{ fontSize: '10px', marginTop: 2 }}>
+                          {agent.description}
+                        </Text>
+                      </div>
+                    </Select.Option>
+                  ))}
+                </Select>
+                <Tooltip title="切换策略会自动填入专属的默认提问">
+                  <Text type="secondary" style={{ fontSize: '10px', color: '#999' }}>
+                    💡 自动填入默认提问
+                  </Text>
+                </Tooltip>
               </div>
             </div>
             <TextArea

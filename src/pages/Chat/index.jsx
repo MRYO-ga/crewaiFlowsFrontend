@@ -20,6 +20,7 @@ import remarkGfm from 'remark-gfm';
 import mermaid from 'mermaid';
 import smartChatService from '../../services/smartChatService';
 import { personaService } from '../../services/personaApi';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const { TextArea } = Input;
 const { Text, Paragraph } = Typography;
@@ -232,6 +233,14 @@ const ChatPage = () => {
     localStorage.getItem('selectedAgent') || 'general_chat'
   );
 
+  // 人设介绍状态
+  const [showPersonaIntro, setShowPersonaIntro] = useState(false);
+  const [currentPersonaIntro, setCurrentPersonaIntro] = useState('');
+
+  // 路由相关
+  const navigate = useNavigate();
+  const location = useLocation();
+
   // Agent选项配置
   const agentOptions = [
     { 
@@ -239,28 +248,48 @@ const ChatPage = () => {
       label: '默认（通用智能助手）', 
       icon: '🤖', 
       description: '全能AI助手，适合各类对话和任务',
-      defaultQuestion: '你好！我需要什么样的帮助？请介绍一下你的功能。'
+      defaultQuestion: '你好！我需要什么样的帮助？请介绍一下你的功能。',
+      introduction: '👋 您好！我是您的通用智能助手，可以帮助您解决各种问题和任务。无论是内容创作、数据分析、还是日常咨询，我都能提供专业支持。有什么我可以帮您的吗？'
     },
     { 
       value: 'industry_keyword_extraction', 
-      label: '行业关键词提取策略', 
+      label: '行业关键词提取策略专家', 
       icon: '🔍', 
       description: '专业挖掘行业核心关键词，助力内容定位',
-      defaultQuestion: '我想为我的美妆博主账号提取行业关键词，请帮我分析小红书上美妆领域的热门关键词和选题方向。'
+      defaultQuestion: '我想为我的美妆博主账号提取行业关键词，请帮我分析小红书上美妆领域的热门关键词和选题方向。',
+      introduction: '📊 您好！我是行业关键词提取策略专家，擅长结合小红书平台数据和内容反推方法，帮助您高效挖掘行业核心词。我可以分析热门内容，提取高频关键词，为您的内容创作提供精准的方向指导。请告诉我您的行业领域，我们立即开始关键词分析！'
     },
     { 
       value: 'user_needs_capture', 
-      label: '用户需求精准捕捉', 
+      label: '用户需求精准捕捉专家', 
       icon: '🎯', 
       description: '深度分析用户痛点和情绪价值需求',
-      defaultQuestion: '我做的是职场穿搭内容，想要精准捕捉目标用户的真实需求和痛点，请帮我分析这个领域用户的核心需求。'
+      defaultQuestion: '我做的是职场穿搭内容，想要精准捕捉目标用户的真实需求和痛点，请帮我分析这个领域用户的核心需求。',
+      introduction: '👥 您好！我是用户需求精准捕捉专家，擅长深度挖掘用户真实需求和情绪痛点。我可以从知识干货需求、情绪价值需求和场景化定位三个维度，帮您精准理解目标用户的核心诉求，让您的内容更有共鸣和转化力。请告诉我您的目标用户群体，我们一起挖掘他们的真实需求！'
     },
     { 
       value: 'data_driven_topic_mining', 
-      label: '数据驱动的选题规律挖掘', 
+      label: '数据驱动选题规律挖掘专家', 
       icon: '📊', 
       description: '通过大数据发现蓝海选题机会',
-      defaultQuestion: '请帮我分析护肤领域的选题规律，挖掘哪些关键词组合是蓝海机会，有哪些数据驱动的选题建议？'
+      defaultQuestion: '请帮我分析护肤领域的选题规律，挖掘哪些关键词组合是蓝海机会，有哪些数据驱动的选题建议？',
+      introduction: '📈 您好！我是数据驱动选题规律挖掘专家，擅长通过大数据分析发现内容创作的黄金机会。我可以进行横向对比分析、交叉表分析和互动模式识别，帮您找出未被充分覆盖的蓝海选题方向，提升内容竞争力和曝光率。请告诉我您关注的领域，我们立即开始数据挖掘！'
+    },
+    {
+      value: 'content_creation',
+      label: '小红书内容创作导师',
+      icon: '✍️',
+      description: '专业内容创作指导，打造爆款笔记',
+      defaultQuestion: '我想创作一篇关于家居收纳的小红书笔记，请给我一些创作建议和内容框架。',
+      introduction: '✨ 您好！我是小红书内容创作导师，拥有丰富的平台爆款内容创作经验。我可以为您提供选题建议、内容策划、标题优化和结构设计，帮助您创作出既吸引眼球又有价值的高质量内容。无论您是内容新手还是有经验的创作者，我都能提供专业指导，提升您的创作效率和内容表现。请告诉我您想创作的内容方向！'
+    },
+    {
+      value: 'competitor_analysis',
+      label: '小红书竞品分析专家',
+      icon: '📱',
+      description: '深度分析竞争对手策略和机会',
+      defaultQuestion: '请帮我分析小红书上美妆领域的头部博主竞品，找出他们的成功策略和我可以突破的机会点。',
+      introduction: '🔍 您好！我是小红书竞品分析专家，擅长通过数据洞察发现机会。我可以帮您分析竞品账号定位、内容策略、用户互动模式和变现方式，找出差异化机会点和潜在风险。通过系统化的竞品分析，您将更清晰地了解市场格局，制定更有效的差异化策略。请告诉我您想分析的竞品领域！'
     }
   ];
   
@@ -271,24 +300,52 @@ const ChatPage = () => {
     console.log('🔄 切换AI模型:', model);
   };
 
-  // 保存Agent选择到localStorage
+  // 保存Agent选择到localStorage并显示人设介绍
   const handleAgentChange = (agent) => {
     setSelectedAgent(agent);
     localStorage.setItem('selectedAgent', agent);
     console.log('🤖 切换Agent策略:', agent);
     
-    // 自动填入该agent的默认提问
+    // 查找选中的Agent选项
     const selectedAgentOption = agentOptions.find(option => option.value === agent);
-    if (selectedAgentOption && selectedAgentOption.defaultQuestion) {
-      setInputValue(selectedAgentOption.defaultQuestion);
-      // 聚焦到输入框
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 100);
+    
+    // 显示人设介绍
+    if (selectedAgentOption) {
+      setCurrentPersonaIntro(selectedAgentOption.introduction);
+      setShowPersonaIntro(true);
+      
+      // 自动填入该agent的默认提问
+      if (selectedAgentOption.defaultQuestion) {
+        setInputValue(selectedAgentOption.defaultQuestion);
+        // 聚焦到输入框
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+          }
+        }, 100);
+      }
     }
   };
+
+  // 处理路由参数，设置初始Agent类型
+  useEffect(() => {
+    if (location.state) {
+      const { defaultQuestion, agentType } = location.state;
+      
+      // 如果有指定的Agent类型，设置选中的Agent
+      if (agentType && agentOptions.some(option => option.value === agentType)) {
+        handleAgentChange(agentType);
+      }
+      
+      // 如果有默认问题，设置到输入框
+      if (defaultQuestion) {
+        setInputValue(defaultQuestion);
+      }
+      
+      // 清除路由状态，防止刷新页面时重复设置
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location]);
   
   // MCP状态
   const [mcpStatus, setMcpStatus] = useState({
@@ -682,10 +739,14 @@ const ChatPage = () => {
 
   // 显示欢迎消息和功能样例
   const showWelcomeMessage = () => {
+    // 获取当前选择的人设介绍
+    const selectedAgentOption = agentOptions.find(option => option.value === selectedAgent);
+    const personaIntroduction = selectedAgentOption ? selectedAgentOption.introduction : agentOptions[0].introduction;
+    
     const welcomeMessage = {
       id: Date.now(),
       type: 'assistant',
-      content: '🎉 **欢迎使用SocialPulse AI - 智能社交媒体运营助手！**\n\n我是你的专业社交媒体运营顾问，具备以下核心能力：\n\n🤖 **多元化AI策略**\n• 行业关键词提取策略 - 精准挖掘领域核心词\n• 用户需求精准捕捉 - 深度分析痛点情绪\n• 数据驱动选题挖掘 - 发现蓝海机会\n\n🛠️ **强大工具支持**\n• 📊 数据库分析工具（账号数据、用户画像）\n• 🔍 小红书平台工具（内容搜索、趋势分析）\n• 📈 智能分析引擎（竞品分析、选题建议）\n\n💡 **使用建议**\n1. 在右上角选择不同的AI策略\n2. 每种策略都有专属的默认提问\n3. 结合你的具体需求进行深度对话\n\n快速开始，试试以下功能：',
+      content: personaIntroduction + '\n\n🎉 **欢迎使用SocialPulse AI - 智能社交媒体运营助手！**\n\n我是你的专业社交媒体运营顾问，具备以下核心能力：\n\n🤖 **多元化AI策略**\n• 行业关键词提取策略 - 精准挖掘领域核心词\n• 用户需求精准捕捉 - 深度分析痛点情绪\n• 数据驱动选题挖掘 - 发现蓝海机会\n\n🛠️ **强大工具支持**\n• 📊 数据库分析工具（账号数据、用户画像）\n• 🔍 小红书平台工具（内容搜索、趋势分析）\n• 📈 智能分析引擎（竞品分析、选题建议）\n\n💡 **使用建议**\n1. 在右上角选择不同的AI策略\n2. 每种策略都有专属的默认提问\n3. 结合你的具体需求进行深度对话\n\n快速开始，试试以下功能：',
       timestamp: new Date().toLocaleTimeString(),
       suggestions: [
         {
@@ -712,6 +773,29 @@ const ChatPage = () => {
     };
     setMessages([welcomeMessage]);
   };
+
+  // 显示人设介绍
+  const displayPersonaIntroduction = () => {
+    const selectedAgentOption = agentOptions.find(option => option.value === selectedAgent);
+    if (!selectedAgentOption) return;
+    
+    const introMessage = {
+      id: Date.now(),
+      type: 'assistant',
+      content: selectedAgentOption.introduction,
+      timestamp: new Date().toLocaleTimeString()
+    };
+    
+    setMessages(prev => [...prev, introMessage]);
+    setShowPersonaIntro(false);
+  };
+
+  // 在人设切换时，如果显示介绍标志为true，则显示介绍
+  useEffect(() => {
+    if (showPersonaIntro && currentPersonaIntro) {
+      displayPersonaIntroduction();
+    }
+  }, [showPersonaIntro, currentPersonaIntro]);
 
   // 快速发送预设查询
   const sendQuickQuery = (query) => {
@@ -3015,10 +3099,20 @@ const ChatPage = () => {
                     </Select.Option>
                   ))}
                 </Select>
-                <Tooltip title="切换策略会自动填入专属的默认提问">
-                  <Text type="secondary" style={{ fontSize: '10px', color: '#999' }}>
-                    💡 自动填入默认提问
-                  </Text>
+                <Tooltip title="查看当前人设介绍">
+                  <Button 
+                    size="small" 
+                    icon={<UserOutlined />} 
+                    onClick={() => {
+                      const selectedAgentOption = agentOptions.find(option => option.value === selectedAgent);
+                      if (selectedAgentOption) {
+                        setCurrentPersonaIntro(selectedAgentOption.introduction);
+                        setShowPersonaIntro(true);
+                      }
+                    }}
+                  >
+                    人设介绍
+                  </Button>
                 </Tooltip>
               </div>
             </div>

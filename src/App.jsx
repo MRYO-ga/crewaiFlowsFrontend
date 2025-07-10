@@ -13,13 +13,14 @@ import ApiTestPage from './pages/ApiTest';
 import MCPTestPage from './pages/MCP/MCPTest';
 import XhsManagementPage from './pages/XHS';
 import ExamplesPage from './pages/Examples';
+import HomePage from './pages/GuidePage';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<MainLayout />}>
-          <Route index element={<Navigate to="/chat" replace />} />
+          <Route index element={<HomePage />} />
           <Route path="chat" element={<ChatPage />} />
           <Route path="task" element={<TaskPage />} />
           <Route path="competitor" element={<CompetitorPage />} />

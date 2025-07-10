@@ -14,14 +14,15 @@ const MainLayout = () => {
     { 
       title: '主功能区', 
       items: [
+        { path: '/', name: '首页', icon: 'fa-home' },
         { path: '/chat', name: '智能对话', icon: 'fa-comments' },
-        { path: '/task', name: '任务中心', icon: 'fa-clipboard-list' },
+        // { path: '/task', name: '任务中心', icon: 'fa-clipboard-list' },
         { path: '/competitor', name: '竞品分析', icon: 'fa-magnifying-glass-chart' },
         { path: '/content', name: '内容库', icon: 'fa-file-lines' },
         { path: '/schedule', name: '发布计划', icon: 'fa-calendar' },
         { path: '/examples', name: '功能样例', icon: 'fa-lightbulb' },
         { path: '/xhs', name: '小红书数据', icon: 'fa-database' },
-        { path: '/mcp-test', name: 'MCP测试', icon: 'fa-plug' },
+        // { path: '/mcp-test', name: 'MCP测试', icon: 'fa-plug' },
       ]
     },
     {

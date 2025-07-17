@@ -26,9 +26,10 @@ const MainLayout = () => {
       ]
     },
     {
-      title: '账号管理',
+      title: '文档管理',
       items: [
-        { path: '/account', name: '账号管理', icon: 'fa-user-gear' }
+        { path: '/account', name: '账号人设', icon: 'fa-user-gear' },
+        { path: '/product', name: '产品品牌信息', icon: 'fa-shopping-bag' }
       ]
     },
     {

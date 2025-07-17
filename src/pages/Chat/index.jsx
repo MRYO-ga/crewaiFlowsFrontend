@@ -13,13 +13,14 @@ import {
   HistoryOutlined, SaveOutlined, PlusOutlined,
   FileTextOutlined, TeamOutlined, CalendarOutlined,
   RiseOutlined, UnorderedListOutlined, SearchOutlined,
-  ExperimentOutlined
+  ExperimentOutlined, ShoppingOutlined, DownloadOutlined
 } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import mermaid from 'mermaid';
 import smartChatService from '../../services/smartChatService';
 import { personaService } from '../../services/personaApi';
+import { productService } from '../../services/productApi';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const { TextArea } = Input;
@@ -290,6 +291,38 @@ const ChatPage = () => {
       description: '深度分析竞争对手策略和机会',
       defaultQuestion: '请帮我分析小红书上美妆领域的头部博主竞品，找出他们的成功策略和我可以突破的机会点。',
       introduction: '🔍 您好！我是小红书竞品分析专家，擅长通过数据洞察发现机会。我可以帮您分析竞品账号定位、内容策略、用户互动模式和变现方式，找出差异化机会点和潜在风险。通过系统化的竞品分析，您将更清晰地了解市场格局，制定更有效的差异化策略。请告诉我您想分析的竞品领域！'
+    },
+    {
+      value: 'pain_point_analysis',
+      label: '痛点与需求深度挖掘专家',
+      icon: '🎯',
+      description: '自动规划任务，找到用户痛到愿意花钱解决的需求',
+      defaultQuestion: '请帮我分析目标用户在小红书上反映的主要痛点，并按出现频率和情绪强度排序，生成痛点优先级清单和产品匹配矩阵。',
+      introduction: '🎯 您好！我是痛点与需求深度挖掘专家，具备自动任务规划能力。我会智能使用小红书搜索工具，自动规划痛点搜索关键词，重点关注负面反馈和真实痛点。通过分析用户痛点的出现频率和情绪强度，帮您找到"用户痛到愿意花钱解决"的核心需求。我将为您输出痛点优先级清单、产品匹配矩阵和用户情绪洞察报告，确保您的内容能够精准戳中用户痒点。请告诉我您的产品信息和目标用户画像！'
+    },
+    {
+      value: 'content_topic_library',
+      label: '选题库与内容框架搭建专家',
+      icon: '📚',
+      description: '自动规划任务，构建可批量生产的系统化选题库',
+      defaultQuestion: '请帮我构建一个包含痛点解决型、场景代入型、对比测评型、热点结合型的选题库，每类至少10个选题，并提供对应的内容框架模板。',
+      introduction: '📚 您好！我是选题库与内容框架搭建专家，具备自动任务规划能力。我会智能使用小红书搜索工具获取真实数据，然后构建四大类型的选题库：痛点解决型、场景代入型、对比测评型、热点结合型，每类提供10+选题。我会自动规划搜索关键词，分析热门内容，为每类选题设计固定的内容框架模板，让您告别"临时想内容"的低效状态。请提供您的产品信息和人设定位！'
+    },
+    {
+      value: 'competitor_blogger_analysis',
+      label: '同类博主与竞品策略深度对标专家',
+      icon: '🔄',
+      description: '自动规划任务，找到已被验证的成功路径，避免重复踩坑',
+      defaultQuestion: '请帮我分析同类博主（粉丝5k-5w，互动率>5%）的成功策略，包括高赞笔记共性、发布规律、变现方式，并输出竞品策略差异表。',
+      introduction: '🔄 您好！我是同类博主与竞品策略深度对标专家，具备自动任务规划能力。我会智能使用小红书搜索工具，重点分析腰部博主（粉丝5k-5w，互动率>5%）的成功模式。通过深度分析高赞笔记的共性特征、发布规律、变现方式和互动技巧，为您提供可复制的成功策略。我还会监控竞品账号，输出竞品策略差异表，帮您发现未被充分覆盖的空白区域。让我们一起找到"已被验证的成功路径"，避免重复踩坑！请提供您的目标用户画像和产品信息！'
+    },
+    {
+      value: 'content_generation',
+      label: '小红书内容生成与合规审核专家',
+      icon: '📝',
+      description: '产出真实感强+合规安全的内容，避免被平台限流',
+      defaultQuestion: '请基于我的人设风格和产品信息，生成一篇小红书内容，包括文案、配图建议，并进行合规审核，确保内容真实感强且符合平台规则。',
+      introduction: '📝 您好！我是小红书内容生成与合规审核专家，专注于产出"真实感强+合规安全"的内容。我会基于您的选题库、人设风格和产品信息，生成高质量的内容初稿，添加个性化细节增强真实感，然后进行全面的合规审核和敏感词检测。我的输出包括：内容初稿（文案+配图建议+视频脚本）、合规修改清单（敏感词替换+合规信息补充）、最终定稿内容（经过审核的完整内容）。让我们一起创作既吸引人又合规安全的小红书内容！请提供您的选题库、人设信息和产品信息！'
     }
   ];
   
@@ -330,7 +363,7 @@ const ChatPage = () => {
   // 处理路由参数，设置初始Agent类型
   useEffect(() => {
     if (location.state) {
-      const { defaultQuestion, agentType } = location.state;
+      const { defaultQuestion, agentType, attachedData } = location.state;
       
       // 如果有指定的Agent类型，设置选中的Agent
       if (agentType && agentOptions.some(option => option.value === agentType)) {
@@ -340,6 +373,12 @@ const ChatPage = () => {
       // 如果有默认问题，设置到输入框
       if (defaultQuestion) {
         setInputValue(defaultQuestion);
+      }
+      
+      // 如果有附加数据，设置到attachedData状态
+      if (attachedData && attachedData.length > 0) {
+        console.log('接收到附加数据:', attachedData);
+        setAttachedData(attachedData);
       }
       
       // 清除路由状态，防止刷新页面时重复设置
@@ -383,6 +422,10 @@ const ChatPage = () => {
   const [personaData, setPersonaData] = useState(null);
   const [personaLoading, setPersonaLoading] = useState(false);
   
+  // 产品数据状态
+  const [productData, setProductData] = useState(null);
+  const [productLoading, setProductLoading] = useState(false);
+  
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const executionTimerRef = useRef(null);
@@ -403,6 +446,7 @@ const ChatPage = () => {
     // loadChatHistory(); // 暂时禁用聊天历史功能
     loadCacheData();
     loadPersonaData();
+    loadProductData();
     loadAvailableModels();
     // 如果没有历史消息，显示欢迎和功能样例
     if (messages.length === 0) {
@@ -517,7 +561,7 @@ const ChatPage = () => {
             description: '平衡性能和速度的Claude模型'
           },
           { 
-            value: 'deepseek-r1-2025-01-20', 
+            value: 'deepseek-r1-250528', 
             label: 'DeepSeek R1', 
             provider: 'deepseek',
             description: '中文优化的强推理模型'
@@ -560,7 +604,7 @@ const ChatPage = () => {
           description: '平衡性能和速度的Claude模型'
         },
         { 
-          value: 'deepseek-r1-2025-01-20', 
+          value: 'deepseek-r1-250528', 
           label: 'DeepSeek R1', 
           provider: 'deepseek',
           description: '中文优化的强推理模型'
@@ -603,7 +647,7 @@ const ChatPage = () => {
           description: '平衡性能和速度的Claude模型'
         },
         { 
-          value: 'deepseek-r1-2025-01-20', 
+          value: 'deepseek-r1-250528', 
           label: 'DeepSeek R1', 
           provider: 'deepseek',
           description: '中文优化的强推理模型'
@@ -645,7 +689,7 @@ const ChatPage = () => {
           description: '平衡性能和速度的Claude模型'
         },
         { 
-          value: 'deepseek-r1-2025-01-20', 
+          value: 'deepseek-r1-250528', 
           label: 'DeepSeek R1', 
           provider: 'deepseek',
           description: '中文优化的强推理模型'
@@ -656,6 +700,99 @@ const ChatPage = () => {
     } finally {
       setModelsLoading(false);
     }
+  };
+
+
+  // 检测消息中是否包含document_ready标志
+  const checkForDocumentReady = (content) => {
+    console.log('🔍 检查document_ready标志:', content.substring(0, 200) + '...');
+    
+    // 首先检查是否包含 document_ready: true
+    if (!content.includes('document_ready') || !content.includes('true')) {
+      console.log('❌ 内容中不包含document_ready: true');
+      return { isDocument: false };
+    }
+    
+    // 方法2：尝试提取并解析代码块中的JSON
+    const jsonBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (jsonBlockMatch && jsonBlockMatch[1]) {
+      try {
+        // 清理可能的格式问题
+        let jsonContent = jsonBlockMatch[1].trim();
+        
+        // 检查第一个字符是否为{，不是则尝试查找第一个{
+        if (jsonContent.charAt(0) !== '{') {
+          const firstBrace = jsonContent.indexOf('{');
+          if (firstBrace !== -1) {
+            jsonContent = jsonContent.substring(firstBrace);
+          }
+        }
+        
+        // 查看提取的内容
+        console.log('🔍 从代码块提取的JSON:', jsonContent.substring(0, 100) + '...');
+        
+        if (jsonContent.includes('document_ready') && jsonContent.includes('true')) {
+          try {
+            const parsed = JSON.parse(jsonContent);
+            if (parsed.document_ready === true) {
+              console.log('✅ 检测到代码块中的document_ready标志');
+              return {
+                isDocument: true,
+                summary: parsed.summary || '文档已生成',
+                document: parsed.document || ''
+              };
+            }
+          } catch (innerE) {
+            console.log('⚠️ 代码块JSON解析失败:', innerE.message);
+            // 解析失败，但我们仍然可以尝试手动提取JSON内容
+            
+            
+          }
+        }
+      } catch (e) {
+        console.log('⚠️ 代码块JSON提取失败:', e.message);
+      }
+    }
+  
+    console.log('❌ 未能成功提取document内容');
+    return { isDocument: false };
+  };
+
+  // 检查文本是否已经是格式化的文档
+  const isAlreadyFormatted = (text) => {
+    // 检查是否已经包含我们生成的格式化文本
+    return text && (
+      text.includes('**分析报告已生成完成**') || 
+      text.includes('点击右下角"下载文档"按钮') ||
+      (text.startsWith('📄') && text.includes('分析报告'))
+    );
+  };
+  
+  // 生成并下载文档
+  const generateDocument = (documentData) => {
+    const { summary, document } = documentData;
+    
+    // 创建文件内容
+    const content = document || '文档内容为空';
+    
+    // 生成文件名（基于时间戳和摘要）
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:\-T]/g, '');
+    const safeSummary = (summary || '分析报告').replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_').slice(0, 20);
+    const filename = `${safeSummary}_${timestamp}.md`;
+    
+    // 创建Blob并下载
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    message.success(`📄 文档已下载: ${filename}`);
   };
 
   // 初始化MCP连接 - 启动时自动连接所有服务器
@@ -746,7 +883,7 @@ const ChatPage = () => {
     const welcomeMessage = {
       id: Date.now(),
       type: 'assistant',
-      content: personaIntroduction + '\n\n🎉 **欢迎使用SocialPulse AI - 智能社交媒体运营助手！**\n\n我是你的专业社交媒体运营顾问，具备以下核心能力：\n\n🤖 **多元化AI策略**\n• 行业关键词提取策略 - 精准挖掘领域核心词\n• 用户需求精准捕捉 - 深度分析痛点情绪\n• 数据驱动选题挖掘 - 发现蓝海机会\n\n🛠️ **强大工具支持**\n• 📊 数据库分析工具（账号数据、用户画像）\n• 🔍 小红书平台工具（内容搜索、趋势分析）\n• 📈 智能分析引擎（竞品分析、选题建议）\n\n💡 **使用建议**\n1. 在右上角选择不同的AI策略\n2. 每种策略都有专属的默认提问\n3. 结合你的具体需求进行深度对话\n\n快速开始，试试以下功能：',
+      content: personaIntroduction + '\n\n🎉 **欢迎使用SocialPulse AI - 智能社交媒体运营助手！**\n\n我是你的专业社交媒体运营顾问，具备以下核心能力：\n\n🤖 **多元化AI策略**\n• 行业关键词提取策略 - 精准挖掘领域核心词\n• 用户需求精准捕捉 - 深度分析痛点情绪\n• 数据驱动选题挖掘 - 发现蓝海机会\n• 内容生成与合规审核 - 真实感强且安全合规\n\n🛠️ **强大工具支持**\n• 📊 数据库分析工具（账号数据、用户画像）\n• 🔍 小红书平台工具（内容搜索、趋势分析）\n• 📈 智能分析引擎（竞品分析、选题建议）\n• 📝 内容生成引擎（文案创作、合规检测）\n\n💡 **使用建议**\n1. 在右上角选择不同的AI策略\n2. 每种策略都有专属的默认提问\n3. 结合你的具体需求进行深度对话\n\n快速开始，试试以下功能：',
       timestamp: new Date().toLocaleTimeString(),
       suggestions: [
         {
@@ -768,6 +905,11 @@ const ChatPage = () => {
           title: '📈 账号数据分析',
           description: '分析现有账号的运营数据',
           query: '帮我分析一下当前账号的数据情况，包括用户数、内容数等统计信息'
+        },
+        {
+          title: '📝 内容生成与合规',
+          description: '生成真实感强且合规安全的内容',
+          query: '请基于我的人设风格和产品信息，生成一篇小红书内容，包括文案、配图建议，并进行合规审核，确保内容真实感强且符合平台规则。'
         }
       ]
     };
@@ -907,6 +1049,14 @@ const ChatPage = () => {
               const data = JSON.parse(line.slice(6));
               console.log('📡 收到流式数据:', data);
               
+              // 详细打印AI返回数据
+              console.group(`🔍 [performMessageSending] 流式数据详情 - ${data.type}`);
+              console.log('📝 内容:', data.content);
+              console.log('📊 数据:', data.data);
+              console.log('⏰ 时间戳:', new Date().toLocaleTimeString());
+              console.log('🔗 完整数据对象:', JSON.stringify(data, null, 2));
+              console.groupEnd();
+              
               // 更新任务历史
               const stepInfo = {
                 timestamp: Date.now(),
@@ -949,16 +1099,33 @@ const ChatPage = () => {
                   case 'ai_message':
                     // AI的说明文字，累积显示
                     updated.status = 'ai_explaining';
+                    console.log('🧠 处理AI说明文字:', {
+                      当前内容: data.content,
+                      之前累积: updated.aiExplanation,
+                      状态: updated.status
+                    });
                     if (updated.aiExplanation) {
                       updated.aiExplanation += '\n\n' + data.content;
                     } else {
                       updated.aiExplanation = data.content;
                     }
                     updated.content = updated.aiExplanation;
+                    console.log('📝 更新后的完整内容:', updated.content);
+                    console.log('🔍 更新后的complete updated对象:', {
+                      content: updated.content,
+                      aiExplanation: updated.aiExplanation,
+                      status: updated.status,
+                      id: updated.id
+                    });
                       break;
                       
                   case 'tool_call':
                     updated.status = 'calling_tool';
+                    console.log('🔧 处理工具调用:', {
+                      工具内容: data.content,
+                      之前AI说明: updated.aiExplanation,
+                      将要显示的内容: updated.aiExplanation ? updated.aiExplanation + '\n\n' + data.content : data.content
+                    });
                     // 保持之前的AI说明文字
                     if (updated.aiExplanation) {
                       updated.content = updated.aiExplanation + '\n\n' + data.content;
@@ -966,18 +1133,38 @@ const ChatPage = () => {
                       updated.content = data.content;
                     }
                     updated.currentTool = data.data;
+                    console.log('🔧 工具调用后的完整内容:', updated.content);
                       break;
                       
                   case 'tool_result':
                     updated.status = 'tool_completed';
-                    updated.content = data.content;
+                    console.log('✅ 处理工具结果:', {
+                      结果内容: data.content,
+                      之前AI说明: updated.aiExplanation,
+                      将要显示的内容: updated.aiExplanation ? updated.aiExplanation + '\n\n' + data.content : data.content
+                    });
+                    // 保持之前的AI说明文字和工具调用信息
+                    if (updated.aiExplanation) {
+                      updated.content = updated.aiExplanation + '\n\n' + data.content;
+                    } else {
+                      updated.content = data.content;
+                    }
                     updated.toolResult = data.data?.result || '执行完成';
+                    console.log('✅ 工具结果后的完整内容:', updated.content);
                       break;
                       
                   case 'final_answer':
                     updated.status = 'generating_answer';
                     finalContent = data.content;
                     updated.content = data.content;
+                    
+                    // 检测是否包含document_ready标志
+                    const documentCheck = checkForDocumentReady(data.content);
+                    if (documentCheck.isDocument) {
+                      updated.documentData = documentCheck;
+                      updated.content = documentCheck.document;  // 设置为文档内容
+                    }
+                    
                     // 保留之前的工具调用结果
                     // updated.toolResult 和 updated.currentTool 保持不变
                       break;
@@ -993,15 +1180,24 @@ const ChatPage = () => {
                     setTimeout(() => {
                       setStreamingMessage(prev => {
                         if (prev && prev.id === streamingId) {
+                          // 检测是否包含document_ready标志（优先使用已存在的documentData）
+                          const documentData = prev.documentData || checkForDocumentReady(prev.content || '');
+                          
+                          let finalMessageContent = prev.content || '任务完成';
+                          if (documentData.isDocument) {
+                            finalMessageContent = documentData.document;  // 使用文档内容
+                          }
+                          
                           // 创建完整的助手消息，包含所有对话流内容
                           const completedMessage = {
                             id: streamingId,
                             type: 'assistant',
-                            content: prev.content || '任务完成',
+                            content: finalMessageContent,
                             timestamp: prev.timestamp,
                             steps: prev.steps || [],
                             executionTime: Math.floor((Date.now() - prev.startTime) / 1000),
-                            isCompleted: true
+                            isCompleted: true,
+                            documentData: documentData.isDocument ? documentData : null
                           };
                           
                           // 添加到历史消息
@@ -1072,258 +1268,20 @@ const ChatPage = () => {
     setAttachedData([]);
     setIsLoading(true);
 
-    // 创建取消控制器
-    const controller = new AbortController();
-    setAbortController(controller);
-    
-    // 创建流式消息
-    const streamingId = Date.now();
-    const streamingMessage = {
-      id: streamingId,
-      type: 'assistant',
-      content: '',
-      timestamp: new Date().toLocaleTimeString(),
-      startTime: Date.now(),
-      status: 'processing',
-      steps: []
-    };
-    
-    setStreamingMessage(streamingMessage);
-    setCurrentTask({
-      id: streamingId,
-      query: currentInput,
-      status: 'running',
-      startTime: Date.now(),
-      steps: []
+    console.log('📤 发送给后端的数据:', {
+      user_input: currentInput,
+      user_id: getUserId(),
+      model: selectedModel,
+      attached_data: currentAttachedData,
+      data_references: currentAttachedData.length > 0 ? currentAttachedData.map(item => ({
+        type: item.type,
+        id: item.data.note_id || item.data.id || 'unknown',
+        name: item.name
+      })) : null
     });
 
-    try {
-      const response = await fetch('http://localhost:9000/api/chat/stream', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_input: currentInput,
-          user_id: getUserId(),
-          model: selectedModel,
-          conversation_history: messages.slice(-5).map(msg => ({
-            role: msg.type === 'user' ? 'user' : 'assistant',
-            content: msg.content
-          })),
-          attached_data: [
-            ...(currentAttachedData.length > 0 ? currentAttachedData : []),
-            { 
-              type: 'persona_context', 
-              name: agentOptions.find(a => a.value === selectedAgent)?.label || 'Agent', 
-              data: { agent: selectedAgent } 
-            }
-          ],
-          data_references: currentAttachedData.length > 0 ? currentAttachedData.map(item => ({
-            type: item.type,
-            id: item.data.note_id || item.data.id || 'unknown',
-            name: item.name
-          })) : null
-        }),
-        signal: controller.signal
-      });
-
-      console.log('📤 发送给后端的数据:', {
-        user_input: currentInput,
-        user_id: getUserId(),
-        model: selectedModel,
-        attached_data: currentAttachedData,
-        data_references: currentAttachedData.length > 0 ? currentAttachedData.map(item => ({
-          type: item.type,
-          id: item.data.note_id || item.data.id || 'unknown',
-          name: item.name
-        })) : null
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let finalContent = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const text = decoder.decode(value);
-        const lines = text.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              console.log('📡 收到流式数据:', data);
-              
-              // 更新任务历史
-              const stepInfo = {
-                timestamp: Date.now(),
-                type: data.type,
-                content: data.content,
-                data: data.data
-              };
-              
-              setTaskHistory(prev => [...prev, stepInfo]);
-              
-              // 更新流式消息
-              setStreamingMessage(prev => {
-                if (!prev) return null;
-                
-                const updated = { ...prev };
-                updated.steps = [...(updated.steps || []), stepInfo];
-                
-                switch (data.type) {
-                  case 'start':
-                    updated.status = 'processing';
-                    updated.content = data.content;
-                      break;
-                      
-                  case 'tools_loading':
-                    updated.status = 'loading_tools';
-                    updated.content = data.content;
-                      break;
-                      
-                  case 'tools_loaded':
-                    updated.status = 'tools_ready';
-                    updated.content = `${data.content}，开始处理...`;
-                    updated.toolsInfo = data.data;
-                      break;
-                      
-                  case 'llm_thinking':
-                    updated.status = 'thinking';
-                    updated.content = data.content;
-                      break;
-                      
-                  case 'ai_message':
-                    // AI的说明文字，累积显示
-                    updated.status = 'ai_explaining';
-                    if (updated.aiExplanation) {
-                      updated.aiExplanation += '\n\n' + data.content;
-                    } else {
-                      updated.aiExplanation = data.content;
-                    }
-                    updated.content = updated.aiExplanation;
-                      break;
-                      
-                  case 'tool_call':
-                    updated.status = 'calling_tool';
-                    // 保持之前的AI说明文字
-                    if (updated.aiExplanation) {
-                      updated.content = updated.aiExplanation + '\n\n' + data.content;
-                    } else {
-                      updated.content = data.content;
-                    }
-                    updated.currentTool = data.data;
-                      break;
-                      
-                  case 'tool_result':
-                    updated.status = 'tool_completed';
-                    updated.content = data.content;
-                    updated.toolResult = data.data?.result || '执行完成';
-                      break;
-                      
-                  case 'final_answer':
-                    updated.status = 'generating_answer';
-                    finalContent = data.content;
-                    updated.content = data.content;
-                    // 保留之前的工具调用结果
-                    // updated.toolResult 和 updated.currentTool 保持不变
-                      break;
-                      
-                    case 'complete':
-                    // 标记任务完成，将流式消息转换为历史消息
-                    updated.status = 'complete';
-                    updated.isCompleted = true;
-                    finalContent = finalContent || updated.content;
-                    updated.content = finalContent;
-                    
-                    // 将完成的流式消息添加到历史消息中
-                    setTimeout(() => {
-                      setStreamingMessage(prev => {
-                        if (prev && prev.id === streamingId) {
-                          // 创建完整的助手消息，包含所有对话流内容
-                          const completedMessage = {
-                            id: streamingId,
-                            type: 'assistant',
-                            content: prev.content || '任务完成',
-                            timestamp: prev.timestamp,
-                            steps: prev.steps || [],
-                            executionTime: Math.floor((Date.now() - prev.startTime) / 1000),
-                            isCompleted: true
-                          };
-                          
-                          // 添加到历史消息
-                          setMessages(prevMessages => [...prevMessages, completedMessage]);
-                          
-                          return null; // 清除流式消息
-                        }
-                        return prev;
-                      });
-                      setCurrentTask(null);
-                      setAbortController(null);
-                      setIsLoading(false);
-                    }, 500);
-                      break;
-                      
-                    case 'error':
-                    updated.status = 'error';
-                    updated.content = `❌ ${data.content}`;
-                    setTimeout(() => {
-                      const errorMessage = {
-                        id: streamingId,
-                        type: 'assistant',
-                        content: updated.content,
-                        timestamp: updated.timestamp
-                      };
-                      setMessages(prev => [...prev, errorMessage]);
-                      setStreamingMessage(null);
-                      setCurrentTask(null);
-                      setAbortController(null);
-                    }, 2000);
-                      break;
-                  }
-                  
-                return updated;
-              });
-              
-            } catch (error) {
-              console.error('❌ 解析流式数据失败:', error);
-            }
-          }
-        }
-      }
-
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        console.log('🛑 任务已取消');
-        message.info('任务已取消');
-        setStreamingMessage(null);
-        setCurrentTask(null);
-      } else {
-        console.error('❌ 发送消息失败:', error);
-        message.error('发送消息失败，请重试');
-        
-        // 清理流式消息并显示错误
-        setStreamingMessage(null);
-        setCurrentTask(null);
-        const errorMessage = {
-          id: Date.now(),
-          type: 'assistant',
-          content: `❌ 抱歉，发生了错误: ${error.message}`,
-          timestamp: new Date().toLocaleTimeString()
-          };
-        setMessages(prev => [...prev, errorMessage]);
-      }
-    } finally {
-      setIsLoading(false);
-      setAbortController(null);
-    }
+    // 调用实际的发送逻辑
+    await performMessageSending(currentInput, currentAttachedData);
   };
 
   // 取消当前任务
@@ -1423,6 +1381,29 @@ const ChatPage = () => {
       setPersonaData([]);
     } finally {
       setPersonaLoading(false);
+    }
+  };
+
+  // 加载产品数据
+  const loadProductData = async () => {
+    try {
+      setProductLoading(true);
+      console.log('🛍️ 开始加载产品数据...');
+      
+      // 获取产品文档列表
+      const data = await productService.getProductDocuments('product_builder_user');
+      console.log('🛍️ 产品API返回数据:', data);
+      console.log('🛍️ 产品数据类型:', typeof data);
+      console.log('🛍️ 产品数据长度:', Array.isArray(data) ? data.length : '不是数组');
+      
+      setProductData(data);
+      console.log('🛍️ 产品数据加载成功，共', Array.isArray(data) ? data.length : 0, '条记录');
+    } catch (error) {
+      console.error('🛍️ 加载产品数据失败:', error);
+      console.error('🛍️ 错误详情:', error.response?.data || error.message);
+      setProductData([]);
+    } finally {
+      setProductLoading(false);
     }
   };
 
@@ -1531,19 +1512,19 @@ const ChatPage = () => {
     }
 
     // 任务数据
-    if (comprehensiveData?.tasks && comprehensiveData.tasks.length > 0) {
-      dataOptions.push({
-        category: '任务管理',
-        icon: <CheckCircleOutlined />,
-        description: '管理和优化工作流程',
-        items: comprehensiveData.tasks.map(task => ({
-          type: 'task',
-          name: task.title || '未命名任务',
-          subInfo: `${task.priority || 'low'}优先级 | ${task.status || 'pending'}`,
-          data: task
-        }))
-      });
-    }
+    // if (comprehensiveData?.tasks && comprehensiveData.tasks.length > 0) {
+    //   dataOptions.push({
+    //     category: '任务管理',
+    //     icon: <CheckCircleOutlined />,
+    //     description: '管理和优化工作流程',
+    //     items: comprehensiveData.tasks.map(task => ({
+    //       type: 'task',
+    //       name: task.title || '未命名任务',
+    //       subInfo: `${task.priority || 'low'}优先级 | ${task.status || 'pending'}`,
+    //       data: task
+    //     }))
+    //   });
+    // }
 
     // 小红书缓存笔记数据
     if (cacheData?.xiaohongshu_notes && cacheData.xiaohongshu_notes.length > 0) {
@@ -1590,6 +1571,21 @@ const ChatPage = () => {
           name: persona.title || '未命名人设',
           subInfo: `${persona.summary || '人设文档'} | ${persona.tags?.join(', ') || '无标签'}`,
           data: persona
+        }))
+      });
+    }
+
+    // 产品信息数据
+    if (productData && productData.length > 0) {
+      dataOptions.push({
+        category: '产品信息库',
+        icon: <ShoppingOutlined />,
+        description: '使用已构建的产品信息进行分析',
+        items: productData.map(product => ({
+          type: 'product_context',
+          name: product.title || '未命名产品',
+          subInfo: `${product.summary || '产品文档'} | ${product.tags?.join(', ') || '无标签'}`,
+          data: product
         }))
       });
     }
@@ -1820,6 +1816,35 @@ const ChatPage = () => {
                   </div>
                 )}
                 
+                {/* 显示文档生成按钮 */}
+                {message.documentData && (
+                  <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid #f0f0f0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ flex: 1 }}>
+                        <Text style={{ fontSize: '12px', color: '#52c41a', display: 'block', fontWeight: 'bold' }}>
+                          📄 分析报告已生成
+                        </Text>
+                        <Text style={{ fontSize: '11px', color: '#8c8c8c', marginTop: 2, display: 'block' }}>
+                          {message.documentData.summary}
+                        </Text>
+                      </div>
+                      <Button
+                        type="primary"
+                        icon={<DownloadOutlined />}
+                        size="small"
+                        onClick={() => generateDocument(message.documentData)}
+                        style={{
+                          backgroundColor: '#52c41a',
+                          borderColor: '#52c41a',
+                          borderRadius: 6
+                        }}
+                      >
+                        下载文档
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 {/* 显示功能样例建议按钮 */}
                 {message.suggestions && message.suggestions.length > 0 && (
                   <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid #f0f0f0' }}>
@@ -1913,10 +1938,16 @@ const ChatPage = () => {
             currentAiMessage = '';
           }
           
+          // 检查是否是文档格式
+          const docCheck = checkForDocumentReady(step.content);
+          const displayContent = docCheck.isDocument ? docCheck.document : step.content;
+          
           conversationFlow.push({
             type: 'ai_response',
-            content: step.content,
-            timestamp: step.timestamp
+            content: displayContent,
+            timestamp: step.timestamp,
+            isDocument: docCheck.isDocument,
+            documentData: docCheck.isDocument ? docCheck : null
           });
           break;
       }
@@ -1950,6 +1981,11 @@ const ChatPage = () => {
                     {item.content}
                   </EnhancedMarkdown>
                 </div>
+                {item.isDocument && (
+                  <div style={{ marginTop: 8, color: '#52c41a', fontSize: '12px' }}>
+                    📄 文档已生成（详细版可在下载中查看）
+                  </div>
+                )}
               </div>
             ) : (
               // 工具调用 - 可折叠
@@ -2037,76 +2073,14 @@ const ChatPage = () => {
   const renderStreamingMessage = () => {
     if (!streamingMessage) return null;
 
-    // 按时间顺序处理所有步骤，构建完整的对话流
+    // 直接使用已经累积好的content，而不是重新解析
     const steps = streamingMessage.steps || [];
-    const conversationFlow = [];
+    const hasContent = streamingMessage.content && streamingMessage.content.trim();
     
-    let currentAiMessage = '';
-    let pendingToolCalls = [];
-    
-    for (let i = 0; i < steps.length; i++) {
-      const step = steps[i];
-      
-      switch (step.type) {
-        case 'ai_message':
-          // AI的说明文字
-          currentAiMessage += (currentAiMessage ? '\n\n' : '') + step.content;
-          break;
-          
-        case 'tool_call':
-          // 如果有累积的AI消息，先添加到流中
-          if (currentAiMessage.trim()) {
-            conversationFlow.push({
-              type: 'ai_response',
-              content: currentAiMessage.trim(),
-              timestamp: step.timestamp
-            });
-            currentAiMessage = '';
-          }
-          
-          // 查找对应的工具结果
-          const resultStep = steps.find((s, idx) => 
-            idx > i && s.type === 'tool_result' && 
-            s.timestamp > step.timestamp
-          );
-          
-          conversationFlow.push({
-            type: 'tool_execution',
-            call: step,
-            result: resultStep,
-            timestamp: step.timestamp
-          });
-          break;
-          
-        case 'final_answer':
-          // 最终回答
-          if (currentAiMessage.trim()) {
-            conversationFlow.push({
-              type: 'ai_response',
-              content: currentAiMessage.trim(),
-              timestamp: step.timestamp
-            });
-            currentAiMessage = '';
-          }
-          
-          conversationFlow.push({
-            type: 'ai_response',
-            content: step.content,
-            timestamp: step.timestamp
-          });
-          break;
-      }
-    }
-    
-    // 如果还有未处理的AI消息
-    if (currentAiMessage.trim()) {
-      conversationFlow.push({
-        type: 'ai_response',
-        content: currentAiMessage.trim(),
-        timestamp: Date.now()
-      });
-    }
-    
+    // 构建对话流：主要内容 + 工具调用详情
+    const mainContent = streamingMessage.content || '';
+    const toolCalls = steps.filter(step => step.type === 'tool_call');
+
     return (
       <div key={streamingMessage.id} className="message-item assistant">
         <Avatar 
@@ -2170,118 +2144,160 @@ const ChatPage = () => {
               )}
             </div>
             
-            {/* 对话流内容 */}
-            <div style={{ marginBottom: 16 }}>
-              {conversationFlow.map((item, index) => (
+            {/* 主要内容显示 */}
+            {hasContent && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ 
+                  padding: '12px 0',
+                  lineHeight: 1.6 
+                }}>
+                  <div style={{ 
+                    margin: 0, 
+                    fontSize: '14px',
+                    color: '#262626'
+                  }}>
+                    <EnhancedMarkdown fontSize="14px">
+                      {mainContent}
+                    </EnhancedMarkdown>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* 工具调用详情 */}
+            {toolCalls.map((toolCall, index) => {
+              const toolResult = steps.find(step => 
+                step.type === 'tool_result' && step.timestamp > toolCall.timestamp
+              );
+              
+              return (
                 <div key={index} style={{ marginBottom: 16 }}>
-                  {item.type === 'ai_response' ? (
-                    // AI回答内容
-                    <div style={{ 
-                      padding: '12px 0',
-                      lineHeight: 1.6 
+                  <details style={{ 
+                    border: '1px solid #e8e8e8',
+                    borderRadius: 8,
+                    padding: 0,
+                    marginBottom: 8,
+                    backgroundColor: '#fafafa'
+                  }}>
+                    <summary style={{ 
+                      padding: '12px 16px',
+                      cursor: 'pointer',
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: '8px 8px 0 0',
+                      borderBottom: '1px solid #e8e8e8',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
                     }}>
-                      <div style={{ 
-                        margin: 0, 
-                        fontSize: '14px',
-                        color: '#262626'
-                      }}>
-                        <EnhancedMarkdown fontSize="14px">
-                          {item.content}
-                        </EnhancedMarkdown>
-                      </div>
-                    </div>
-                  ) : (
-                    // 工具调用 - 可折叠
-                    <details style={{ 
-                      border: '1px solid #e8e8e8',
-                      borderRadius: 8,
-                      padding: 0,
-                      marginBottom: 8,
-                      backgroundColor: '#fafafa'
-                    }}>
-                      <summary style={{ 
-                        padding: '12px 16px',
-                        cursor: 'pointer',
-                        backgroundColor: '#f5f5f5',
-                        borderRadius: '8px 8px 0 0',
-                        borderBottom: '1px solid #e8e8e8',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <span style={{ marginRight: 8, fontSize: '14px' }}>
-                            {item.result ? '✅' : '⏳'}
-                          </span>
-                          <Text strong style={{ fontSize: '13px' }}>
-                            {item.call.data?.name || '工具调用'}
-                          </Text>
-                        </div>
-                        <Text type="secondary" style={{ fontSize: '12px' }}>
-                          点击查看详情
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{ marginRight: 8, fontSize: '14px' }}>
+                          {toolResult ? '✅' : '⏳'}
+                        </span>
+                        <Text strong style={{ fontSize: '13px' }}>
+                          {toolCall.data?.name || '工具调用'}
                         </Text>
-                      </summary>
+                      </div>
+                      <Text type="secondary" style={{ fontSize: '12px' }}>
+                        点击查看详情
+                      </Text>
+                    </summary>
+                    
+                    <div style={{ padding: '16px' }}>
+                      {/* 工具调用信息 */}
+                      <div style={{ marginBottom: 12 }}>
+                        <Text strong style={{ fontSize: '12px', color: '#666' }}>
+                          调用参数:
+                        </Text>
+                        <pre style={{ 
+                          backgroundColor: '#f8f8f8',
+                          padding: '8px 12px',
+                          borderRadius: 4,
+                          fontSize: '12px',
+                          margin: '4px 0 0 0',
+                          overflow: 'auto'
+                        }}>
+                          {JSON.stringify(toolCall.data?.args || {}, null, 2)}
+                        </pre>
+                      </div>
                       
-                      <div style={{ padding: '16px' }}>
-                        {/* 工具调用信息 */}
-                        <div style={{ marginBottom: 12 }}>
+                      {/* 工具结果 */}
+                      {toolResult && (
+                        <div>
                           <Text strong style={{ fontSize: '12px', color: '#666' }}>
-                            调用参数:
+                            执行结果:
                           </Text>
-                          <pre style={{ 
-                            backgroundColor: '#f8f8f8',
+                          <div style={{ 
+                            backgroundColor: '#f0f9ff',
                             padding: '8px 12px',
                             borderRadius: 4,
                             fontSize: '12px',
                             margin: '4px 0 0 0',
+                            border: '1px solid #e0f2fe',
+                            maxHeight: '200px',
                             overflow: 'auto'
                           }}>
-                            {JSON.stringify(item.call.data?.args || {}, null, 2)}
-                          </pre>
-                        </div>
-                        
-                        {/* 工具结果 */}
-                        {item.result && (
-                          <div>
-                            <Text strong style={{ fontSize: '12px', color: '#666' }}>
-                              执行结果:
-                            </Text>
-                            <div style={{ 
-                              backgroundColor: '#f0f9ff',
-                              padding: '8px 12px',
-                              borderRadius: 4,
-                              fontSize: '12px',
-                              margin: '4px 0 0 0',
-                              border: '1px solid #e0f2fe',
-                              whiteSpace: 'pre-wrap'
-                            }}>
-                              {typeof item.result.data?.result === 'string' 
-                                ? item.result.data.result 
-                                : JSON.stringify(item.result.data?.result || '执行完成', null, 2)
-                              }
-                            </div>
+                            {toolResult.content || '执行完成'}
                           </div>
-                        )}
-                      </div>
-                    </details>
-                  )}
+                        </div>
+                      )}
+                      
+                      {!toolResult && (
+                        <div style={{ 
+                          color: '#999', 
+                          fontSize: '12px',
+                          fontStyle: 'italic' 
+                        }}>
+                          正在执行工具...
+                        </div>
+                      )}
+                    </div>
+                  </details>
                 </div>
-              ))}
-              
-              {/* 当前状态显示 */}
-              {!streamingMessage.isCompleted && (
-                <div style={{ display: 'flex', alignItems: 'center', padding: '12px 0' }}>
-                  <Spin size="small" style={{ marginRight: 8 }} />
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
-                    {streamingMessage.status === 'thinking' ? 'AI正在思考中...' :
-                     streamingMessage.status === 'ai_explaining' ? 'AI正在分析中...' :
-                     streamingMessage.status === 'calling_tool' ? '正在执行工具...' :
-                     streamingMessage.status === 'generating_answer' ? '正在生成回答...' :
-                     '正在处理中...'}
-                  </Text>
+              );
+            })}
+            
+            {/* 显示文档生成按钮（流式消息中） */}
+            {streamingMessage.documentData && (
+              <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid #f0f0f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <Text style={{ fontSize: '12px', color: '#52c41a', display: 'block', fontWeight: 'bold' }}>
+                      📄 分析报告已生成
+                    </Text>
+                    <Text style={{ fontSize: '11px', color: '#8c8c8c', marginTop: 2, display: 'block' }}>
+                      {streamingMessage.documentData.summary}
+                    </Text>
+                  </div>
+                  <Button
+                    type="primary"
+                    icon={<DownloadOutlined />}
+                    size="small"
+                    onClick={() => generateDocument(streamingMessage.documentData)}
+                    style={{
+                      backgroundColor: '#52c41a',
+                      borderColor: '#52c41a',
+                      borderRadius: 6
+                    }}
+                  >
+                    下载文档
+                  </Button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* 当前状态显示 */}
+            {!streamingMessage.isCompleted && (
+              <div style={{ display: 'flex', alignItems: 'center', padding: '12px 0' }}>
+                <Spin size="small" style={{ marginRight: 8 }} />
+                <Text type="secondary" style={{ fontSize: '12px' }}>
+                  {streamingMessage.status === 'thinking' ? 'AI正在思考中...' :
+                   streamingMessage.status === 'ai_explaining' ? 'AI正在分析中...' :
+                   streamingMessage.status === 'calling_tool' ? '正在执行工具...' :
+                   streamingMessage.status === 'generating_answer' ? '正在生成回答...' :
+                   '正在处理中...'}
+                </Text>
+              </div>
+            )}
           </Card>
         </div>
       </div>

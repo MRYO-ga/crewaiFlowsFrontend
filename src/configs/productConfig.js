@@ -1,12 +1,13 @@
 import React from 'react';
 import { Input, Tag, Button, Space, Popconfirm } from 'antd';
-import { ShoppingOutlined, CalendarOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
+import { ShoppingOutlined, CalendarOutlined, EyeOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
+import { message } from 'antd'; // Added message import
 
 const productConfig = {
   // 基础配置
   type: 'product',
-  displayName: '产品分析',
+  displayName: '小红书账号分析',
   userId: 'product_builder_user',
   
   // 服务方法映射
@@ -17,110 +18,157 @@ const productConfig = {
   },
   
   // 页面配置
-  pageTitle: '产品品牌信息管理',
-  pageDescription: '使用AI助手进行产品与品牌信息深度穿透，管理已创建的产品文档',
-  builderTabLabel: 'AI产品分析',
+  pageTitle: '品牌产品信息管理',
+  pageDescription: '使用AI助手进行品牌产品信息深度分析，管理已创建的产品文档',
+  builderTabLabel: 'AI品牌产品信息分析',
   listTabLabel: '产品管理',
-  listTitle: '产品文档管理',
+  listTitle: '品牌产品文档管理',
   
   // 第一阶段配置
-  phase1Title: '产品与品牌信息深度穿透 - 第一阶段：基础信息采集',
-  welcomeTitle: '欢迎使用产品信息穿透AI助手！',
-  phase1Description: '为了帮您进行深度的产品与品牌信息穿透分析，我需要先了解一些基本情况。请完成以下选择题：',
+  phase1Title: '品牌产品信息深度分析 - 第一阶段：基础信息采集',
+  welcomeTitle: '欢迎使用品牌产品信息分析AI助手！',
+  phase1Description: '为了帮您进行深度的品牌产品信息分析，我需要先了解一些基本情况。请完成以下表单：',
   
   // AI配置
   aiConfig: {
     constructionPhase: 'product_analysis',
     agent: 'product_analysis',
     contextName: 'ProductAnalysis',
-    gradientColors: 'from-purple-400 to-blue-500',
-    chatTitle: 'AI产品信息穿透对话',
-    inputPlaceholder: '向AI描述您的产品特色或提出问题...'
+    gradientColors: 'from-pink-400 to-red-500',
+    chatTitle: 'AI品牌产品信息分析对话',
+    inputPlaceholder: '向AI描述您的账号特色或提出问题...'
   },
   
   // 预览配置
   previewConfig: {
-    title: '产品信息预览',
-    gradientColors: 'from-orange-400 to-red-500'
+    title: '品牌产品信息预览',
+    gradientColors: 'from-pink-400 to-red-500'
   },
   
   // 必填字段
-  requiredFields: ['productName', 'brandName', 'productCategory', 'brandType', 'priceRange', 'targetAudience', 'salesChannel', 'competitionLevel'],
+  requiredFields: ['accountNickname', 'accountType', 'contentCategory', 'contentStyle', 'audienceProfile', 'mainProduct', 'contentTypes'],
   
   // 初始基础信息
   initialBasicInfo: {
-    productCategory: '',
-    brandType: '',
-    priceRange: '',
-    targetAudience: '',
-    salesChannel: '',
-    competitionLevel: '',
-    otherProductCategory: '',
-    otherBrandType: '',
-    otherTargetAudience: '',
-    productName: '',
-    brandName: '',
-    productUrl: ''
+    // 1. 账号信息
+    accountNickname: '',
+    accountType: '',
+    fansCount: '',
+    profileUrl: '',
+    
+    // 2. 人设与定位
+    contentCategory: '',
+    audienceProfile: '',
+    personalityTags: '',
+    contentStyle: '',
+    
+    // 3. 产品与卖点
+    mainProduct: '',
+    productFeatures: '',
+    competitors: '',
+    existingContent: '',
+    
+    // 4. 营销目标
+    marketingGoals: [],
+    hasAdvertising: false,
+    advertisingNote: '',
+    conversionTracking: '',
+    
+    // 5. 内容素材与限制
+    hasBrandMaterials: false,
+    brandMaterials: '',
+    brandGuidelines: '',
+    contentTypes: [],
+    otherContentTypes: '',
+    restrictions: '',
+    
+    // 6. 时间与预算
+    campaignTiming: '',
+    budget: '',
+    phaseNote: '',
+    
+    // 7. 额外信息
+    additionalInfo: ''
+  },
+  
+  // 示例数据
+  exampleData: {
+    accountInfo: {
+      accountNickname: '响指HaiSnap（如未注册可预留）',
+      accountType: 'brand',
+      fansCount: '待上线（预计首轮种草）',
+      profileUrl: '待补充小红书主页'
+    },
+    positioning: {
+      contentCategory: 'tech',
+      otherContentCategory: 'AI工具 / 数字产品 / 无代码开发 / 教程科普',
+      audienceProfile: '20-40岁城市青年\n\n学生 / 创作者 / 自媒体人 / 产品经理 / 创业者\n\n对AI感兴趣、希望低门槛尝试构建应用',
+      personalityTags: '人人都是开发者、灵感即产品、AI生产力提升工具',
+      contentStyle: 'educational',
+      contentStyleDetail: '干货科普 + 案例展示\n\n创意感 + 技术酷感结合\n\n社区互动型（鼓励共创）'
+    },
+    product: {
+      mainProduct: '「响指HaiSnap」AI应用生成平台',
+      productFeatures: '一句话生成App\n\n无需代码 / 无需提示词\n\n自动完成前后端构建 + 一键部署\n\n支持自定义域名 / 移动端上线\n\n创作者社区 + 插件共创激励',
+      competitors: 'Notion AI / Glide / 轻流 / 魔搭 / 明略云无代码平台等',
+      existingContent: '已有部分介绍图文素材（可裁剪使用）'
+    },
+    marketing: {
+      marketingGoals: ['exposure', 'collection', 'consultation', 'conversion'],
+      hasAdvertising: true,
+      advertisingNote: '可选（建议结合兴趣定向投放）',
+      conversionTracking: '可引导用户点击平台链接 / 注册账号（可接短链）'
+    },
+    content: {
+      brandMaterials: '提供主KV、功能图解、对话截图、应用示例图等',
+      brandGuidelines: '强调"无代码""一句话生成"易用性\n\n不涉及竞品名称比对\n\n不可承诺绝对效果或夸大功能',
+      contentTypes: ['image', 'video'],
+      otherContentTypes: '插件展示合集',
+      restrictions: '误导性编程教学内容\n\n涉及非法用途示范（如外挂、违规信息查询）'
+    },
+    timing: {
+      campaignTiming: '2025.7（进阶版上线初期）至8月初为首轮重点窗口\n\n配合节点：上线、社区共创计划启动、插件激励计划预热',
+      budget: '视账号体量与内容形式协商，支持效果类合作（如注册转化）',
+      phaseNote: '建议如下三阶段节奏：\n\n营销预热：宣传概念与入口（7.中旬）\n\n功能演示：真实案例使用（7.下旬）\n\n社区共创：共创激励机制宣传（8月）'
+    }
   },
   
   // 字段值映射
   fieldMappings: {
-    productCategory: {
-      'beauty': '美妆个护',
-      'fashion': '服饰穿搭',
-      'food': '食品饮料',
-      'home': '家居生活',
-      'tech': '数码科技',
-      'health': '健康保健',
-      'baby': '母婴用品',
-      'education': '教育培训',
-      'travel': '旅游出行',
-      'pet': '宠物用品',
-      'sports': '运动健身',
-      'jewelry': '珠宝配饰',
-      'auto': '汽车用品',
+    accountType: {
+      'brand': '品牌号',
+      'personal': '个人号',
+      'kol': '达人号',
+      'mcn': 'MCN机构'
+    },
+    contentCategory: {
+      'beauty': '美妆',
+      'fashion': '穿搭',
+      'parenting': '母婴',
+      'health': '健康',
+      'tech': '数码',
+      'emotion': '情感',
+      'food': '美食',
+      'lifestyle': '生活方式',
       'other': '其他'
     },
-    brandType: {
-      'international': '国际大牌',
-      'domestic': '国产品牌',
-      'niche': '小众品牌',
-      'new': '新兴品牌',
-      'private_label': '自有品牌',
-      'other': '其他'
+    contentStyle: {
+      'lifestyle': '生活化',
+      'professional': '专业种草',
+      'emotional': '情绪共鸣',
+      'educational': '知识型',
+      'entertainment': '娱乐化'
     },
-    priceRange: {
-      'budget': '平价（100元以下）',
-      'mid_range': '中档（100-500元）',
-      'premium': '高端（500-2000元）',
-      'luxury': '奢侈（2000元以上）',
-      'mixed': '多价位段'
+    marketingGoals: {
+      'exposure': '提升曝光',
+      'followers': '涨粉',
+      'collection': '引导收藏',
+      'consultation': '引导私信咨询',
+      'conversion': '带货转化'
     },
-    targetAudience: {
-      'young_female': '年轻女性（18-30岁）',
-      'mature_female': '成熟女性（30-45岁）',
-      'young_male': '年轻男性（18-30岁）',
-      'mature_male': '成熟男性（30-45岁）',
-      'students': '学生群体',
-      'office_workers': '上班族',
-      'parents': '家长群体',
-      'seniors': '中老年群体',
-      'all_ages': '全年龄段',
-      'other': '其他'
-    },
-    salesChannel: {
-      'online_only': '纯线上销售',
-      'offline_only': '纯线下销售',
-      'omnichannel': '线上线下结合',
-      'social_commerce': '社交电商',
-      'live_streaming': '直播带货',
-      'other': '其他'
-    },
-    competitionLevel: {
-      'low': '竞争较小（蓝海市场）',
-      'medium': '竞争适中',
-      'high': '竞争激烈（红海市场）',
-      'unknown': '不太了解'
+    contentTypes: {
+      'image': '图文笔记',
+      'video': '视频笔记'
     }
   },
   
@@ -129,235 +177,989 @@ const productConfig = {
     return productConfig.fieldMappings[field]?.[value] || value;
   },
   
+  // 解析提示词
+  parsePrompt: `请将以下文本解析为结构化的小红书账号分析数据。返回值必须严格按照以下JSON格式：
+
+{
+  "accountInfo": {
+    "accountNickname": "小红书账号昵称",
+    "accountType": "brand", // 必须是以下值之一: "brand"(品牌号)/"personal"(个人号)/"kol"(达人号)/"mcn"(MCN机构)
+    "fansCount": "当前粉丝数",
+    "profileUrl": "主页链接"
+  },
+  "personaPositioning": {
+    "contentCategory": "tech", // 必须是以下值之一: "beauty"/"fashion"/"parenting"/"health"/"tech"/"emotion"/"food"/"lifestyle"/"other"
+    "otherContentCategory": "其他内容领域描述",
+    "audienceProfile": "核心受众画像描述",
+    "personalityTags": ["标签1", "标签2", "标签3"], // 数组格式
+    "contentStyle": "educational", // 必须是以下值之一: "lifestyle"/"professional"/"emotional"/"educational"/"entertainment"
+    "contentStyleDetail": "内容风格详细描述"
+  },
+  "productSellingPoints": {
+    "mainProduct": "主推产品/服务名称",
+    "productFeatures": ["卖点1", "卖点2", "卖点3"], // 数组格式
+    "competitors": "竞品参考",
+    "existingContent": "现有种草素材"
+  },
+  "marketingGoals": {
+    "marketingGoals": ["exposure", "followers", "collection", "consultation", "conversion"], // 数组格式，必须是列举的值
+    "hasAdvertising": true, // 布尔值，true或false
+    "advertisingNote": "投放说明",
+    "conversionTracking": "转化跟踪方式"
+  },
+  "contentMaterialsRestrictions": {
+    "brandMaterials": "品牌物料",
+    "brandGuidelines": "内容规范要求",
+    "contentTypes": ["image", "video"], // 数组格式，必须是"image"和/或"video"
+    "otherContentTypes": "其他内容类型",
+    "restrictions": "禁止事项"
+  },
+  "timingBudget": {
+    "campaignTiming": "节日/节点配合",
+    "budget": "预算范围",
+    "phaseNote": "分阶段发布计划"
+  }
+}
+
+示例输出：
+
+{
+  "accountInfo": {
+    "accountNickname": "响指HaiSnap",
+    "accountType": "brand",
+    "fansCount": null,
+    "profileUrl": null
+  },
+  "personaPositioning": {
+    "contentCategory": "tech",
+    "otherContentCategory": "AI工具 / 数字产品 / 无代码开发 / 教程科普",
+    "audienceProfile": "20-40岁城市青年，学生、创作者、自媒体人、产品经理、创业者，对AI感兴趣、希望低门槛尝试构建应用",
+    "personalityTags": ["人人都是开发者", "灵感即产品", "AI生产力提升工具"],
+    "contentStyle": "educational",
+    "contentStyleDetail": "干货科普+案例展示，创意感与技术酷感结合，社区互动型（鼓励共创）"
+  },
+  "productSellingPoints": {
+    "mainProduct": "「响指HaiSnap」AI应用生成平台",
+    "productFeatures": [
+      "一句话生成App",
+      "无需代码 / 无需提示词",
+      "自动完成前后端构建 + 一键部署",
+      "支持自定义域名 / 移动端上线",
+      "创作者社区 + 插件共创激励"
+    ],
+    "competitors": "Notion AI / Glide / 轻流 / 魔搭 / 明略云无代码平台等",
+    "existingContent": "已有部分介绍图文素材（可裁剪使用）"
+  },
+  "marketingGoals": {
+    "marketingGoals": ["exposure", "collection", "consultation", "conversion"],
+    "hasAdvertising": true,
+    "advertisingNote": "可选（建议结合兴趣定向投放）",
+    "conversionTracking": "可引导用户点击平台链接 / 注册账号（可接短链）"
+  },
+  "contentMaterialsRestrictions": {
+    "brandMaterials": "主KV、功能图解、对话截图、应用示例图等",
+    "brandGuidelines": "强调"无代码""一句话生成"易用性，不涉及竞品名称比对，不可承诺绝对效果或夸大功能",
+    "contentTypes": ["image", "video"],
+    "otherContentTypes": "插件展示合集",
+    "restrictions": "误导性编程教学内容、涉及非法用途示范（如外挂、违规信息查询）"
+  },
+  "timingBudget": {
+    "campaignTiming": "2025.7（进阶版上线初期）至8月初为首轮重点窗口，上线、社区共创计划启动、插件激励计划预热",
+    "budget": "视账号体量与内容形式协商，支持效果类合作（如注册转化）",
+    "phaseNote": "建议三阶段节奏：营销预热（7.中旬）、功能演示（7.下旬）、社区共创（8月）"
+  }
+}
+
+请务必严格按照上述JSON结构返回解析结果，不要添加任何解释性文字，直接返回有效的JSON。确保所有字段名称完全一致。如果无法确定某个字段的值，可以返回null，但必须包含所有字段。`,
+  
   // 渲染基础信息表单
   renderBasicInfoForm: (basicInfo, handleBasicInfoChange) => (
     <>
-      {/* 产品和品牌名称输入 */}
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          产品与品牌信息 <span className="text-red-500">*</span>
+      {/* 一键解析 */}
+      <div className="bg-white p-4 rounded-lg border mb-4">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-lg font-medium">一键解析</h4>
+          <div className="space-x-2">
+            <Button 
+              type="link" 
+              onClick={() => {
+                const textarea = document.getElementById('parseInput');
+                textarea.value = `小红书账号昵称：响指HaiSnap（如未注册可预留）
+账号类型：品牌号
+当前粉丝数：待上线（预计首轮种草）
+主页链接：待补充小红书主页
+
+主营内容领域：AI工具 / 数字产品 / 无代码开发 / 教程科普
+核心受众画像：
+20-40岁城市青年
+学生 / 创作者 / 自媒体人 / 产品经理 / 创业者
+对AI感兴趣、希望低门槛尝试构建应用
+
+人设标签：人人都是开发者、灵感即产品、AI生产力提升工具
+内容风格偏好：
+干货科普 + 案例展示
+创意感 + 技术酷感结合
+社区互动型（鼓励共创）
+
+主推产品/服务名称：「响指HaiSnap」AI应用生成平台
+核心卖点：
+一句话生成App
+无需代码 / 无需提示词
+自动完成前后端构建 + 一键部署
+支持自定义域名 / 移动端上线
+创作者社区 + 插件共创激励
+
+竞品参考：Notion AI / Glide / 轻流 / 魔搭 / 明略云无代码平台等
+是否已有种草素材：已有部分介绍图文素材（可裁剪使用）
+
+本轮目标类型：
+✅ 提升曝光
+✅ 引导收藏
+✅ 引导私信咨询
+✅ 带货转化（平台注册&应用创建）
+是否配合投放：可选（建议结合兴趣定向投放）
+是否可追踪转化：可引导用户点击平台链接 / 注册账号（可接短链）
+
+品牌物料：提供主KV、功能图解、对话截图、应用示例图等
+内容规范要求：
+强调"无代码""一句话生成"易用性
+不涉及竞品名称比对
+不可承诺绝对效果或夸大功能
+
+可接受的内容类型：
+✅ 图文笔记
+✅ 视频笔记
+✅ 插件展示合集
+
+禁止事项：
+误导性编程教学内容
+涉及非法用途示范（如外挂、违规信息查询）
+
+发布时间范围：2025.7（进阶版上线初期）至8月初为首轮重点窗口
+配合节点：上线、社区共创计划启动、插件激励计划预热
+预算范围：视账号体量与内容形式协商，支持效果类合作（如注册转化）
+
+建议如下三阶段节奏：
+营销预热：宣传概念与入口（7.中旬）
+功能演示：真实案例使用（7.下旬）
+社区共创：共创激励机制宣传（8月）`;
+              }}
+            >
+              查看示例文本
+            </Button>
+            <Button 
+              type="primary"
+              onClick={async () => {
+                const textarea = document.getElementById('parseInput');
+                const text = textarea.value;
+                if (!text) {
+                  message.error('请先输入要解析的文本');
+                  return;
+                }
+
+                try {
+                  // 显示加载状态
+                  message.loading({ content: '正在解析...', key: 'parsing' });
+
+                  // 获取正确的 API 基础URL
+                  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:9000';
+                  
+                  console.log('发送解析请求:', text.substring(0, 100) + '...');
+                  
+                  // 构建请求体
+                  const requestBody = {
+                    user_input: `${productConfig.parsePrompt}\n\n下面是要解析的文本内容:\n\n${text}`,
+                    user_id: "product_form_parser",
+                    model: "gpt-4o",
+                    conversation_history: []
+                  };
+                  
+                  console.log('请求体:', JSON.stringify(requestBody).substring(0, 500) + '...');
+
+                  // 调用chat API解析文本
+                  const response = await fetch(`${baseUrl}/api/chat`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                  });
+
+                  if (!response.ok) {
+                    console.error('API响应状态码:', response.status, response.statusText);
+                    throw new Error(`解析失败: ${response.status} ${response.statusText}`);
+                  }
+
+                  const responseData = await response.json();
+                  console.log('收到API响应:', responseData);
+                  
+                  // 检查空响应
+                  if (!responseData) {
+                    message.error({ content: '服务器返回空响应，请稍后重试', key: 'parsing' });
+                    return;
+                  }
+                  
+                  // 从回答中提取JSON
+                  let data = null;
+                  let flattenedData = {}; // 将变量定义提到更外层作用域
+                  
+                  try {
+                    if (responseData.reply) {
+                      console.log('尝试从reply中解析JSON:', responseData.reply.substring(0, 200) + '...');
+                      // 尝试从回复中提取JSON
+                      const jsonMatch = responseData.reply.match(/```json\s*([\s\S]*?)\s*```/) || 
+                                       responseData.reply.match(/\{[\s\S]*\}/);
+                      
+                      if (jsonMatch) {
+                        const jsonStr = jsonMatch[1] || jsonMatch[0];
+                        console.log('找到JSON字符串:', jsonStr.substring(0, 200) + '...');
+                        data = JSON.parse(jsonStr);
+                      }
+                    }
+                    
+                    if (!data && responseData.data) {
+                      console.log('尝试使用responseData.data');
+                      data = responseData.data;
+                    }
+                    
+                    if (!data) {
+                      console.error('无法提取JSON数据');
+                      throw new Error('无法从回复中提取JSON数据');
+                    }
+                    
+                    console.log('解析得到的数据:', data);
+                    
+                    // 处理嵌套数据结构，将它扁平化以匹配表单结构
+                    flattenedData = {}; // 重置为空对象
+                    
+                    // 账号信息 - 处理下划线命名法和驼峰命名法
+                    if (data.accountInformation || data.account_info || data.accountInfo) {
+                      const accountInfo = data.accountInformation || data.account_info || data.accountInfo;
+                      flattenedData.accountNickname = accountInfo.accountNickname;
+                      flattenedData.accountType = accountInfo.accountType;
+                      flattenedData.fansCount = accountInfo.fansCount;
+                      flattenedData.profileUrl = accountInfo.profileUrl;
+                    }
+                    
+                    // 人设与定位
+                    if (data.personaAndPositioning || data.persona_positioning || data.personaPositioning) {
+                      const positioningInfo = data.personaAndPositioning || data.persona_positioning || data.personaPositioning;
+                      flattenedData.contentCategory = positioningInfo.contentCategory || positioningInfo.category;
+                      flattenedData.otherContentCategory = positioningInfo.otherContentCategory || positioningInfo.other_category;
+                      flattenedData.audienceProfile = positioningInfo.audienceProfile || positioningInfo.audience || positioningInfo.target_audience;
+                      
+                      // 处理 personalityTags，可能是字符串或数组
+                      if (positioningInfo.personalityTags) {
+                        if (Array.isArray(positioningInfo.personalityTags)) {
+                          flattenedData.personalityTags = positioningInfo.personalityTags.join('、');
+                        } else {
+                          flattenedData.personalityTags = positioningInfo.personalityTags;
+                        }
+                      } else if (positioningInfo.tags) {
+                        if (Array.isArray(positioningInfo.tags)) {
+                          flattenedData.personalityTags = positioningInfo.tags.join('、');
+                        } else {
+                          flattenedData.personalityTags = positioningInfo.tags;
+                        }
+                      }
+                      
+                      flattenedData.contentStyle = positioningInfo.contentStyle || positioningInfo.style;
+                      flattenedData.contentStyleDetail = positioningInfo.contentStyleDetail || positioningInfo.style_detail;
+                    }
+                    
+                    // 产品与卖点
+                    if (data.productAndSellingPoints || data.product_selling_points || data.productSellingPoints) {
+                      const productInfo = data.productAndSellingPoints || data.product_selling_points || data.productSellingPoints;
+                      flattenedData.mainProduct = productInfo.mainProduct || productInfo.main_product || productInfo.product_name;
+                      
+                      // 处理 productFeatures，可能是字符串或数组
+                      if (productInfo.productFeatures) {
+                        if (Array.isArray(productInfo.productFeatures)) {
+                          flattenedData.productFeatures = productInfo.productFeatures.join('\n\n');
+                        } else {
+                          flattenedData.productFeatures = productInfo.productFeatures;
+                        }
+                      } else if (productInfo.features) {
+                        if (Array.isArray(productInfo.features)) {
+                          flattenedData.productFeatures = productInfo.features.join('\n\n');
+                        } else {
+                          flattenedData.productFeatures = productInfo.features;
+                        }
+                      } else if (productInfo.selling_points) {
+                        if (Array.isArray(productInfo.selling_points)) {
+                          flattenedData.productFeatures = productInfo.selling_points.join('\n\n');
+                        } else {
+                          flattenedData.productFeatures = productInfo.selling_points;
+                        }
+                      }
+                      
+                      flattenedData.competitors = productInfo.competitors || productInfo.competitor_products;
+                      flattenedData.existingContent = productInfo.existingContent || productInfo.existing_content || productInfo.materials;
+                    }
+                    
+                    // 营销目标
+                    if (data.marketingGoals || data.marketing_goals) {
+                      const marketingInfo = data.marketingGoals || data.marketing_goals;
+                      
+                      // 处理 marketingGoals，可能有多种格式
+                      if (marketingInfo.marketingGoals && Array.isArray(marketingInfo.marketingGoals)) {
+                        flattenedData.marketingGoals = marketingInfo.marketingGoals;
+                      } else if (marketingInfo.goals && Array.isArray(marketingInfo.goals)) {
+                        flattenedData.marketingGoals = marketingInfo.goals;
+                      } else if (typeof marketingInfo.marketingGoals === 'string') {
+                        flattenedData.marketingGoals = marketingInfo.marketingGoals.split(',').map(g => g.trim());
+                      } else if (typeof marketingInfo.goals === 'string') {
+                        flattenedData.marketingGoals = marketingInfo.goals.split(',').map(g => g.trim());
+                      } else {
+                        // 默认为空数组
+                        flattenedData.marketingGoals = [];
+                      }
+                      
+                      flattenedData.hasAdvertising = marketingInfo.hasAdvertising === true;
+                      flattenedData.advertisingNote = marketingInfo.advertisingNote || marketingInfo.advertising_note;
+                      flattenedData.conversionTracking = marketingInfo.conversionTracking || marketingInfo.conversion_tracking;
+                    }
+                    
+                    // 内容素材与限制
+                    if (data.contentMaterialsAndRestrictions || data.content_materials_restrictions || data.contentMaterialsRestrictions) {
+                      const contentInfo = data.contentMaterialsAndRestrictions || data.content_materials_restrictions || data.contentMaterialsRestrictions;
+                      flattenedData.brandMaterials = contentInfo.brandMaterials || contentInfo.brand_materials;
+                      flattenedData.brandGuidelines = contentInfo.brandGuidelines || contentInfo.brand_guidelines;
+                      
+                      // 处理 contentTypes，可能有多种格式
+                      if (contentInfo.contentTypes && Array.isArray(contentInfo.contentTypes)) {
+                        flattenedData.contentTypes = contentInfo.contentTypes;
+                      } else if (contentInfo.content_types && Array.isArray(contentInfo.content_types)) {
+                        flattenedData.contentTypes = contentInfo.content_types;
+                      } else if (typeof contentInfo.contentTypes === 'string') {
+                        flattenedData.contentTypes = contentInfo.contentTypes.split(',').map(t => t.trim());
+                      } else if (typeof contentInfo.content_types === 'string') {
+                        flattenedData.contentTypes = contentInfo.content_types.split(',').map(t => t.trim());
+                      } else {
+                        // 默认为空数组
+                        flattenedData.contentTypes = [];
+                      }
+                      
+                      flattenedData.otherContentTypes = contentInfo.otherContentTypes || contentInfo.other_content_types;
+                      flattenedData.restrictions = contentInfo.restrictions;
+                    }
+                    
+                    // 时间与预算
+                    if (data.timingAndBudget || data.timing_budget || data.timingBudget) {
+                      const timingInfo = data.timingAndBudget || data.timing_budget || data.timingBudget;
+                      flattenedData.campaignTiming = timingInfo.campaignTiming || timingInfo.campaign_timing;
+                      flattenedData.budget = timingInfo.budget;
+                      flattenedData.phaseNote = timingInfo.phaseNote || timingInfo.phase_note;
+                    }
+                    
+                    // 检查顶级的数组字段
+                    if (Array.isArray(data.marketingGoals)) {
+                      flattenedData.marketingGoals = data.marketingGoals;
+                    }
+                    if (Array.isArray(data.marketing_goals)) {
+                      flattenedData.marketingGoals = data.marketing_goals;
+                    }
+                    
+                    if (Array.isArray(data.contentTypes)) {
+                      flattenedData.contentTypes = data.contentTypes;
+                    }
+                    if (Array.isArray(data.content_types)) {
+                      flattenedData.contentTypes = data.content_types;
+                    }
+                    
+                    // 检查顶级的布尔字段
+                    if (typeof data.hasAdvertising === 'boolean') {
+                      flattenedData.hasAdvertising = data.hasAdvertising;
+                    }
+                    if (typeof data.has_advertising === 'boolean') {
+                      flattenedData.hasAdvertising = data.has_advertising;
+                    }
+                    
+                    // 检查其他可能的顶级字段
+                    if (data.advertisingNote) flattenedData.advertisingNote = flattenedData.advertisingNote || data.advertisingNote;
+                    if (data.advertising_note) flattenedData.advertisingNote = flattenedData.advertisingNote || data.advertising_note;
+                    
+                    if (data.conversionTracking) flattenedData.conversionTracking = flattenedData.conversionTracking || data.conversionTracking;
+                    if (data.conversion_tracking) flattenedData.conversionTracking = flattenedData.conversionTracking || data.conversion_tracking;
+                    
+                    if (data.brandMaterials) flattenedData.brandMaterials = flattenedData.brandMaterials || data.brandMaterials;
+                    if (data.brand_materials) flattenedData.brandMaterials = flattenedData.brandMaterials || data.brand_materials;
+                    
+                    if (data.brandGuidelines) flattenedData.brandGuidelines = flattenedData.brandGuidelines || data.brandGuidelines;
+                    if (data.brand_guidelines) flattenedData.brandGuidelines = flattenedData.brandGuidelines || data.brand_guidelines;
+                    
+                    if (data.otherContentTypes) flattenedData.otherContentTypes = flattenedData.otherContentTypes || data.otherContentTypes;
+                    if (data.other_content_types) flattenedData.otherContentTypes = flattenedData.otherContentTypes || data.other_content_types;
+                    
+                    if (data.restrictions) flattenedData.restrictions = flattenedData.restrictions || data.restrictions;
+                    
+                    if (data.campaignTiming) flattenedData.campaignTiming = flattenedData.campaignTiming || data.campaignTiming;
+                    if (data.campaign_timing) flattenedData.campaignTiming = flattenedData.campaignTiming || data.campaign_timing;
+                    
+                    if (data.budget) flattenedData.budget = flattenedData.budget || data.budget;
+                    
+                    if (data.phaseNote) flattenedData.phaseNote = flattenedData.phaseNote || data.phaseNote;
+                    if (data.phase_note) flattenedData.phaseNote = flattenedData.phaseNote || data.phase_note;
+                    
+                    console.log('扁平化后的数据:', flattenedData);
+                  } catch (jsonError) {
+                    console.error('解析JSON失败:', jsonError);
+                    message.error({ content: '解析数据格式错误，请重试', key: 'parsing' });
+                    return;
+                  }
+                  
+                  // 更新所有字段
+                  if (flattenedData) {
+                    Object.entries(flattenedData).forEach(([key, value]) => {
+                      if (value !== undefined && value !== null) {
+                        handleBasicInfoChange(key, value);
+                      }
+                    });
+
+                    // 显示成功消息
+                    message.success({ content: '解析成功！', key: 'parsing' });
+                  } else {
+                    message.error({ content: '解析结果为空，请重试', key: 'parsing' });
+                  }
+                } catch (error) {
+                  console.error('解析失败:', error);
+                  message.error({ content: '解析失败，请重试', key: 'parsing' });
+                }
+              }}
+            >
+              一键解析
+            </Button>
+          </div>
+        </div>
+        <Input.TextArea
+          id="parseInput"
+          placeholder="请粘贴要解析的文本内容..."
+          rows={6}
+          className="mb-2"
+        />
+        <div className="text-sm text-gray-500">
+          提示：粘贴文本后点击"一键解析"，系统将自动识别并填充表单。您也可以点击"查看示例文本"查看支持的文本格式。
+        </div>
+      </div>
+
+      {/* 填充所有示例数据按钮 */}
+      <div className="bg-white p-4 rounded-lg border mb-4">
+        <div className="flex justify-between items-center">
+          <h4 className="text-lg font-medium">快速填充示例数据</h4>
+          <Button 
+            type="primary" 
+            onClick={() => {
+              // 填充账号信息
+              handleBasicInfoChange('accountNickname', productConfig.exampleData.accountInfo.accountNickname);
+              handleBasicInfoChange('accountType', productConfig.exampleData.accountInfo.accountType);
+              handleBasicInfoChange('fansCount', productConfig.exampleData.accountInfo.fansCount);
+              handleBasicInfoChange('profileUrl', productConfig.exampleData.accountInfo.profileUrl);
+              
+              // 填充人设与定位
+              handleBasicInfoChange('contentCategory', productConfig.exampleData.positioning.contentCategory);
+              handleBasicInfoChange('otherContentCategory', productConfig.exampleData.positioning.otherContentCategory);
+              handleBasicInfoChange('audienceProfile', productConfig.exampleData.positioning.audienceProfile);
+              handleBasicInfoChange('personalityTags', productConfig.exampleData.positioning.personalityTags);
+              handleBasicInfoChange('contentStyle', productConfig.exampleData.positioning.contentStyle);
+              handleBasicInfoChange('contentStyleDetail', productConfig.exampleData.positioning.contentStyleDetail);
+              
+              // 填充产品与卖点
+              handleBasicInfoChange('mainProduct', productConfig.exampleData.product.mainProduct);
+              handleBasicInfoChange('productFeatures', productConfig.exampleData.product.productFeatures);
+              handleBasicInfoChange('competitors', productConfig.exampleData.product.competitors);
+              handleBasicInfoChange('existingContent', productConfig.exampleData.product.existingContent);
+              
+              // 填充营销目标
+              handleBasicInfoChange('marketingGoals', productConfig.exampleData.marketing.marketingGoals);
+              handleBasicInfoChange('hasAdvertising', productConfig.exampleData.marketing.hasAdvertising);
+              handleBasicInfoChange('advertisingNote', productConfig.exampleData.marketing.advertisingNote);
+              handleBasicInfoChange('conversionTracking', productConfig.exampleData.marketing.conversionTracking);
+              
+              // 填充内容素材与限制
+              handleBasicInfoChange('hasBrandMaterials', true);
+              handleBasicInfoChange('brandMaterials', productConfig.exampleData.content.brandMaterials);
+              handleBasicInfoChange('brandGuidelines', productConfig.exampleData.content.brandGuidelines);
+              handleBasicInfoChange('contentTypes', productConfig.exampleData.content.contentTypes);
+              handleBasicInfoChange('otherContentTypes', productConfig.exampleData.content.otherContentTypes);
+              handleBasicInfoChange('restrictions', productConfig.exampleData.content.restrictions);
+              
+              // 填充时间与预算
+              handleBasicInfoChange('campaignTiming', productConfig.exampleData.timing.campaignTiming);
+              handleBasicInfoChange('budget', productConfig.exampleData.timing.budget);
+              handleBasicInfoChange('phaseNote', productConfig.exampleData.timing.phaseNote);
+              
+              message.success('已填充所有示例数据！');
+            }}
+          >
+            一键填充所有示例数据
+          </Button>
+        </div>
+      </div>
+
+      {/* 1. 账号信息 */}
+      <div className="bg-white p-4 rounded-lg border">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-lg font-medium">1. 账号信息</h4>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              小红书账号昵称 <span className="text-red-500">*</span>
         </label>
-        <div className="grid grid-cols-2 gap-4">
           <Input
-            value={basicInfo.productName}
-            onChange={(e) => handleBasicInfoChange('productName', e.target.value)}
-            placeholder="例如：玻尿酸精华液"
-            className="mb-2"
-          />
+              value={basicInfo.accountNickname}
+              onChange={(e) => handleBasicInfoChange('accountNickname', e.target.value)}
+              placeholder="请输入账号昵称"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              账号类型 <span className="text-red-500">*</span>
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {Object.entries(productConfig.fieldMappings.accountType).map(([value, label]) => (
+                <div
+                  key={value}
+                  className={`p-2 rounded-lg border-2 cursor-pointer text-center ${
+                    basicInfo.accountType === value
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => handleBasicInfoChange('accountType', value)}
+                >
+                  {label}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              当前粉丝数 <span className="text-red-500">*</span>
+            </label>
           <Input
-            value={basicInfo.brandName}
-            onChange={(e) => handleBasicInfoChange('brandName', e.target.value)}
-            placeholder="例如：兰蔻"
-            className="mb-2"
+              value={basicInfo.fansCount}
+              onChange={(e) => handleBasicInfoChange('fansCount', e.target.value)}
+              placeholder="请输入当前粉丝数"
           />
         </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              主页链接
+            </label>
         <Input
-          value={basicInfo.productUrl}
-          onChange={(e) => handleBasicInfoChange('productUrl', e.target.value)}
-          placeholder="产品官网链接或详情页链接（可选）"
-          className="text-sm"
-        />
+              value={basicInfo.profileUrl}
+              onChange={(e) => handleBasicInfoChange('profileUrl', e.target.value)}
+              placeholder="请输入小红书主页链接"
+            />
+          </div>
+        </div>
       </div>
       
-      {/* 1. 产品类别选择 */}
+      {/* 2. 人设与定位 */}
       <div className="bg-white p-4 rounded-lg border">
-        <h4 className="text-lg font-medium mb-4">1. 请选择您的产品类别：</h4>
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { value: 'beauty', label: '美妆个护', desc: '化妆品、护肤品、个护用品等' },
-            { value: 'fashion', label: '服饰穿搭', desc: '服装、鞋包、配饰等' },
-            { value: 'food', label: '食品饮料', desc: '食品、饮料、保健品等' },
-            { value: 'home', label: '家居生活', desc: '家具、家装、生活用品等' },
-            { value: 'tech', label: '数码科技', desc: '电子产品、智能设备等' },
-            { value: 'health', label: '健康保健', desc: '保健品、医疗器械等' },
-            { value: 'baby', label: '母婴用品', desc: '婴儿用品、孕产用品等' },
-            { value: 'education', label: '教育培训', desc: '教育服务、培训课程等' },
-            { value: 'travel', label: '旅游出行', desc: '旅游服务、出行用品等' },
-            { value: 'pet', label: '宠物用品', desc: '宠物食品、宠物用品等' },
-            { value: 'sports', label: '运动健身', desc: '运动器材、健身用品等' },
-            { value: 'other', label: '其他', desc: '其他类别产品' }
-          ].map((item) => (
-            <div
-              key={item.value}
-              className={`p-3 rounded-lg border-2 cursor-pointer transition-colors ${
-                basicInfo.productCategory === item.value
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-lg font-medium">2. 人设与定位</h4>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              主营内容领域 <span className="text-red-500">*</span>
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {Object.entries(productConfig.fieldMappings.contentCategory).map(([value, label]) => (
+                <div
+                  key={value}
+                  className={`p-2 rounded-lg border-2 cursor-pointer text-center ${
+                    basicInfo.contentCategory === value
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
-              onClick={() => handleBasicInfoChange('productCategory', item.value)}
+                  onClick={() => handleBasicInfoChange('contentCategory', value)}
             >
-              <div className="font-medium">{item.label}</div>
-              <div className="text-sm text-gray-500 mt-1">{item.desc}</div>
+                  {label}
             </div>
           ))}
+            </div>
+            {basicInfo.contentCategory === 'other' && (
+              <Input.TextArea
+                value={basicInfo.otherContentCategory}
+                onChange={(e) => handleBasicInfoChange('otherContentCategory', e.target.value)}
+                placeholder="请具体描述您的内容领域，多个领域用 / 分隔"
+                className="mt-2"
+                rows={2}
+              />
+            )}
         </div>
         
-        {basicInfo.productCategory === 'other' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              核心受众画像 <span className="text-red-500">*</span>
+            </label>
+            <Input.TextArea
+              value={basicInfo.audienceProfile}
+              onChange={(e) => handleBasicInfoChange('audienceProfile', e.target.value)}
+              placeholder="请描述目标受众的年龄、性别、城市、兴趣等特征"
+              rows={3}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              特定人设标签
+            </label>
           <Input
-            value={basicInfo.otherProductCategory}
-            onChange={(e) => handleBasicInfoChange('otherProductCategory', e.target.value)}
-            placeholder="请具体描述您的产品类别"
-            className="mt-3"
-          />
-        )}
+              value={basicInfo.personalityTags}
+              onChange={(e) => handleBasicInfoChange('personalityTags', e.target.value)}
+              placeholder="请输入特定人设标签，多个标签用逗号分隔"
+            />
       </div>
 
-      {/* 2. 品牌类型选择 */}
-      <div className="bg-white p-4 rounded-lg border">
-        <h4 className="text-lg font-medium mb-4">2. 请选择您的品牌类型：</h4>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { value: 'international', label: '国际大牌', desc: '知名国际品牌，有较高知名度' },
-            { value: 'domestic', label: '国产品牌', desc: '国内知名品牌，有一定市场份额' },
-            { value: 'niche', label: '小众品牌', desc: '专业小众品牌，特定群体认知' },
-            { value: 'new', label: '新兴品牌', desc: '新兴品牌，正在建立知名度' },
-            { value: 'private_label', label: '自有品牌', desc: '自主创立或代工品牌' },
-            { value: 'other', label: '其他', desc: '其他类型品牌' }
-          ].map((item) => (
-            <div
-              key={item.value}
-              className={`p-3 rounded-lg border-2 cursor-pointer transition-colors ${
-                basicInfo.brandType === item.value
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              内容风格偏好 <span className="text-red-500">*</span>
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {Object.entries(productConfig.fieldMappings.contentStyle).map(([value, label]) => (
+                <div
+                  key={value}
+                  className={`p-2 rounded-lg border-2 cursor-pointer text-center ${
+                    basicInfo.contentStyle === value
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
-              onClick={() => handleBasicInfoChange('brandType', item.value)}
+                  onClick={() => handleBasicInfoChange('contentStyle', value)}
             >
-              <div className="font-medium">{item.label}</div>
-              <div className="text-sm text-gray-500 mt-1">{item.desc}</div>
+                  {label}
             </div>
           ))}
+            </div>
+            {basicInfo.contentStyle === 'professional' && (
+              <Input.TextArea
+                value={basicInfo.contentStyleDetail}
+                onChange={(e) => handleBasicInfoChange('contentStyleDetail', e.target.value)}
+                placeholder="请描述更具体的风格细节（如创意感、技术酷感等）"
+                className="mt-2"
+                rows={2}
+              />
+            )}
+          </div>
+        </div>
         </div>
         
-        {basicInfo.brandType === 'other' && (
+      {/* 3. 主推产品与卖点 */}
+      <div className="bg-white p-4 rounded-lg border">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-lg font-medium">3. 主推产品与卖点</h4>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              主推产品/服务名称 <span className="text-red-500">*</span>
+            </label>
           <Input
-            value={basicInfo.otherBrandType}
-            onChange={(e) => handleBasicInfoChange('otherBrandType', e.target.value)}
-            placeholder="请具体描述您的品牌类型"
-            className="mt-3"
-          />
-        )}
+              value={basicInfo.mainProduct}
+              onChange={(e) => handleBasicInfoChange('mainProduct', e.target.value)}
+              placeholder="请输入主推产品或服务名称"
+            />
       </div>
 
-      {/* 3. 价格区间选择 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              产品核心卖点
+            </label>
+            <Input.TextArea
+              value={basicInfo.productFeatures}
+              onChange={(e) => handleBasicInfoChange('productFeatures', e.target.value)}
+              placeholder="请输入产品核心卖点，多个卖点请换行"
+              rows={3}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              竞品参考
+            </label>
+            <Input.TextArea
+              value={basicInfo.competitors}
+              onChange={(e) => handleBasicInfoChange('competitors', e.target.value)}
+              placeholder="请输入竞品信息（品牌名+产品）"
+              rows={2}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              现有种草素材/评测报告
+            </label>
+            <Input.TextArea
+              value={basicInfo.existingContent}
+              onChange={(e) => handleBasicInfoChange('existingContent', e.target.value)}
+              placeholder="如有现成的种草素材或评测报告，请填写链接或内容"
+              rows={2}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 4. 营销目标 */}
       <div className="bg-white p-4 rounded-lg border">
-        <h4 className="text-lg font-medium mb-4">3. 请选择您的产品价格区间：</h4>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { value: 'budget', label: '平价（100元以下）', desc: '亲民价格，大众消费' },
-            { value: 'mid_range', label: '中档（100-500元）', desc: '中等价位，品质消费' },
-            { value: 'premium', label: '高端（500-2000元）', desc: '高端价位，品质追求' },
-            { value: 'luxury', label: '奢侈（2000元以上）', desc: '奢侈品级，高端消费' },
-            { value: 'mixed', label: '多价位段', desc: '产品线跨越多个价位段' }
-          ].map((item) => (
-            <div
-              key={item.value}
-              className={`p-3 rounded-lg border-2 cursor-pointer transition-colors ${
-                basicInfo.priceRange === item.value
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-lg font-medium">4. 营销目标</h4>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              本轮目标类型 <span className="text-red-500">*</span>
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(productConfig.fieldMappings.marketingGoals).map(([value, label]) => (
+                <div
+                  key={value}
+                  className={`p-2 rounded-lg border-2 cursor-pointer ${
+                    Array.isArray(basicInfo.marketingGoals) && basicInfo.marketingGoals.includes(value)
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
-              onClick={() => handleBasicInfoChange('priceRange', item.value)}
-            >
-              <div className="font-medium">{item.label}</div>
-              <div className="text-sm text-gray-500 mt-1">{item.desc}</div>
+                  onClick={() => {
+                    const currentGoals = Array.isArray(basicInfo.marketingGoals) ? basicInfo.marketingGoals : [];
+                    const goals = currentGoals.includes(value)
+                      ? currentGoals.filter(g => g !== value)
+                      : [...currentGoals, value];
+                    handleBasicInfoChange('marketingGoals', goals);
+                  }}
+                >
+                  {label}
             </div>
           ))}
         </div>
       </div>
 
-      {/* 4. 目标用户群体选择 */}
-      <div className="bg-white p-4 rounded-lg border">
-        <h4 className="text-lg font-medium mb-4">4. 请选择您的主要目标用户群体：</h4>
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { value: 'young_female', label: '年轻女性（18-30岁）', desc: '年轻女性群体，注重时尚和品质' },
-            { value: 'mature_female', label: '成熟女性（30-45岁）', desc: '成熟女性群体，追求实用和效果' },
-            { value: 'young_male', label: '年轻男性（18-30岁）', desc: '年轻男性群体，关注潮流和性能' },
-            { value: 'mature_male', label: '成熟男性（30-45岁）', desc: '成熟男性群体，注重品质和功能' },
-            { value: 'students', label: '学生群体', desc: '学生消费者，价格敏感度高' },
-            { value: 'office_workers', label: '上班族', desc: '职场人士，注重效率和品质' },
-            { value: 'parents', label: '家长群体', desc: '有孩子的家庭，关注安全和实用' },
-            { value: 'seniors', label: '中老年群体', desc: '中老年消费者，重视健康和品质' },
-            { value: 'all_ages', label: '全年龄段', desc: '适合各个年龄段的用户' },
-            { value: 'other', label: '其他', desc: '其他特定用户群体' }
-          ].map((item) => (
-            <div
-              key={item.value}
-              className={`p-3 rounded-lg border-2 cursor-pointer transition-colors ${
-                basicInfo.targetAudience === item.value
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              是否配合投放
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <div
+                className={`p-2 rounded-lg border-2 cursor-pointer text-center ${
+                  basicInfo.hasAdvertising
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
-              onClick={() => handleBasicInfoChange('targetAudience', item.value)}
+                onClick={() => handleBasicInfoChange('hasAdvertising', true)}
             >
-              <div className="font-medium">{item.label}</div>
-              <div className="text-sm text-gray-500 mt-1">{item.desc}</div>
+                是
             </div>
-          ))}
+              <div
+                className={`p-2 rounded-lg border-2 cursor-pointer text-center ${
+                  basicInfo.hasAdvertising === false
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => handleBasicInfoChange('hasAdvertising', false)}
+              >
+                否
         </div>
-        
-        {basicInfo.targetAudience === 'other' && (
-          <Input
-            value={basicInfo.otherTargetAudience}
-            onChange={(e) => handleBasicInfoChange('otherTargetAudience', e.target.value)}
-            placeholder="请具体描述您的目标用户群体"
-            className="mt-3"
-          />
-        )}
-      </div>
-
-      {/* 5. 销售渠道选择 */}
-      <div className="bg-white p-4 rounded-lg border">
-        <h4 className="text-lg font-medium mb-4">5. 请选择您的主要销售渠道：</h4>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { value: 'online_only', label: '纯线上销售', desc: '主要通过电商平台、官网等线上渠道' },
-            { value: 'offline_only', label: '纯线下销售', desc: '主要通过实体店、专柜等线下渠道' },
-            { value: 'omnichannel', label: '线上线下结合', desc: '线上线下多渠道同时销售' },
-            { value: 'social_commerce', label: '社交电商', desc: '主要通过社交平台、微商等' },
-            { value: 'live_streaming', label: '直播带货', desc: '主要通过直播平台带货销售' },
-            { value: 'other', label: '其他', desc: '其他销售渠道' }
-          ].map((item) => (
-            <div
-              key={item.value}
-              className={`p-3 rounded-lg border-2 cursor-pointer transition-colors ${
-                basicInfo.salesChannel === item.value
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-              onClick={() => handleBasicInfoChange('salesChannel', item.value)}
-            >
-              <div className="font-medium">{item.label}</div>
-              <div className="text-sm text-gray-500 mt-1">{item.desc}</div>
             </div>
-          ))}
+            {basicInfo.hasAdvertising && (
+              <div className="mt-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  投放说明
+                </label>
+                <Input.TextArea
+                  value={basicInfo.advertisingNote}
+                  onChange={(e) => handleBasicInfoChange('advertisingNote', e.target.value)}
+                  placeholder="请描述投放说明，例如兴趣定向、预算范围等"
+                  rows={2}
+                />
+              </div>
+            )}
+            {basicInfo.hasAdvertising && (
+              <div className="mt-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  转化跟踪
+                </label>
+                <Input.TextArea
+                  value={basicInfo.conversionTracking}
+                  onChange={(e) => handleBasicInfoChange('conversionTracking', e.target.value)}
+                  placeholder="请描述转化跟踪方式，例如短链、埋点等"
+                  rows={2}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* 6. 竞争强度选择 */}
+      {/* 5. 内容素材与限制 */}
       <div className="bg-white p-4 rounded-lg border">
-        <h4 className="text-lg font-medium mb-4">6. 请评估您的市场竞争强度：</h4>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { value: 'low', label: '竞争较小（蓝海市场）', desc: '市场竞争相对较小，有较大发展空间' },
-            { value: 'medium', label: '竞争适中', desc: '有一定竞争，但仍有机会突破' },
-            { value: 'high', label: '竞争激烈（红海市场）', desc: '市场竞争非常激烈，需要差异化优势' },
-            { value: 'unknown', label: '不太了解', desc: '对市场竞争状况了解有限' }
-          ].map((item) => (
-            <div
-              key={item.value}
-              className={`p-3 rounded-lg border-2 cursor-pointer transition-colors ${
-                basicInfo.competitionLevel === item.value
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-lg font-medium">5. 内容素材与限制</h4>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              是否提供品牌物料
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <div
+                className={`p-2 rounded-lg border-2 cursor-pointer text-center ${
+                  basicInfo.hasBrandMaterials
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
-              onClick={() => handleBasicInfoChange('competitionLevel', item.value)}
+                onClick={() => handleBasicInfoChange('hasBrandMaterials', true)}
             >
-              <div className="font-medium">{item.label}</div>
-              <div className="text-sm text-gray-500 mt-1">{item.desc}</div>
+                是
+            </div>
+              <div
+                className={`p-2 rounded-lg border-2 cursor-pointer text-center ${
+                  basicInfo.hasBrandMaterials === false
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => handleBasicInfoChange('hasBrandMaterials', false)}
+              >
+                否
+        </div>
+            </div>
+            {basicInfo.hasBrandMaterials && (
+              <div className="mt-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  品牌物料
+                </label>
+                <Input.TextArea
+                  value={basicInfo.brandMaterials}
+                  onChange={(e) => handleBasicInfoChange('brandMaterials', e.target.value)}
+                  placeholder="请描述提供的品牌物料（如主KV、功能图解、产品截图等）"
+                  rows={3}
+                />
+              </div>
+            )}
+      </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              品牌内容规范或风格要求
+            </label>
+            <Input.TextArea
+              value={basicInfo.brandGuidelines}
+              onChange={(e) => handleBasicInfoChange('brandGuidelines', e.target.value)}
+              placeholder="请输入品牌内容规范或风格要求"
+              rows={3}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              可接受的内容类型 <span className="text-red-500">*</span>
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(productConfig.fieldMappings.contentTypes).map(([value, label]) => (
+                <div
+                  key={value}
+                  className={`p-2 rounded-lg border-2 cursor-pointer text-center ${
+                    Array.isArray(basicInfo.contentTypes) && basicInfo.contentTypes.includes(value)
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+                  onClick={() => {
+                    const currentTypes = Array.isArray(basicInfo.contentTypes) ? basicInfo.contentTypes : [];
+                    const types = currentTypes.includes(value)
+                      ? currentTypes.filter(t => t !== value)
+                      : [...currentTypes, value];
+                    handleBasicInfoChange('contentTypes', types);
+                  }}
+                >
+                  {label}
             </div>
           ))}
+            </div>
+            <Input
+              value={basicInfo.otherContentTypes}
+              onChange={(e) => handleBasicInfoChange('otherContentTypes', e.target.value)}
+              placeholder="其他内容类型（如有），多个类型用逗号分隔"
+              className="mt-2"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              禁止事项
+            </label>
+            <Input.TextArea
+              value={basicInfo.restrictions}
+              onChange={(e) => handleBasicInfoChange('restrictions', e.target.value)}
+              placeholder="请输入禁止事项（如不能提及价格/疗效/敏感词等）"
+              rows={2}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 6. 时间与预算 */}
+      <div className="bg-white p-4 rounded-lg border">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-lg font-medium">6. 时间与预算</h4>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              节日/节点配合
+            </label>
+            <Input.TextArea
+              value={basicInfo.campaignTiming}
+              onChange={(e) => handleBasicInfoChange('campaignTiming', e.target.value)}
+              placeholder="请输入需要配合的节日或节点（如618、双11等）"
+              rows={3}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              预算范围
+            </label>
+            <Input.TextArea
+              value={basicInfo.budget}
+              onChange={(e) => handleBasicInfoChange('budget', e.target.value)}
+              placeholder="请输入预算范围（可填写参考CPC/CPM/千次费用）"
+              rows={2}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              分阶段发布计划
+            </label>
+            <Input.TextArea
+              value={basicInfo.phaseNote}
+              onChange={(e) => handleBasicInfoChange('phaseNote', e.target.value)}
+              placeholder="如需分阶段发布，请描述各阶段计划"
+              rows={4}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 7. 额外信息补充 */}
+      <div className="bg-white p-4 rounded-lg border">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-lg font-medium">7. 额外信息补充</h4>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              其他需要补充的信息
+            </label>
+            <Input.TextArea
+              value={basicInfo.additionalInfo}
+              onChange={(e) => handleBasicInfoChange('additionalInfo', e.target.value)}
+              placeholder="请输入任何其他需要补充的信息"
+              rows={6}
+            />
+          </div>
         </div>
       </div>
     </>
@@ -365,32 +1167,32 @@ const productConfig = {
   
   // 生成初始消息
   generateInitialMessage: (basicInfo) => {
-    return `我已经完成了基础信息采集，现在进入深入对话阶段。以下是我的产品基本信息：
+    return `我已经完成了基础信息采集，现在进入深入对话阶段。以下是我的小红书账号基本信息：
 
-📝 **产品基本信息**：
-• 产品名称：${basicInfo.productName || '未设置'}
-• 品牌名称：${basicInfo.brandName || '未设置'}
-• 产品类别：${productConfig.getFieldDisplayValue('productCategory', basicInfo.productCategory)}
-• 品牌类型：${productConfig.getFieldDisplayValue('brandType', basicInfo.brandType)}
-• 价格区间：${productConfig.getFieldDisplayValue('priceRange', basicInfo.priceRange)}
-• 目标用户：${productConfig.getFieldDisplayValue('targetAudience', basicInfo.targetAudience)}
-• 销售渠道：${productConfig.getFieldDisplayValue('salesChannel', basicInfo.salesChannel)}
-• 竞争强度：${productConfig.getFieldDisplayValue('competitionLevel', basicInfo.competitionLevel)}
-${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
+📝 **小红书账号基本信息**：
+• 账号昵称：${basicInfo.accountNickname || '未设置'}
+• 账号类型：${productConfig.getFieldDisplayValue('accountType', basicInfo.accountType)}
+• 粉丝数量：${basicInfo.fansCount || '未设置'}
+• 内容领域：${productConfig.getFieldDisplayValue('contentCategory', basicInfo.contentCategory)}
+• 内容风格：${productConfig.getFieldDisplayValue('contentStyle', basicInfo.contentStyle)}
+• 主推产品：${basicInfo.mainProduct || '未设置'}
+• 目标受众：${basicInfo.audienceProfile || '未设置'}
+${basicInfo.profileUrl ? `• 主页链接：${basicInfo.profileUrl}` : ''}
+${basicInfo.additionalInfo ? `\n**额外补充信息**：\n${basicInfo.additionalInfo}` : ''}
 
-请基于这些信息，进入深入对话阶段，帮我进行详细的产品与品牌信息深度穿透分析。`;
+请基于这些信息，进入深入对话阶段，帮我进行详细的小红书账号信息深度分析。`;
   },
   
   // 渲染当前分析主体
   renderCurrentAnalysisSubject: (basicInfo) => (
     <>
-      <span className="mx-2">{basicInfo.productName}</span>
+      <span className="mx-2">{basicInfo.accountNickname}</span>
       <span className="text-gray-400">|</span>
-      <span className="mx-2">{basicInfo.brandName}</span>
+      <span className="mx-2">{productConfig.getFieldDisplayValue('accountType', basicInfo.accountType)}</span>
       <span className="text-gray-400">|</span>
-      <span className="mx-2">{productConfig.getFieldDisplayValue('productCategory', basicInfo.productCategory)}</span>
+      <span className="mx-2">{productConfig.getFieldDisplayValue('contentCategory', basicInfo.contentCategory)}</span>
       <span className="text-gray-400">|</span>
-      <span className="mx-2">{productConfig.getFieldDisplayValue('priceRange', basicInfo.priceRange)}</span>
+      <span className="mx-2">{basicInfo.mainProduct}</span>
     </>
   ),
   
@@ -401,11 +1203,11 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
       <div>
         <h4 className="text-sm font-medium text-gray-700 mb-2">基础信息</h4>
         <div className="bg-gray-50 rounded p-3 text-xs space-y-1">
-          <div><span className="text-gray-600">产品名称：</span>{basicInfo.productName || '未设置'}</div>
-          <div><span className="text-gray-600">品牌名称：</span>{basicInfo.brandName || '未设置'}</div>
-          <div><span className="text-gray-600">产品类别：</span>{productConfig.getFieldDisplayValue('productCategory', basicInfo.productCategory) || '未设置'}</div>
-          <div><span className="text-gray-600">价格区间：</span>{productConfig.getFieldDisplayValue('priceRange', basicInfo.priceRange) || '未设置'}</div>
-          <div><span className="text-gray-600">目标用户：</span>{productConfig.getFieldDisplayValue('targetAudience', basicInfo.targetAudience) || '未设置'}</div>
+          <div><span className="text-gray-600">账号昵称：</span>{basicInfo.accountNickname || '未设置'}</div>
+          <div><span className="text-gray-600">账号类型：</span>{productConfig.getFieldDisplayValue('accountType', basicInfo.accountType) || '未设置'}</div>
+          <div><span className="text-gray-600">内容领域：</span>{productConfig.getFieldDisplayValue('contentCategory', basicInfo.contentCategory) || '未设置'}</div>
+          <div><span className="text-gray-600">内容风格：</span>{productConfig.getFieldDisplayValue('contentStyle', basicInfo.contentStyle) || '未设置'}</div>
+          <div><span className="text-gray-600">主推产品：</span>{basicInfo.mainProduct || '未设置'}</div>
         </div>
       </div>
 
@@ -419,18 +1221,18 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+              className="bg-pink-500 h-2 rounded-full transition-all duration-300"
               style={{ width: `${Math.min(aiMessages.length * 10, 100)}%` }}
             ></div>
           </div>
         </div>
       </div>
 
-      {/* 产品摘要 */}
+      {/* 账号摘要 */}
       {productConfig.generateSummary(basicInfo, builderData) && (
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-2">产品摘要</h4>
-          <div className="bg-orange-50 rounded p-3 text-xs text-gray-700">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">账号摘要</h4>
+          <div className="bg-pink-50 rounded p-3 text-xs text-gray-700">
             {productConfig.generateSummary(basicInfo, builderData)}
           </div>
         </div>
@@ -442,7 +1244,7 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
           <h4 className="text-sm font-medium text-gray-700 mb-2">相关标签</h4>
           <div className="flex flex-wrap gap-1">
             {productConfig.generateTags(basicInfo, builderData, aiMessages).slice(0, 6).map((tag, index) => (
-              <span key={index} className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs">
+              <span key={index} className="bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">
                 {tag}
               </span>
             ))}
@@ -454,47 +1256,28 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
   
   // 生成文档内容
   generateDocument: (basicInfo, aiMessages, builderData) => {
-    let documentContent = `# ${basicInfo.productName} - 产品与品牌信息深度穿透分析\n\n`;
-    
-    // 基础信息部分
-    documentContent += `## 基础信息\n\n`;
-    documentContent += `- **产品名称：** ${basicInfo.productName}\n`;
-    documentContent += `- **品牌名称：** ${basicInfo.brandName}\n`;
-    documentContent += `- **产品类别：** ${productConfig.getFieldDisplayValue('productCategory', basicInfo.productCategory)}\n`;
-    documentContent += `- **品牌类型：** ${productConfig.getFieldDisplayValue('brandType', basicInfo.brandType)}\n`;
-    documentContent += `- **价格区间：** ${productConfig.getFieldDisplayValue('priceRange', basicInfo.priceRange)}\n`;
-    documentContent += `- **目标用户：** ${productConfig.getFieldDisplayValue('targetAudience', basicInfo.targetAudience)}\n`;
-    documentContent += `- **销售渠道：** ${productConfig.getFieldDisplayValue('salesChannel', basicInfo.salesChannel)}\n`;
-    documentContent += `- **竞争强度：** ${productConfig.getFieldDisplayValue('competitionLevel', basicInfo.competitionLevel)}\n`;
-    if (basicInfo.productUrl) {
-      documentContent += `- **产品链接：** ${basicInfo.productUrl}\n`;
+    // 如果有最终分析结果，直接使用
+    if (builderData.finalData) {
+      return typeof builderData.finalData === 'string' 
+        ? builderData.finalData 
+        : JSON.stringify(builderData.finalData, null, 2);
     }
-    documentContent += `\n`;
-
-    // AI对话内容部分
-    documentContent += `## AI分析与对话记录\n\n`;
-    documentContent += `*以下是通过AI深入对话获得的产品与品牌信息穿透分析：*\n\n`;
     
-    aiMessages.forEach((message, index) => {
-      if (message.type === 'ai') {
-        documentContent += `### AI分析 ${Math.floor(index/2) + 1}\n\n`;
-        documentContent += `${message.content}\n\n`;
-      } else if (message.type === 'user' && !message.isOption && !message.isQuestionSelection) {
-        documentContent += `**用户提问：** ${message.content}\n\n`;
-      }
-    });
-
-    // 构建结果部分
-    if (builderData.finalProduct) {
-      documentContent += `## 最终产品信息穿透框架\n\n`;
-      documentContent += `${typeof builderData.finalProduct === 'string' ? builderData.finalProduct : JSON.stringify(builderData.finalProduct, null, 2)}\n\n`;
+    // 如果有分析框架，直接使用
+    if (builderData.analysis && builderData.analysis.framework) {
+      return typeof builderData.analysis.framework === 'string'
+        ? builderData.analysis.framework
+        : JSON.stringify(builderData.analysis.framework, null, 2);
     }
-
-    documentContent += `---\n`;
-    documentContent += `*文档生成时间：${new Date().toLocaleString('zh-CN')}*\n`;
-    documentContent += `*总对话轮数：${Math.floor(aiMessages.length / 2)}轮*\n`;
-
-    return documentContent;
+    
+    // 从AI消息中提取最后一条AI回复作为文档内容
+    const aiResponses = aiMessages.filter(msg => msg.type === 'ai');
+    if (aiResponses.length > 0) {
+      return aiResponses[aiResponses.length - 1].content;
+    }
+    
+    // 如果没有找到有效内容，返回空字符串
+    return '';
   },
   
   // 生成摘要
@@ -502,12 +1285,13 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
     const totalMessages = 0; // 从其他地方获取
     const aiMessages_count = 0; // 从其他地方获取
     
-    let summary = `${basicInfo.productName}的产品信息穿透分析，`;
-    summary += `涵盖${productConfig.getFieldDisplayValue('productCategory', basicInfo.productCategory)}领域，`;
-    summary += `${productConfig.getFieldDisplayValue('priceRange', basicInfo.priceRange)}价位，`;
-    summary += `面向${productConfig.getFieldDisplayValue('targetAudience', basicInfo.targetAudience)}。`;
+    let summary = `${basicInfo.accountNickname}的小红书账号分析，`;
+    summary += `涵盖${productConfig.getFieldDisplayValue('contentCategory', basicInfo.contentCategory)}领域，`;
+    summary += `${productConfig.getFieldDisplayValue('contentStyle', basicInfo.contentStyle)}风格，`;
+    summary += `主推产品"${basicInfo.mainProduct}"，`;
+    summary += `面向"${basicInfo.audienceProfile?.substring(0, 20)}..."等受众。`;
     summary += `通过AI深度对话分析，`;
-    summary += `${builderData.isComplete ? '已完成完整的产品信息穿透框架构建' : '正在进行中'}。`;
+    summary += `${builderData.isComplete ? '已完成完整的账号信息分析框架构建' : '正在进行中'}。`;
     
     return summary;
   },
@@ -517,17 +1301,18 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
     const tags = [];
     
     // 基于基础信息生成标签
-    if (basicInfo.productCategory) {
-      tags.push(productConfig.getFieldDisplayValue('productCategory', basicInfo.productCategory));
+    if (basicInfo.contentCategory) {
+      tags.push(productConfig.getFieldDisplayValue('contentCategory', basicInfo.contentCategory));
     }
-    if (basicInfo.brandType) {
-      tags.push(productConfig.getFieldDisplayValue('brandType', basicInfo.brandType));
+    if (basicInfo.accountType) {
+      tags.push(productConfig.getFieldDisplayValue('accountType', basicInfo.accountType));
     }
-    if (basicInfo.priceRange) {
-      tags.push(productConfig.getFieldDisplayValue('priceRange', basicInfo.priceRange));
+    if (basicInfo.contentStyle) {
+      tags.push(productConfig.getFieldDisplayValue('contentStyle', basicInfo.contentStyle));
     }
-    if (basicInfo.targetAudience) {
-      tags.push(productConfig.getFieldDisplayValue('targetAudience', basicInfo.targetAudience));
+    if (basicInfo.personalityTags) {
+      const personalityTagsArray = basicInfo.personalityTags.split('、');
+      personalityTagsArray.slice(0, 2).forEach(tag => tags.push(tag));
     }
     
     // 基于对话内容生成标签
@@ -535,14 +1320,14 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
     if (aiContent.includes('卖点') || aiContent.includes('优势')) {
       tags.push('核心卖点');
     }
-    if (aiContent.includes('差异化') || aiContent.includes('特色')) {
-      tags.push('差异化优势');
+    if (aiContent.includes('人设') || aiContent.includes('定位')) {
+      tags.push('人设定位');
     }
-    if (aiContent.includes('合规') || aiContent.includes('注意事项')) {
-      tags.push('合规要点');
+    if (aiContent.includes('内容策略') || aiContent.includes('内容规划')) {
+      tags.push('内容策略');
     }
-    if (aiContent.includes('场景') || aiContent.includes('使用')) {
-      tags.push('使用场景');
+    if (aiContent.includes('变现') || aiContent.includes('商业')) {
+      tags.push('变现模式');
     }
     
     // 状态标签
@@ -556,20 +1341,76 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
   },
   
   // 构建文档数据
-  buildDocumentData: (basicInfo, documentContent, summary, tags) => ({
-    product_name: basicInfo.productName || '未命名产品',
-    brand_name: basicInfo.brandName || '未命名品牌',
-    document_content: documentContent,
-    product_category: basicInfo.productCategory,
-    price_range: basicInfo.priceRange,
-    target_audience: basicInfo.targetAudience,
-    tags: tags,
-    summary: summary
-  }),
+  buildDocumentData: (basicInfo, documentContent, summary, tags, aiMessages) => {
+    return {
+      product_name: basicInfo.accountNickname || '未命名账号',
+      document_content: documentContent,
+      brand_name: basicInfo.accountNickname || '未命名账号',
+      product_category: basicInfo.contentCategory,
+      price_range: basicInfo.budget || '',
+      target_audience: basicInfo.audienceProfile,
+      tags: tags,
+      summary: summary,
+      user_id: 'product_builder_user',
+      // 保存第一阶段的所有表单数据
+      phase1_data: { ...basicInfo },
+      // 保存完整的对话记录
+      chat_history: aiMessages.map(msg => ({
+        type: msg.type,
+        content: msg.content,
+        timestamp: msg.timestamp,
+        ...(msg.questions && { questions: msg.questions }),
+        ...(msg.options && { options: msg.options }),
+        ...(msg.isQuestionSelection && { isQuestionSelection: true }),
+        ...(msg.selectedAnswers && { selectedAnswers: msg.selectedAnswers })
+      }))
+    };
+  },
   
   // 检查是否可以保存
   canSave: (basicInfo, aiLoading) => {
-    return basicInfo.productName && !aiLoading;
+    // 检查必填字段是否已填写
+    const { isValid } = productConfig.checkRequiredFields(basicInfo);
+    return isValid && !aiLoading;
+  },
+  
+  // 检查必填字段
+  checkRequiredFields: (basicInfo) => {
+    const missingFields = [];
+    
+    // 检查账号信息
+    if (!basicInfo.accountNickname) {
+      missingFields.push('小红书账号昵称');
+    }
+    if (!basicInfo.accountType) {
+      missingFields.push('账号类型');
+    }
+    
+    // 检查人设与定位
+    if (!basicInfo.contentCategory) {
+      missingFields.push('主营内容领域');
+    }
+    if (!basicInfo.contentStyle) {
+      missingFields.push('内容风格偏好');
+    }
+    if (!basicInfo.audienceProfile) {
+      missingFields.push('核心受众画像');
+    }
+    
+    // 检查产品与卖点
+    if (!basicInfo.mainProduct) {
+      missingFields.push('主推产品/服务名称');
+    }
+    
+    // 检查内容类型
+    if (!basicInfo.contentTypes || basicInfo.contentTypes.length === 0) {
+      missingFields.push('可接受的内容类型');
+    }
+    
+    return {
+      isValid: missingFields.length === 0,
+      missingFields: missingFields
+    };
   },
   
   // 获取类别标签
@@ -598,24 +1439,24 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
   },
   
   // 获取表格列配置
-  getTableColumns: (handleDelete, setViewingItem, setShowDetailModal) => [
+  getTableColumns: (handleDelete, setViewingItem, setShowDetailModal, setEditingItem, setShowEditModal) => [
     {
-      title: '产品信息',
-      key: 'product',
+      title: '账号信息',
+      key: 'account',
       width: 280,
       render: (_, record) => (
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-pink-500 to-red-500 flex items-center justify-center">
             <ShoppingOutlined className="text-white text-lg" />
           </div>
           <div>
-            <div className="font-medium">{record.product_name}</div>
-            <div className="text-sm text-gray-500">{record.brand_name || '未设置品牌'}</div>
+            <div className="font-medium">{record.account_nickname}</div>
+            <div className="text-sm text-gray-500">{productConfig.getFieldDisplayValue('accountType', record.account_type) || '未设置类型'}</div>
             <div className="flex items-center space-x-2 mt-1">
-              {record.product_category && productConfig.getCategoryTag(record.product_category)}
-              {record.price_range && (
-                <Tag color="orange" size="small">
-                  {productConfig.getFieldDisplayValue('priceRange', record.price_range)}
+              {record.content_category && productConfig.getCategoryTag(record.content_category)}
+              {record.content_style && (
+                <Tag color="pink" size="small">
+                  {productConfig.getFieldDisplayValue('contentStyle', record.content_style)}
                 </Tag>
               )}
             </div>
@@ -674,7 +1515,7 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
     {
       title: '操作',
       key: 'actions',
-      width: 150,
+      width: 200,
       render: (_, record) => (
         <Space>
           <Button 
@@ -687,6 +1528,17 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
             }}
           >
             查看
+          </Button>
+          <Button 
+            type="link" 
+            size="small" 
+            icon={<EditOutlined />}
+            onClick={() => {
+              setEditingItem(record);
+              setShowEditModal(true);
+            }}
+          >
+            编辑
           </Button>
           <Popconfirm
             title="确定删除此产品文档吗？"
@@ -707,19 +1559,19 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
   renderDetailModal: (viewingItem) => (
     <div className="product-detail-content">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold mb-2">{viewingItem.product_name}</h3>
+        <h3 className="text-lg font-semibold mb-2">{viewingItem.account_nickname}</h3>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <span className="text-gray-600">品牌：</span>
-            <span className="font-medium">{viewingItem.brand_name || '-'}</span>
+            <span className="text-gray-600">账号类型：</span>
+            <span className="font-medium">{productConfig.getFieldDisplayValue('accountType', viewingItem.account_type) || '-'}</span>
           </div>
           <div>
-            <span className="text-gray-600">类别：</span>
-            <span className="font-medium">{productConfig.getCategoryTag(viewingItem.product_category)}</span>
+            <span className="text-gray-600">内容领域：</span>
+            <span className="font-medium">{productConfig.getCategoryTag(viewingItem.content_category)}</span>
           </div>
           <div>
-            <span className="text-gray-600">价格区间：</span>
-            <span className="font-medium">{viewingItem.price_range || '-'}</span>
+            <span className="text-gray-600">内容风格：</span>
+            <span className="font-medium">{productConfig.getFieldDisplayValue('contentStyle', viewingItem.content_style) || '-'}</span>
           </div>
           <div>
             <span className="text-gray-600">创建时间：</span>
@@ -732,7 +1584,7 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
             <span className="text-gray-600">标签：</span>
             <div className="mt-1">
               {viewingItem.tags.map((tag, index) => (
-                <span key={index} className="inline-block bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs mr-1 mb-1">
+                <span key={index} className="inline-block bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs mr-1 mb-1">
                   {tag}
                 </span>
               ))}
@@ -742,7 +1594,7 @@ ${basicInfo.productUrl ? `• 产品链接：${basicInfo.productUrl}` : ''}
       </div>
       
       <div className="border rounded-lg p-4 bg-gray-50">
-        <h4 className="font-medium mb-2">产品分析内容</h4>
+        <h4 className="font-medium mb-2">账号分析内容</h4>
         <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
           <ReactMarkdown>{viewingItem.document_content}</ReactMarkdown>
         </div>

@@ -47,8 +47,8 @@ const MermaidDiagram = ({ chart }) => {
         setSvg(svg);
         setError('');
       } catch (err) {
-        console.error('Mermaid渲染错误:', err);
-        setError('图表渲染失败');
+        console.error('Mermaid渲染错误详情:', err);
+        setError(`图表渲染失败: ${err.message || '未知语法错误'}`);
       }
     };
 
@@ -705,11 +705,11 @@ const ChatPage = () => {
 
   // 检测消息中是否包含document_ready标志
   const checkForDocumentReady = (content) => {
-    console.log('🔍 检查document_ready标志:', content.substring(0, 200) + '...');
+    // console.log('🔍 检查document_ready标志:', content.substring(0, 200) + '...');
     
     // 首先检查是否包含 document_ready: true
     if (!content.includes('document_ready') || !content.includes('true')) {
-      console.log('❌ 内容中不包含document_ready: true');
+      // console.log('❌ 内容中不包含document_ready: true');
       return { isDocument: false };
     }
     
@@ -744,9 +744,6 @@ const ChatPage = () => {
             }
           } catch (innerE) {
             console.log('⚠️ 代码块JSON解析失败:', innerE.message);
-            // 解析失败，但我们仍然可以尝试手动提取JSON内容
-            
-            
           }
         }
       } catch (e) {
@@ -754,7 +751,7 @@ const ChatPage = () => {
       }
     }
   
-    console.log('❌ 未能成功提取document内容');
+    // console.log('❌ 未能成功提取document内容');
     return { isDocument: false };
   };
 
@@ -1134,7 +1131,7 @@ const ChatPage = () => {
                     }
                     updated.currentTool = data.data;
                     console.log('🔧 工具调用后的完整内容:', updated.content);
-                      break;
+                    break;
                       
                   case 'tool_result':
                     updated.status = 'tool_completed';
@@ -1146,12 +1143,12 @@ const ChatPage = () => {
                     // 保持之前的AI说明文字和工具调用信息
                     if (updated.aiExplanation) {
                       updated.content = updated.aiExplanation + '\n\n' + data.content;
-                    } else {
+                      } else {
                       updated.content = data.content;
                     }
                     updated.toolResult = data.data?.result || '执行完成';
                     console.log('✅ 工具结果后的完整内容:', updated.content);
-                      break;
+                    break;
                       
                   case 'final_answer':
                     updated.status = 'generating_answer';

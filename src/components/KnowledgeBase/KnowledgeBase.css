@@ -1,0 +1,402 @@
+/* 知识库组件样式 */
+.knowledge-base-container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  overflow-x: hidden;
+}
+
+/* 文档编辑器样式 */
+.document-editor {
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.editor-form {
+  width: 100%;
+  max-width: 100%;
+}
+
+.document-editor .ant-form-item-label {
+  font-weight: 500;
+  color: #262626;
+  text-align: left !important;
+  padding-bottom: 8px;
+}
+
+.document-editor .ant-form-item {
+  margin-bottom: 24px;
+}
+
+.document-editor .ant-input,
+.document-editor .ant-select,
+.document-editor .ant-input-number,
+.document-editor .ant-picker {
+  width: 100%;
+}
+
+.document-editor .ant-form-item-control-input {
+  width: 100%;
+}
+
+/* 修复标签页切换时宽度变化问题 */
+.ant-tabs-content {
+  width: 100%;
+}
+
+.ant-tabs-tabpane {
+  width: 100%;
+  padding: 0;
+}
+
+.document-editor textarea {
+  font-family: 'Courier New', Consolas, Monaco, monospace;
+  line-height: 1.6;
+  width: 100%;
+}
+
+/* Markdown预览样式 */
+.markdown-preview {
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  line-height: 1.8;
+  color: #262626;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  color: #1a1a1a;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.markdown-preview h1 {
+  font-size: 2em;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 10px;
+}
+
+.markdown-preview h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 8px;
+}
+
+.markdown-preview h3 {
+  font-size: 1.25em;
+}
+
+.markdown-preview h4 {
+  font-size: 1em;
+}
+
+.markdown-preview h5 {
+  font-size: 0.875em;
+}
+
+.markdown-preview h6 {
+  font-size: 0.85em;
+  color: #6a737d;
+}
+
+.markdown-preview p {
+  margin-bottom: 16px;
+}
+
+.markdown-preview blockquote {
+  padding: 0 1em;
+  color: #6a737d;
+  border-left: 0.25em solid #dfe2e5;
+  margin: 0 0 16px 0;
+}
+
+.markdown-preview blockquote > :first-child {
+  margin-top: 0;
+}
+
+.markdown-preview blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  padding-left: 2em;
+  margin-bottom: 16px;
+}
+
+.markdown-preview li {
+  margin-bottom: 4px;
+}
+
+.markdown-preview li > p {
+  margin-bottom: 8px;
+}
+
+.markdown-preview code {
+  padding: 0.2em 0.4em;
+  background-color: rgba(27, 31, 35, 0.05);
+  border-radius: 3px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  font-size: 85%;
+}
+
+.markdown-preview pre {
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: #f6f8fa;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.markdown-preview pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 100%;
+}
+
+.markdown-preview table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.markdown-preview table th,
+.markdown-preview table td {
+  padding: 6px 13px;
+  border: 1px solid #dfe2e5;
+}
+
+.markdown-preview table th {
+  font-weight: 600;
+  background-color: #f6f8fa;
+}
+
+.markdown-preview table tr:nth-child(2n) {
+  background-color: #f6f8fa;
+}
+
+.markdown-preview img {
+  max-width: 100%;
+  height: auto;
+  margin: 16px 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-preview hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  background-color: #e1e4e8;
+  border: 0;
+}
+
+.markdown-preview a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.markdown-preview a:hover {
+  text-decoration: underline;
+}
+
+/* 搜索表单样式 */
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.search-form .ant-form-item {
+  margin-bottom: 0;
+}
+
+/* 预览模态框样式 */
+.preview-modal .ant-modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* 文档元信息样式 */
+.document-meta {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #0366d6;
+}
+
+/* 表格样式优化 */
+.ant-table-tbody > tr > td {
+  vertical-align: top;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: #f5f7fa;
+}
+
+/* 标签样式 */
+.ant-tag {
+  margin: 2px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* 操作按钮样式 */
+.ant-btn-text {
+  padding: 4px 8px;
+  height: auto;
+}
+
+.ant-btn-text:hover {
+  background: rgba(24, 144, 255, 0.1);
+}
+
+.ant-btn-text.ant-btn-dangerous:hover {
+  background: rgba(255, 77, 79, 0.1);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .knowledge-base-container {
+    padding: 10px;
+    overflow-x: hidden;
+  }
+  
+  .search-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-form .ant-form-item {
+    margin-bottom: 16px;
+  }
+  
+  .document-editor {
+    padding: 16px;
+    overflow-x: hidden;
+  }
+  
+  .ant-table-wrapper {
+    overflow-x: auto;
+  }
+  
+  /* 修复表单在小屏幕上的显示 */
+  .ant-form-item-label {
+    text-align: left !important;
+  }
+  
+  /* 修复标签页内容溢出 */
+  .ant-tabs-content-holder {
+    overflow-x: hidden;
+  }
+  
+  .ant-tabs-content {
+    overflow-x: hidden;
+  }
+  
+  /* 确保内容区域不超出容器 */
+  .ant-card {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  
+  /* 修复文本区域溢出 */
+  textarea.ant-input {
+    max-width: 100%;
+  }
+}
+
+/* 修复所有屏幕尺寸下的溢出问题 */
+.ant-card-body {
+  overflow-x: hidden;
+}
+
+.ant-tabs {
+  overflow-x: hidden;
+}
+
+/* 加载状态 */
+.ant-spin-nested-loading > div > .ant-spin {
+  max-height: none;
+}
+
+/* 表单验证样式 */
+.ant-form-item-has-error .ant-input,
+.ant-form-item-has-error .ant-input-affix-wrapper,
+.ant-form-item-has-error .ant-select-selector {
+  border-color: #ff4d4f;
+}
+
+.ant-form-item-has-error .ant-form-item-explain-error {
+  color: #ff4d4f;
+}
+
+/* 工具提示样式 */
+.ant-tooltip-inner {
+  background: #262626;
+  color: #fff;
+  border-radius: 4px;
+}
+
+/* 分页样式 */
+.ant-pagination {
+  text-align: right;
+  margin-top: 24px;
+}
+
+/* 空状态样式 */
+.ant-empty {
+  margin: 40px 0;
+}
+
+/* 卡片样式优化 */
+.ant-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 标签页样式 */
+.ant-tabs-nav {
+  margin-bottom: 24px;
+}
+
+.ant-tabs-tab {
+  padding: 12px 16px;
+  font-weight: 500;
+}
+
+.ant-tabs-tab-active {
+  color: #1890ff;
+}
+
+/* 按钮组样式 */
+.ant-space {
+  display: flex;
+  align-items: center;
+}
+
+.ant-space-item {
+  margin-right: 8px;
+}
+
+.ant-space-item:last-child {
+  margin-right: 0;
+} 

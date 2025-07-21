@@ -6,6 +6,7 @@ import { chatApi } from '../../services/api';
 import LoadingSpinner from '../LoadingSpinner';
 import ErrorMessage from '../ErrorMessage';
 import ReactMarkdown from 'react-markdown';
+import ProductDocumentEditor from '../ProductDocumentEditor';
 import './AIBuilder.css';
 
 const { TextArea } = Input;
@@ -36,6 +37,10 @@ const AIBuilder = ({
   // 查看详情相关状态
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [viewingItem, setViewingItem] = useState(null);
+  
+  // 编辑相关状态
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
   
   // 第一阶段：基础信息采集
   const [basicInfo, setBasicInfo] = useState(config.initialBasicInfo || {});
@@ -81,7 +86,14 @@ const AIBuilder = ({
     }));
   };
 
+  // 修改isPhase1Complete函数，使按钮始终可以点击
   const isPhase1Complete = () => {
+    // 如果存在checkRequiredFields函数，则始终返回true，因为我们在点击时会进行检查
+    if (config.checkRequiredFields) {
+      return true;
+    }
+    
+    // 否则使用原来的逻辑
     return config.requiredFields.every(field => {
       const value = basicInfo[field];
       return value && value.trim && value.trim();
@@ -89,11 +101,32 @@ const AIBuilder = ({
   };
 
   const handlePhase1Complete = async () => {
+    // 使用配置的字段校验函数
+    if (config.checkRequiredFields) {
+      const validationResult = config.checkRequiredFields(basicInfo);
+      if (!validationResult.isValid) {
+        message.error(`请填写以下必填信息: ${validationResult.missingFields.join('、')}`);
+        return;
+      }
+    }
+    
     try {
       setAiLoading(true);
       setCurrentPhase(2);
       
       setBuilderData(prev => ({ ...prev, ...basicInfo }));
+
+      // 立即显示欢迎消息
+      const welcomeMessage = {
+        type: 'ai',
+        content: `你好，我是你的小红书运营搭档「产品信息补全Agent」。
+
+为了帮助你更好地进行账号内容运营、选题策划和产品传播，我将引导你快速补充一份**产品品牌信息档案**，包含产品功能、目标用户、内容素材等。
+
+你可以随时输入"跳过"来跳过某个问题，或输入"完成"随时中止并查看当前信息。`,
+        timestamp: new Date().toISOString()
+      };
+      setAiMessages([welcomeMessage]);
 
       const context = {
         basicInfo: basicInfo,
@@ -105,7 +138,9 @@ const AIBuilder = ({
 
       const basicInfoMessage = config.generateInitialMessage(basicInfo);
       const aiMessage = await callAI(basicInfoMessage, [], true);
-      setAiMessages([aiMessage]);
+      
+      // 将AI回复添加到消息列表
+      setAiMessages(prev => [...prev, aiMessage]);
 
     } catch (error) {
       console.error('进入第二阶段失败:', error);
@@ -291,43 +326,66 @@ const AIBuilder = ({
   };
 
   const handleQuestionSelect = (questionId, optionId, question, option) => {
-    // 更新选择的答案，支持每个问题的多选
+    // 更新选择的答案
     setSelectedAnswers(prev => {
       const newAnswers = { ...prev };
       
-      // 如果当前问题还没有选择任何选项，初始化为空数组
-      if (!newAnswers[questionId]) {
-        newAnswers[questionId] = { question, selectedOptions: [] };
-      }
-      
-      // 检查这个选项是否已经被选择
-      const selectedOptions = newAnswers[questionId].selectedOptions;
-      const existingIndex = selectedOptions.findIndex(item => item.optionId === optionId);
-      
-      if (existingIndex !== -1) {
-        // 如果已经选择了这个选项，则取消选择
-        selectedOptions.splice(existingIndex, 1);
-        
-        // 如果没有选择任何选项，删除整个问题
-        if (selectedOptions.length === 0) {
-          delete newAnswers[questionId];
-        }
+      if (question.format === 'input') {
+        // 处理文本输入
+        newAnswers[questionId] = {
+          question,
+          selectedOptions: [{
+            optionId: 'text_input',
+            option: {
+              id: 'text_input',
+              title: '文本输入',
+              content: option.content
+            }
+          }]
+        };
       } else {
-        // 否则添加这个选项到选择列表
-        selectedOptions.push({ optionId, option });
+        // 处理选项选择
+        if (!newAnswers[questionId]) {
+          newAnswers[questionId] = { question, selectedOptions: [] };
+        }
+        
+        const selectedOptions = newAnswers[questionId].selectedOptions;
+        const existingIndex = selectedOptions.findIndex(item => item.optionId === optionId);
+        
+        if (existingIndex !== -1) {
+          selectedOptions.splice(existingIndex, 1);
+          if (selectedOptions.length === 0) {
+            delete newAnswers[questionId];
+          }
+        } else {
+          selectedOptions.push({ optionId, option });
+        }
       }
       
       return newAnswers;
     });
   };
 
-  // 检查是否所有问题都已选择（每个问题至少选择一个选项）
+  // 检查是否所有问题都已回答（每个问题至少选择一个选项或输入有效文本）
   const areAllQuestionsAnswered = (questions) => {
     if (!questions || questions.length === 0) return false;
     
     return questions.every(question => {
       const questionId = question.id || question.title;
-      return selectedAnswers[questionId] && selectedAnswers[questionId].selectedOptions.length > 0;
+      const answer = selectedAnswers[questionId];
+      
+      if (!answer || !answer.selectedOptions || answer.selectedOptions.length === 0) {
+        return false;
+      }
+      
+      if (question.format === 'input') {
+        // 检查文本输入是否满足最小长度要求
+        const content = answer.selectedOptions[0]?.option?.content;
+        return content && (!question.minLength || content.length >= question.minLength);
+      } else {
+        // 检查是否选择了至少一个选项
+        return answer.selectedOptions.length > 0;
+      }
     });
   };
 
@@ -339,12 +397,19 @@ const AIBuilder = ({
       const questionId = question.id || question.title;
       const answer = selectedAnswers[questionId];
       if (answer && answer.selectedOptions.length > 0) {
-        const selectedOptionsText = answer.selectedOptions.map(item => 
-          `• ${item.option.title}${item.option.description ? `\n  ${item.option.description}` : ''}${item.option.example ? `\n  示例：${item.option.example}` : ''}`
-        ).join('\n');
-        return `**${question.title}**\n我选择了：\n${selectedOptionsText}`;
+        if (question.format === 'input') {
+          // 处理文本输入类型的答案
+          const textContent = answer.selectedOptions[0].option.content;
+          return `**${question.title}**\n${textContent}`;
+        } else {
+          // 处理选项选择类型的答案
+          const selectedOptionsText = answer.selectedOptions.map(item => 
+            `• ${item.option.title}${item.option.description ? `\n  ${item.option.description}` : ''}${item.option.example ? `\n  示例：${item.option.example}` : ''}`
+          ).join('\n');
+          return `**${question.title}**\n我选择了：\n${selectedOptionsText}`;
+        }
       }
-      return `**${question.title}**\n未选择任何选项`;
+      return `**${question.title}**\n未回答`;
     }).join('\n\n');
 
     const userMessage = {
@@ -376,7 +441,7 @@ const AIBuilder = ({
       console.error('处理问题选择失败:', error);
       setAiMessages(prev => [...prev, {
         type: 'ai',
-        content: '处理您的选择时出现问题，请重试。',
+        content: '处理您的回答时出现问题，请重试。',
         timestamp: new Date().toISOString()
       }]);
     } finally {
@@ -395,7 +460,7 @@ const AIBuilder = ({
       const tags = config.generateTags(basicInfo, builderData, aiMessages);
       
       const documentData = {
-        ...config.buildDocumentData(basicInfo, documentContent, summary, tags),
+        ...config.buildDocumentData(basicInfo, documentContent, summary, tags, aiMessages),
         user_id: config.userId
       };
       
@@ -445,8 +510,8 @@ const AIBuilder = ({
   };
 
   const renderPhase1 = () => (
-    <div className="max-w-4xl mx-auto form-container custom-scrollbar">
-      <Card title={config.phase1Title} className="mb-6">
+    <div className="w-full mx-auto form-container custom-scrollbar">
+      <Card title={config.phase1Title} className="mb-6 w-full">
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">{config.welcomeTitle}</h3>
@@ -463,7 +528,7 @@ const AIBuilder = ({
           />
         </div>
         
-        <div className="space-y-8">
+        <div className="space-y-8 w-full">
           {config.renderBasicInfoForm(basicInfo, handleBasicInfoChange)}
         </div>
 
@@ -548,9 +613,6 @@ const AIBuilder = ({
                             <div className="flex items-center mb-3 pb-2 border-b border-gray-200">
                               <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
                               <span className="text-sm font-medium text-gray-700">{question.title}</span>
-                              <span className="ml-auto text-xs text-gray-500">
-                                (可多选)
-                              </span>
                               {selectedCount > 0 && (
                                 <span className="ml-2 text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
                                   ✓ 已选择 {selectedCount} 项
@@ -564,58 +626,98 @@ const AIBuilder = ({
                               </p>
                             )}
                             
-                            <div className="grid gap-2">
-                              {question.options && question.options.map((option, optIndex) => {
-                                const isOptionSelected = questionAnswer && questionAnswer.selectedOptions.some(item => item.optionId === option.id);
-                                
-                                return (
-                                  <div
-                                    key={optIndex}
-                                    className={`
-                                      p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md
-                                      ${aiLoading 
-                                        ? 'border-gray-200 bg-gray-50 cursor-not-allowed' 
-                                        : isOptionSelected
-                                          ? 'border-green-500 bg-green-50 ring-2 ring-green-200'
-                                          : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50'
-                                      }
-                                    `}
-                                    onClick={() => !aiLoading && handleQuestionSelect(questionId, option.id, question, option)}
-                                  >
-                                  <div className="flex items-start">
-                                    <div className="flex-1">
-                                      <h4 className="text-sm font-medium text-gray-800 mb-1">
-                                        {option.title}
-                                      </h4>
-                                      {option.description && (
-                                        <p className="text-xs text-gray-600 leading-relaxed mb-2">
-                                          {option.description}
-                                        </p>
-                                      )}
-                                      {option.example && (
-                                        <div className="bg-gray-100 rounded p-2 mt-2">
-                                          <p className="text-xs text-gray-700 italic">
-                                            示例：{option.example}
-                                          </p>
+                            {question.reason && (
+                              <div className="bg-blue-50 border border-blue-100 rounded-lg p-2 mb-3">
+                                <p className="text-xs text-blue-700 leading-relaxed">
+                                  <span className="font-medium"></span>{question.reason}
+                                </p>
+                              </div>
+                            )}
+                            {/* 根据问题格式渲染不同的输入方式 */}
+                            {question.format === 'input' ? (
+                              // 文本输入框
+                              <div className="mb-3">
+                                <Input.TextArea
+                                  placeholder={question.placeholder || "请输入您的回答..."}
+                                  value={selectedAnswers[questionId]?.selectedOptions[0]?.option?.content || ''}
+                                  onChange={(e) => {
+                                    const content = e.target.value;
+                                    handleQuestionSelect(questionId, 'text_input', question, {
+                                      id: 'text_input',
+                                      title: '文本输入',
+                                      content: content
+                                    });
+                                  }}
+                                  onBlur={(e) => {
+                                    // 在失去焦点时也更新一次，确保内容被保存
+                                    const content = e.target.value;
+                                    if (content) {
+                                      handleQuestionSelect(questionId, 'text_input', question, {
+                                        id: 'text_input',
+                                        title: '文本输入',
+                                        content: content
+                                      });
+                                    }
+                                  }}
+                                  rows={4}
+                                  className="w-full border-gray-200"
+                                />
+                              </div>
+                            ) : (
+                              // 选项选择
+                              <div className="grid gap-2">
+                                {question.options && question.options.map((option, optIndex) => {
+                                  const isOptionSelected = questionAnswer && questionAnswer.selectedOptions.some(item => item.optionId === option.id);
+                                  
+                                  return (
+                                    <div
+                                      key={optIndex}
+                                      className={`
+                                        p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md
+                                        ${aiLoading 
+                                          ? 'border-gray-200 bg-gray-50 cursor-not-allowed' 
+                                          : isOptionSelected
+                                            ? 'border-green-500 bg-green-50 ring-2 ring-green-200'
+                                            : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50'
+                                        }
+                                      `}
+                                      onClick={() => !aiLoading && handleQuestionSelect(questionId, option.id, question, option)}
+                                    >
+                                      <div className="flex items-start">
+                                        <div className="flex-1">
+                                          <h4 className="text-sm font-medium text-gray-800 mb-1">
+                                            {option.title}
+                                          </h4>
+                                          {option.description && (
+                                            <p className="text-xs text-gray-600 leading-relaxed mb-2">
+                                              {option.description}
+                                            </p>
+                                          )}
+                                          {option.example && (
+                                            <div className="bg-gray-100 rounded p-2 mt-2">
+                                              <p className="text-xs text-gray-700 italic">
+                                                示例：{option.example}
+                                              </p>
+                                            </div>
+                                          )}
                                         </div>
-                                      )}
-                                    </div>
-                                    <div className="w-5 h-5 flex items-center justify-center ml-2">
-                                      {isOptionSelected ? (
-                                        <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
-                                          <span className="text-white text-xs">✓</span>
+                                        <div className="w-5 h-5 flex items-center justify-center ml-2">
+                                          {isOptionSelected ? (
+                                            <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
+                                              <span className="text-white text-xs">✓</span>
+                                            </div>
+                                          ) : (
+                                            <div className="w-5 h-5 border-2 border-gray-300 rounded"></div>
+                                          )}
                                         </div>
-                                      ) : (
-                                        <div className="w-5 h-5 border-2 border-gray-300 rounded"></div>
-                                      )}
+                                      </div>
                                     </div>
-                                  </div>
-                                </div>
-                                );
-                              })}
+                                  );
+                                })}
+                              </div>
+                            )}
                             </div>
-                          </div>
-                        );
+                          );
                       })}
                       
                       {/* 发送按钮 */}
@@ -759,7 +861,7 @@ const AIBuilder = ({
           
           <Table
             dataSource={data}
-            columns={config.getTableColumns(handleDelete, setViewingItem, setShowDetailModal)}
+            columns={config.getTableColumns(handleDelete, setViewingItem, setShowDetailModal, setEditingItem, setShowEditModal)}
             pagination={{
               pageSize: 10,
               showSizeChanger: true,
@@ -855,6 +957,17 @@ const AIBuilder = ({
       >
         {viewingItem && config.renderDetailModal(viewingItem)}
       </Modal>
+
+      {/* 编辑弹窗 */}
+      <ProductDocumentEditor
+        visible={showEditModal}
+        onCancel={() => setShowEditModal(false)}
+        productId={editingItem?.id}
+        onSaved={() => {
+          setShowEditModal(false);
+          fetchData();
+        }}
+      />
     </div>
   );
 };

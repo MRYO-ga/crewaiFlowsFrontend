@@ -16,6 +16,7 @@ import XhsManagementPage from './pages/XHS';
 import ExamplesPage from './pages/Examples';
 import HomePage from './pages/GuidePage';
 import KnowledgeGraphPage from './pages/KnowledgeGraphPage';
+import KnowledgePage from './pages/Knowledge';
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
           <Route path="mcp-test" element={<MCPTestPage />} />
           <Route path="xhs" element={<XhsManagementPage />} />
           <Route path="knowledge-graph" element={<KnowledgeGraphPage />} />
+          <Route path="knowledge" element={<KnowledgePage />} />
         </Route>
         <Route path="/guide" element={<HomePage />} />
         <Route path="/knowledge-graph" element={<KnowledgeGraphPage />} />

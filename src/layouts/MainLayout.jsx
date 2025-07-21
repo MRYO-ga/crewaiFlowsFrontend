@@ -29,7 +29,8 @@ const MainLayout = () => {
       title: '文档管理',
       items: [
         { path: '/account', name: '账号人设', icon: 'fa-user-gear' },
-        { path: '/product', name: '产品品牌信息', icon: 'fa-shopping-bag' }
+        { path: '/product', name: '产品品牌信息', icon: 'fa-shopping-bag' },
+        { path: '/knowledge', name: '知识库', icon: 'fa-book' }
       ]
     },
     {

@@ -59,6 +59,39 @@ export const productService = {
     }
   },
 
+  // 更新产品文档内容（第二阶段内容）
+  updateProductDocumentContent: async (documentId, documentContent) => {
+    try {
+      const response = await productApi.put(`/${documentId}/document`, { document_content: documentContent });
+      return response.data;
+    } catch (error) {
+      console.error('更新产品文档内容失败:', error);
+      throw error;
+    }
+  },
+
+  // 更新产品第一阶段数据
+  updateProductPhase1Data: async (documentId, phase1Data) => {
+    try {
+      const response = await productApi.put(`/${documentId}/phase1`, phase1Data);
+      return response.data;
+    } catch (error) {
+      console.error('更新产品第一阶段数据失败:', error);
+      throw error;
+    }
+  },
+
+  // 更新产品聊天历史
+  updateProductChatHistory: async (documentId, chatHistory) => {
+    try {
+      const response = await productApi.put(`/${documentId}/chat`, chatHistory);
+      return response.data;
+    } catch (error) {
+      console.error('更新产品聊天历史失败:', error);
+      throw error;
+    }
+  },
+
   // 删除产品文档
   deleteProductDocument: async (documentId) => {
     try {

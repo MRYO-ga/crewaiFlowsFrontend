@@ -1,6 +1,6 @@
 import React from 'react';
 import { Input, Button, Popover, Tooltip, Select, Tag, Space } from 'antd';
-import { SendOutlined, DatabaseOutlined, UserOutlined } from '@ant-design/icons';
+import { SendOutlined, DatabaseOutlined, UserOutlined, StopOutlined, ArrowUpOutlined } from '@ant-design/icons';
 import { agentOptions } from './agentOptions';
 
 const { TextArea } = Input;
@@ -28,7 +28,7 @@ const ChatInput = ({
 }) => {
   return (
     <div className="chat-input-area">
-      {currentTask && (
+      {/* {currentTask && (
         <div style={{ 
           marginBottom: 12,
           padding: '12px 16px',
@@ -76,7 +76,7 @@ const ChatInput = ({
             中断任务
           </Button>
         </div>
-      )}
+      )} */}
       
       {attachedData.length > 0 && (
         <div style={{ marginBottom: 12 }}>
@@ -215,28 +215,22 @@ const ChatInput = ({
               border: '2px solid #e0e0e0',
               transition: 'border-color 0.3s'
             }}
-            disabled={isLoading}
+            // disabled={isLoading}
           />
         </div>
-        <Button 
-          type="primary"
-          icon={<SendOutlined />}
-          onClick={sendMessage}
-          loading={isLoading}
-          disabled={!inputValue.trim() || isLoading}
-          style={{ 
-            borderRadius: 12,
-            height: 48,
-            paddingLeft: 20,
-            paddingRight: 20,
-            fontSize: '14px',
-            fontWeight: 500,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            border: 'none'
-          }}
-        >
-          {isLoading ? '处理中' : '提交需求'}
-        </Button>
+        <div className="flex items-center pl-2">
+          <Tooltip title={isLoading ? "中断任务" : "发送消息"}>
+            <Button
+              type="primary"
+              shape={isLoading ? "square" : "circle"}
+              size="large"
+              icon={isLoading ? <StopOutlined /> : <ArrowUpOutlined />}
+              onClick={isLoading ? cancelCurrentTask : sendMessage}
+              loading={isLoading && !cancelCurrentTask}
+              className="transition-all"
+            />
+          </Tooltip>
+        </div>
       </div>
     </div>
   );

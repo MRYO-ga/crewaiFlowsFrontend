@@ -1,6 +1,6 @@
 import React from 'react';
-import { Avatar, Card, Typography, Tag, Button, Spin } from 'antd';
-import { UserOutlined, RobotOutlined, DownloadOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Avatar, Card, Typography, Tag, Button, Spin, Space, Tooltip } from 'antd';
+import { UserOutlined, RobotOutlined, DownloadOutlined, CheckCircleOutlined, SyncOutlined, CopyOutlined } from '@ant-design/icons';
 import EnhancedMarkdown from './EnhancedMarkdown';
 
 const { Text, Paragraph } = Typography;
@@ -11,14 +11,16 @@ const renderStatusIndicator = (status) => {
       loading_tools: { color: '#722ed1', text: '加载工具', icon: '🔧' },
       tools_ready: { color: '#13c2c2', text: '工具就绪', icon: '✅' },
       thinking: { color: '#faad14', text: 'AI思考中', icon: '🤔' },
-      ai_explaining: { color: '#52c41a', text: 'AI分析中', icon: '💭' },
-      calling_tool: { color: '#1890ff', text: '执行工具', icon: '⚙️' },
+      ai_analysing_tool_result: { color: '#faad14', text: '更新记忆中', icon: '🤔' }, // 更新记忆
+      calling_tool: { color: '#1890ff', text: '调用工具中', icon: '⚙️' },
       tool_completed: { color: '#52c41a', text: '工具完成', icon: '✅' },
-      generating_answer: { color: '#13c2c2', text: '生成回答', icon: '✍️' },
+      generating_answer: { color: '#13c2c2', text: '生成回答中', icon: '✍️' },
+      generating_document: { color: '#13c2c2', text: '生成文档中', icon: '📄' }, // 生成文档
       complete: { color: '#52c41a', text: '回答完成', icon: '🎉' }
     };
 
     const config = statusConfig[status] || statusConfig.processing;
+    const isLoading = ![ 'complete', 'tools_ready', 'tool_completed' ].includes(status);
 
     return (
       <div style={{ 
@@ -37,7 +39,7 @@ const renderStatusIndicator = (status) => {
         }}>
           {config.text}
         </Text>
-        {['processing', 'thinking', 'calling_tool', 'generating_answer', 'ai_explaining'].includes(status) && (
+        {isLoading && (
           <div style={{ 
             marginLeft: 8,
             display: 'flex',
@@ -171,8 +173,9 @@ const renderConversationFlow = (message) => {
   );
 };
 
-const Message = ({ message, onCancel, onQuickQuery, onGenerateDocument }) => {
+const Message = ({ message, onCancel, onQuickQuery, onGenerateDocument, onRegenerate, onCopy }) => {
   const isUser = message.type === 'user';
+  const isAssistant = message.type === 'assistant';
 
   return (
     <div key={message.id} className={`message-item ${isUser ? 'user' : 'assistant'}`}>
@@ -184,189 +187,130 @@ const Message = ({ message, onCancel, onQuickQuery, onGenerateDocument }) => {
           marginLeft: isUser ? 12 : 0
         }}
       />
-      <div className="message-content">
-        <div className="message-meta">
-          <Text strong style={{ color: isUser ? '#52c41a' : '#1890ff' }}>
-            {isUser ? '开发者' : 'AI助手'}
-          </Text>
+      <div className="message-content" style={{ textAlign: isUser ? 'right' : 'left' }}>
+        <div className="message-meta" style={{ justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
+          <Text strong>{isUser ? '开发者' : 'AI助手'}</Text>
           <Text type="secondary" style={{ marginLeft: 8, fontSize: '12px' }}>
-            {message.timestamp}
+            {new Date(message.timestamp).toLocaleTimeString()}
           </Text>
-          {isUser && (
-            <Tag size="small" color="green" style={{ marginLeft: 8, fontSize: '10px' }}>
-              需求输入
-            </Tag>
-          )}
-          {!isUser && message.executionTime && (
-            <Text type="secondary" style={{ marginLeft: 8, fontSize: '10px' }}>
+          {isAssistant && message.executionTime > 0 && (
+            <Text type="secondary" style={{ marginLeft: 8, fontSize: '12px' }}>
               执行时间: {message.executionTime}s
             </Text>
           )}
-          {!isUser && message.isCompleted && (
-            <Tag size="small" color="blue" style={{ marginLeft: 8, fontSize: '10px' }}>
-              🎉 回答完成
-            </Tag>
-          )}
         </div>
-        <Card 
-          size="small" 
-          style={{ 
+        <Card
+          size="small"
+          style={{
             marginTop: 8,
             borderRadius: 12,
-            backgroundColor: isUser ? '#f6ffed' : '#f0f8ff',
-            border: `2px solid ${isUser ? '#b7eb8f' : '#91d5ff'}`,
-            textAlign: isUser ? 'right' : 'left'
+            border: '1px solid',
+            borderColor: isUser ? '#d9f7be' : '#e8e8e8',
+            backgroundColor: isUser ? '#f6ffed' : '#ffffff',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+            ...(isUser && {
+              display: 'inline-block',
+              minWidth: '100px',
+              textAlign: 'left'
+            })
           }}
         >
           {isUser ? (
-            <div>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'flex-end',
-                marginBottom: 8 
-              }}>
-                <Text strong style={{ fontSize: '12px', color: '#389e0d' }}>
-                  📋 开发需求
-                </Text>
+            <div style={{ padding: '8px 12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: message.attachedData?.length > 0 ? 8 : 0 }}>
+                <Paragraph style={{ marginBottom: 0, flex: 1 }}>
+                  {message.content}
+                </Paragraph>
+                <Tag color="green" style={{ marginLeft: 16 }}>需求输入</Tag>
               </div>
-              <Paragraph style={{ 
-                margin: 0, 
-                fontSize: '14px', 
-                fontWeight: 500,
-                color: '#262626'
-              }}>
-                {message.content}
-              </Paragraph>
-              
               {message.attachedData && message.attachedData.length > 0 && (
-                <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #d9f7be' }}>
-                  <div style={{ fontSize: '11px', color: '#389e0d', marginBottom: 4 }}>
-                    📎 附加数据:
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                    {message.attachedData.map((item, index) => (
-                      <Tag key={index} size="small" color="green" style={{ fontSize: '10px' }}>
-                        {item.type}: {item.name}
-                      </Tag>
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #f0f0f0' }}>
+                  <Text type="secondary" style={{ fontSize: '12px', marginRight: '8px' }}>
+                    <i className="fa-solid fa-paperclip" style={{ marginRight: '4px' }}></i> 附加数据:
+                  </Text>
+                  <Space size={[0, 8]} wrap>
+                    {message.attachedData.filter(item => item.type !== 'last_chat_status').map((item) => (
+                      <Tag key={item.id}>{item.type}: {item.name}</Tag>
                     ))}
-                  </div>
+                  </Space>
                 </div>
               )}
             </div>
           ) : (
-            <div>
-              {(message.status || (message.steps && message.steps.length > 0)) && (
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  marginBottom: 16,
-                  padding: '12px 16px',
-                  background: '#f8f9fa',
-                  borderRadius: '8px 8px 0 0',
-                  margin: '-12px -12px 16px -12px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {renderStatusIndicator(message.status || 'complete')}
-                    <Text type="secondary" style={{ marginLeft: 12, fontSize: '12px' }}>
-                      {message.status === 'calling_tool' ? '正在调用工具...' :
-                       message.status === 'ai_analysing_tool_result' ? 'AI正在分析工具结果...' :
-                       message.status === 'generating_answer' ? 'AI正在生成回答...' :
-                       '正在处理...'
-                      }
-                    </Text>
-                  </div>
-                  
-                  {message.status && !message.isCompleted && (
-                    <Button 
-                      size="small" 
-                      type="text" 
-                      danger
-                      onClick={onCancel}
-                      style={{ fontSize: '12px' }}
-                    >
-                      取消
-                    </Button>
-                  )}
-                </div>
-              )}
-              
+            <div style={{ padding: '12px' }}>
               {renderConversationFlow(message)}
               
-              {message.documentData && (
-                <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid #f0f0f0' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ flex: 1 }}>
-                      <Text style={{ fontSize: '12px', color: '#52c41a', display: 'block', fontWeight: 'bold' }}>
-                        📄 分析报告已生成
-                      </Text>
-                      <Text style={{ fontSize: '11px', color: '#8c8c8c', marginTop: 2, display: 'block' }}>
-                        {message.documentData.summary}
-                      </Text>
-                    </div>
-                    <Button
-                      type="primary"
-                      icon={<DownloadOutlined />}
-                      size="small"
-                      onClick={() => onGenerateDocument(message.documentData)}
-                      style={{
-                        backgroundColor: '#52c41a',
-                        borderColor: '#52c41a',
-                        borderRadius: 6
-                      }}
-                    >
-                      下载文档
-                    </Button>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                marginTop: '12px',
+                minHeight: '28px' // Placeholder to prevent layout shift
+              }}>
+                {!message.isCompleted && message.status && message.status !== 'complete' && (
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {renderStatusIndicator(message.status)}
                   </div>
-                </div>
-              )}
+                )}
+
+                {message.isCompleted && (
+                   <Space>
+                    <Tooltip title="重新生成">
+                      <Button type="text" icon={<SyncOutlined />} shape="circle" onClick={() => onRegenerate(message.id)} />
+                    </Tooltip>
+                    <Tooltip title="复制">
+                      <Button type="text" icon={<CopyOutlined />} shape="circle" onClick={() => onCopy(message.content)} />
+                    </Tooltip>
+                  </Space>
+                )}
+              </div>
 
               {message.suggestions && message.suggestions.length > 0 && (
-                <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid #f0f0f0' }}>
-                  <Text style={{ fontSize: '12px', color: '#8c8c8c', display: 'block', marginBottom: 8 }}>
-                    💡 点击下方按钮快速体验：
-                  </Text>
-                  <div style={{ display: 'grid', gap: 8, gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+                <div style={{ marginTop: 16 }}>
+                  <Text strong style={{ fontSize: '13px' }}>💡 试试这些问题：</Text>
+                  <div style={{ marginTop: 8 }}>
                     {message.suggestions.map((suggestion, index) => (
                       <Card 
                         key={index}
                         size="small"
                         hoverable
+                        style={{ marginBottom: 8 }}
                         onClick={() => onQuickQuery(suggestion.query)}
-                        style={{ 
-                          cursor: 'pointer',
-                          transition: 'all 0.3s',
-                          border: '1px solid #d9d9d9',
-                          borderRadius: 8
-                        }}
                       >
-                        <div style={{ padding: '4px 0' }}>
-                          <Text strong style={{ fontSize: '13px', color: '#1890ff', display: 'block' }}>
-                            {suggestion.title}
-                          </Text>
-                          <Text style={{ fontSize: '11px', color: '#8c8c8c', marginTop: 4, display: 'block' }}>
-                            {suggestion.description}
-                          </Text>
-                        </div>
+                        <Text strong>{suggestion.title}</Text>
+                        <Paragraph type="secondary" style={{ fontSize: '12px', marginBottom: 0 }}>
+                          {suggestion.description}
+                        </Paragraph>
                       </Card>
                     ))}
                   </div>
                 </div>
               )}
               
-              {/* {message.status && !message.isCompleted && (
-                <div style={{ display: 'flex', alignItems: 'center', padding: '12px 0' }}>
-                  <Spin size="small" style={{ marginRight: 8 }} />
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
-                    {message.status === 'thinking' ? 'AI正在思考中...' :
-                     message.status === 'ai_explaining' ? 'AI正在分析中...' :
-                     message.status === 'calling_tool' ? '正在执行工具...' :
-                     message.status === 'generating_answer' ? '正在生成回答...' :
-                     '正在处理中...'}
-                  </Text>
+              {message.documentData && (
+                <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
+                  <Text strong>📄 已生成文档</Text>
+                  <pre style={{ 
+                    whiteSpace: 'pre-wrap', 
+                    wordBreak: 'break-all', 
+                    background: '#fafafa', 
+                    padding: '8px', 
+                    borderRadius: '4px',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    marginTop: 8
+                  }}>
+                    {message.documentData.content}
+                  </pre>
+                  <Button
+                    icon={<DownloadOutlined />}
+                    onClick={() => onGenerateDocument(message.documentData.content, message.documentData.filename)}
+                    style={{ marginTop: 8 }}
+                  >
+                    下载文档
+                  </Button>
                 </div>
-              )} */}
+              )}
             </div>
           )}
         </Card>

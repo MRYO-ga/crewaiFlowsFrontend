@@ -34,11 +34,16 @@ const checkForDocumentReady = (content) => {
   return { isDocument: false };
 };
 
-export const useMessaging = (
-  { messages, setMessages, setInputValue, setIsLoading, setStreamingMessage, setLastAiStructuredData, setCurrentTask, setTaskHistory, setAbortController, attachedData, setAttachedData },
-  { selectedModel },
-  { selectedAgent }
-) => {
+export const useMessaging = (state, modelState, agentState) => {
+  const { 
+    inputValue, setInputValue, setMessages, setStreamingMessage, 
+    setCurrentTask, setIsLoading, inputRef, attachedData, setAttachedData,
+    lastChatStatus, setLastChatStatus,
+    streamingMessage, abortController, setAbortController,
+    messages, setTaskHistory
+  } = state;
+  const { selectedModel } = modelState;
+  const { selectedAgent } = agentState;
 
   const performMessageSending = async (queryContent, currentAttachedData) => {
     const controller = new AbortController();
@@ -154,6 +159,23 @@ export const useMessaging = (
                     updated.currentTool = data.data; // 存储工具调用信息
                     break;
 
+                  case 'generating_document':
+                    updated.status = 'generating_document';
+                    updated.documentData = data.data;
+                    break;
+
+                  case 'status_change':
+                    updated.status = data.content;
+                    break;
+
+                  case 'background_status_update':
+                    // 后台状态更新，保存chat_status但不影响UI
+                    if (data.data && data.data.chat_status) {
+                      console.log("📥 后台状态更新，保存chat_status:", data.data.chat_status);
+                      setLastChatStatus(data.data.chat_status);
+                    }
+                    break;
+
                   case 'complete':
                     updated.status = 'complete';
                     updated.isCompleted = true;
@@ -161,6 +183,14 @@ export const useMessaging = (
                     // 确保最终内容被设置
                     finalContent = updated.content || '';
                     updated.content = finalContent;
+
+                    // 在完成时检查并存储chat_status
+                    if (data.data && data.data.chat_status) {
+                      console.log("📥 捕获到chat_status:", data.data.chat_status);
+                      setLastChatStatus(data.data.chat_status);
+                    } else {
+                      console.log("📥 complete事件中无chat_status数据");
+                    }
 
                     setTimeout(() => {
                       setStreamingMessage(currentStream => {
@@ -219,20 +249,37 @@ export const useMessaging = (
   const sendMessage = async (inputValue) => {
     if (!inputValue.trim()) return;
 
+    let currentAttachedData = [...attachedData];
+
+    // 如果有上次的chat_status，将其添加到附加数据中
+    if (lastChatStatus) {
+      console.log("📤 发送lastChatStatus给后端:", lastChatStatus);
+      currentAttachedData.push({
+        id: `chat-status-${Date.now()}`,
+        type: 'last_chat_status',
+        name: '上一轮的内部状态',
+        data: lastChatStatus
+      });
+      // 清除，避免重复发送
+      setLastChatStatus(null);
+    } else {
+      console.log("📤 无lastChatStatus需要发送");
+    }
+
     const userMessage = {
       id: Date.now(),
       type: 'user',
       content: inputValue,
       timestamp: new Date().toLocaleTimeString(),
-      attachedData: attachedData.length > 0 ? [...attachedData] : null,
+      attachedData: currentAttachedData,
       model: selectedModel
     };
 
     setMessages(prev => [...prev, userMessage]);
     const currentInput = inputValue;
-    const currentAttachedData = [...attachedData];
     
     setInputValue('');
+    
     setIsLoading(true);
 
     await performMessageSending(currentInput, currentAttachedData);
@@ -246,12 +293,64 @@ export const useMessaging = (
   };
 
   const cancelCurrentTask = () => {
-    setAbortController(controller => {
-      if (controller) {
-        controller.abort();
-        setCurrentTask(prev => prev ? { ...prev, status: 'cancelled' } : null);
+    if (abortController) {
+      abortController.abort();
+      setAbortController(null);
+    }
+    // If there's a message being streamed, finalize it and add it to the list.
+    if (streamingMessage) {
+      setMessages(prevMessages => [
+        ...prevMessages, 
+        // Also add a note that it was cancelled
+        { 
+          ...streamingMessage, 
+          isCompleted: true, 
+          status: 'cancelled', 
+          content: (streamingMessage.content || '') + "\n\n*(用户已中断)*" 
+        }
+      ]);
+    }
+    
+    // Clear the streaming state
+    setStreamingMessage(null);
+    setIsLoading(false);
+    setCurrentTask(null);
+    console.log("任务已中断");
+  };
+
+  const handleRegenerate = (messageId) => {
+    const messageIndex = messages.findIndex(m => m.id === messageId);
+    if (messageIndex === -1) return;
+
+    // We need to find the user message that prompted this AI response.
+    // It's usually the one right before the first AI message in a sequence.
+    let userMessageIndex = -1;
+    for (let i = messageIndex - 1; i >= 0; i--) {
+      if (messages[i].type === 'user') {
+        userMessageIndex = i;
+        break;
       }
-      return controller;
+    }
+
+    if (userMessageIndex === -1) {
+      console.error("无法找到对应的用户提问来进行重新生成");
+      return;
+    }
+
+    const userMessage = messages[userMessageIndex];
+    const historyUpToThatPoint = messages.slice(0, userMessageIndex);
+    
+    // Set the messages state to be the history up to the point of that user message
+    setMessages(historyUpToThatPoint);
+    // Then, resend that user's message
+    sendMessage(userMessage.content, userMessage.attachedData);
+  };
+
+  const handleCopy = (content) => {
+    navigator.clipboard.writeText(content).then(() => {
+      message.success('已复制到剪贴板');
+    }, () => {
+      message.error('复制失败');
     });
   };
 
@@ -277,6 +376,8 @@ export const useMessaging = (
     sendMessage,
     sendQuickQuery,
     cancelCurrentTask,
+    handleRegenerate,
+    handleCopy,
     generateDocument,
   };
 };

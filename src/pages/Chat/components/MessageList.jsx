@@ -72,8 +72,8 @@ const MessageList = ({
         />
       ))}
       {streamingMessage && (
-        <StreamingMessage 
-          streamingMessage={streamingMessage} 
+        <StreamingMessage
+          streamingMessage={streamingMessage}
           onCancel={onCancel}
           setStreamingMessage={setStreamingMessage}
           setCurrentTask={setCurrentTask}

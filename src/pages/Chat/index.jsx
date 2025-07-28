@@ -24,7 +24,8 @@ const ChatPage = () => {
   const agentState = useAgent(chatState.setMessages, chatState.setStreamingMessage, chatState.setCurrentTask, chatState.setInputValue, chatState.inputRef);
   const dataManagementState = useDataManagement(getUserId());
   const mcpState = useMcp();
-  const messagingState = useMessaging({ ...chatState, ...dataManagementState }, modelState, agentState);
+  const [lastChatStatus, setLastChatStatus] = useState(null);
+  const messagingState = useMessaging({ ...chatState, ...dataManagementState, lastChatStatus, setLastChatStatus }, modelState, agentState);
 
   const { messages, setMessages, setStreamingMessage, setCurrentTask, setInputValue, inputRef } = chatState;
   const { selectedAgent, showPersonaIntro, setShowPersonaIntro, currentPersonaIntro } = agentState;

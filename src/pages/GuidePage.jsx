@@ -73,7 +73,7 @@ const HomePage = () => {
           id: Date.now(),
           type: 'persona_context',
           name: personaData.title || '账号人设',
-          data: personaData
+          data: personaData.document_content
         });
       }
       
@@ -83,7 +83,7 @@ const HomePage = () => {
           id: Date.now() + 1,
           type: 'product_context',
           name: productData.title || '产品信息',
-          data: productData
+          data: productData.document_content
         });
       }
       
@@ -120,10 +120,10 @@ const HomePage = () => {
       
       // 构建带有@引用的问题
       let enhancedQuestion = defaultQuestion;
-      if (attachedData.length > 0) {
-        const references = attachedData.map(item => `@${item.type}:${item.name}`).join(' ');
-        enhancedQuestion = `${references} ${defaultQuestion}`;
-      }
+      // if (attachedData.length > 0) {
+      //   const references = attachedData.map(item => `@${item.type}:${item.name}`).join(' ');
+      //   enhancedQuestion = `${references} ${defaultQuestion}`;
+      // }
       
       // 如果是内容生成，尝试获取选题库和内容框架数据
       if (agentType === 'content_generation') {
@@ -218,7 +218,7 @@ const HomePage = () => {
           icon: 'fa-bullseye',
           progress: 50,
           description: '找到"用户痛到愿意花钱解决"的需求，确保内容"戳中痒点"',
-          action: () => navigateToChat("请帮我分析[产品名称]的目标用户在小红书上反映的主要痛点，并按出现频率和情绪强度排序", "pain_point_analysis"),
+          action: () => navigateToChat("请帮我分析目标用户在小红书上反映的主要痛点", "pain_point_analysis"),
           actionText: '分析痛点'
         },
         {
@@ -236,7 +236,7 @@ const HomePage = () => {
           icon: 'fa-chart-line',
           progress: 40,
           description: '找到"已被验证的成功路径"，避免重复踩坑',
-          action: () => navigateToChat("请帮我分析同类博主（粉丝5k-5w，互动率>5%）的成功策略，包括高赞笔记共性、发布规律、变现方式，并输出竞品策略差异表。", "competitor_blogger_analysis"),
+          action: () => navigateToChat("请帮我分析同类博主的成功策略，包括高赞笔记共性、发布规律、变现方式，并输出竞品策略差异表。", "competitor_blogger_analysis"),
           actionText: '智能分析'
         }
       ]

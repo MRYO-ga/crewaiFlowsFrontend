@@ -136,13 +136,20 @@ export const useMessaging = (
                     break;
 
                   case 'ai_message':
-                    updated.status = 'streaming';
+                    updated.status = 'generating_answer';
                     // 直接累加Markdown内容
                     updated.content = (updated.content || '') + data.content;
                     break;
 
                   case 'tool_calling':
                     updated.status = 'calling_tool';
+                    console.log('tool_calling:', data);
+                    updated.content = updated.content || ''; // 保持已显示的文本
+                    updated.currentTool = data.data; // 存储工具调用信息
+                    break;
+
+                  case 'tool_result':
+                    updated.status = 'ai_analysing_tool_result';
                     updated.content = updated.content || ''; // 保持已显示的文本
                     updated.currentTool = data.data; // 存储工具调用信息
                     break;

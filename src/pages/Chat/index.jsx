@@ -321,6 +321,8 @@ const ChatPage = () => {
         onCancel={messagingState.cancelCurrentTask}
         onQuickQuery={messagingState.sendQuickQuery}
         onGenerateDocument={messagingState.generateDocument}
+        setStreamingMessage={chatState.setStreamingMessage}
+        setCurrentTask={chatState.setCurrentTask}
       />
       <ChatInput
         inputValue={chatState.inputValue}

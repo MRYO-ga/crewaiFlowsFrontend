@@ -64,142 +64,109 @@ const renderStatusIndicator = (status) => {
 const renderConversationFlow = (message) => {
   if (!message) return null;
 
-  // If there are no steps or it's a simple message, just render the content.
-  if (!message.steps || message.steps.length === 0) {
-    return (
+  const hasSteps = message.steps && message.steps.length > 0;
+  if (!hasSteps) {
+    return message.content ? (
       <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#262626' }}>
-        <EnhancedMarkdown fontSize="13px">
-          {message.content || ''}
-        </EnhancedMarkdown>
+        <EnhancedMarkdown fontSize="13px">{message.content}</EnhancedMarkdown>
       </div>
-    );
+    ) : null;
   }
+  
+  const orderedSteps = [...message.steps].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  
+  let lastTextContent = null;
+  const conversationParts = [];
 
-  const toolExecutions = [];
-  const orderedSteps = [...message.steps].sort((a, b) => a.timestamp - b.timestamp);
-  const processedToolCalls = new Set();
-
-  // First, build the timeline of tool calls
-  for (const step of orderedSteps) {
-    if (step.type === 'tool_call' && !processedToolCalls.has(step.timestamp)) {
-      const resultStep = orderedSteps.find(s => 
-        s.type === 'tool_result' && 
-        s.timestamp > step.timestamp
-      );
-      
-      toolExecutions.push({
-        type: 'tool_execution',
-        call: step,
-        result: resultStep,
-        timestamp: step.timestamp
-      });
-      processedToolCalls.add(step.timestamp);
+  orderedSteps.forEach(step => {
+    if (step.type === 'ai_message' && step.content) {
+      if (!lastTextContent) {
+        lastTextContent = { type: 'text', content: '' };
+        conversationParts.push(lastTextContent);
+      }
+      lastTextContent.content += step.content;
+    } else if (step.type === 'tool_calling') {
+      const resultStep = orderedSteps.find(r => r.type === 'tool_result' && r.data?.name === step.data.name);
+      conversationParts.push({ type: 'tool', call: step, result: resultStep });
+      lastTextContent = null;
     }
-  }
+  });
 
-  // Now, render the timeline and the final/streaming AI response
   return (
     <div>
-      {/* Render the tool call timeline */}
-      {toolExecutions.map((item, index) => (
-        <details key={index} style={{ 
-          border: '1px solid #e8e8e8',
-          borderRadius: 6,
-          padding: 0,
-          marginBottom: 6,
-          backgroundColor: '#fafafa'
-        }}>
-          <summary style={{ 
-            padding: '8px 12px',
-            backgroundColor: '#f5f5f5',
-            borderRadius: '6px 6px 0 0',
-            borderBottom: '1px solid #e8e8e8',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '12px',
-            cursor: 'pointer'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <span style={{ marginRight: 6, fontSize: '12px' }}>
-                {item.result ? '✅' : '⏳'}
-              </span>
-              <Text strong style={{ fontSize: '12px' }}>
-                {item.call.data?.name || '工具调用'}
-              </Text>
+      {conversationParts.map((part, index) => {
+        if (part.type === 'text') {
+          return (
+            <div key={index} style={{ fontSize: '13px', lineHeight: 1.6, color: '#262626' }}>
+              <EnhancedMarkdown fontSize="13px">{part.content}</EnhancedMarkdown>
             </div>
-            <Text type="secondary" style={{ fontSize: '11px' }}>
-              点击查看详情
-            </Text>
-          </summary>
-          
-          <div style={{ padding: '12px' }}>
-            <div style={{ marginBottom: 8 }}>
-              <Text strong style={{ fontSize: '11px', color: '#666' }}>
-                调用参数:
-              </Text>
-              <pre style={{ 
-                backgroundColor: '#f8f8f8',
-                padding: '6px 8px',
-                borderRadius: 3,
-                fontSize: '11px',
-                margin: '3px 0 0 0',
-                overflow: 'auto'
+          );
+        }
+        if (part.type === 'tool') {
+          return (
+            <div key={index} style={{ margin: '12px 0' }}>
+              <details open style={{ 
+                border: '1px solid #e8e8e8',
+                borderRadius: 6,
+                padding: 0,
+                backgroundColor: '#fafafa'
               }}>
-                {JSON.stringify(item.call.data?.args || {}, null, 2)}
-              </pre>
-            </div>
-            
-            {item.result && (
-              <div>
-                <Text strong style={{ fontSize: '11px', color: '#666' }}>
-                  执行结果:
-                </Text>
-                <div style={{ 
-                  backgroundColor: '#f0f9ff',
-                  padding: '6px 8px',
-                  borderRadius: 3,
-                  fontSize: '11px',
-                  margin: '3px 0 0 0',
-                  border: '1px solid #e0f2fe',
-                  whiteSpace: 'pre-wrap'
+                <summary style={{ 
+                  padding: '8px 12px',
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: '6px 6px 0 0',
+                  borderBottom: '1px solid #e8e8e8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '12px',
+                  cursor: 'pointer'
                 }}>
-                  {typeof item.result.data?.result === 'string' 
-                    ? item.result.data.result 
-                    : JSON.stringify(item.result.data?.result || '执行完成', null, 2)
-                  }
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span style={{ marginRight: 8, fontSize: '12px', display: 'flex', alignItems: 'center' }}>
+                      {part.result ? '✅' : <Spin size="small" />}
+                    </span>
+                    <Text strong style={{ fontSize: '12px' }}>
+                      {part.call.data?.name || '工具调用'}
+                    </Text>
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '11px' }}>
+                    点击{part.result ? '查看' : '隐藏'}详情
+                  </Text>
+                </summary>
+                
+                <div style={{ padding: '12px' }}>
+                  <div style={{ marginBottom: 8 }}>
+                    <Text strong style={{ fontSize: '11px', color: '#666' }}>调用参数:</Text>
+                    <pre style={{ 
+                      backgroundColor: '#f8f8f8', padding: '6px 8px', borderRadius: 3, fontSize: '11px',
+                      margin: '3px 0 0 0', overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all'
+                    }}>
+                      {JSON.stringify(part.call.data?.args || {}, null, 2)}
+                    </pre>
+                  </div>
+                  
+                  {part.result && (
+                    <div>
+                      <Text strong style={{ fontSize: '11px', color: '#666' }}>执行结果:</Text>
+                      <div style={{ 
+                        backgroundColor: '#f0f9ff', padding: '6px 8px', borderRadius: 3, fontSize: '11px',
+                        margin: '3px 0 0 0', border: '1px solid #e0f2fe', whiteSpace: 'pre-wrap',
+                        maxHeight: '200px', overflowY: 'auto'
+                      }}>
+                        {typeof part.result.data?.result === 'string' 
+                          ? part.result.data.result 
+                          : JSON.stringify(part.result.data?.result || '执行完成', null, 2)}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
-            
-            {!item.result && (
-              <div style={{ 
-                color: '#999', 
-                fontSize: '12px',
-                fontStyle: 'italic' 
-              }}>
-                正在执行工具...
-              </div>
-            )}
-          </div>
-        </details>
-      ))}
-
-      {/* Render the AI's explanation/response at the end */}
-      <div style={{ 
-        padding: '8px 0',
-        lineHeight: 1.6 
-      }}>
-        <div style={{ 
-          margin: 0, 
-          fontSize: '13px',
-          color: '#262626'
-        }}>
-          <EnhancedMarkdown fontSize="13px">
-            {message.aiExplanation || message.content || ''}
-          </EnhancedMarkdown>
-        </div>
-      </div>
+              </details>
+            </div>
+          );
+        }
+        return null;
+      })}
     </div>
   );
 };
@@ -302,14 +269,16 @@ const Message = ({ message, onCancel, onQuickQuery, onGenerateDocument }) => {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     {renderStatusIndicator(message.status || 'complete')}
-                    {message.steps && message.steps.length > 0 && (
-                      <Text type="secondary" style={{ marginLeft: 12, fontSize: '12px' }}>
-                        已执行 {message.steps.length} 个步骤
-                      </Text>
-                    )}
+                    <Text type="secondary" style={{ marginLeft: 12, fontSize: '12px' }}>
+                      {message.status === 'calling_tool' ? '正在调用工具...' :
+                       message.status === 'ai_analysing_tool_result' ? 'AI正在分析工具结果...' :
+                       message.status === 'generating_answer' ? 'AI正在生成回答...' :
+                       '正在处理...'
+                      }
+                    </Text>
                   </div>
                   
-                  {message.status && ['processing', 'thinking', 'calling_tool', 'loading_tools', 'generating_answer', 'ai_explaining'].includes(message.status) && !message.isCompleted && (
+                  {message.status && !message.isCompleted && (
                     <Button 
                       size="small" 
                       type="text" 
@@ -386,7 +355,7 @@ const Message = ({ message, onCancel, onQuickQuery, onGenerateDocument }) => {
                 </div>
               )}
               
-              {message.status && !message.isCompleted && (
+              {/* {message.status && !message.isCompleted && (
                 <div style={{ display: 'flex', alignItems: 'center', padding: '12px 0' }}>
                   <Spin size="small" style={{ marginRight: 8 }} />
                   <Text type="secondary" style={{ fontSize: '12px' }}>
@@ -397,7 +366,7 @@ const Message = ({ message, onCancel, onQuickQuery, onGenerateDocument }) => {
                      '正在处理中...'}
                   </Text>
                 </div>
-              )}
+              )} */}
             </div>
           )}
         </Card>

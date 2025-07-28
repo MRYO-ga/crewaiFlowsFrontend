@@ -1,5 +1,6 @@
 # Node
 node_modules/
+.git_disabled/
 
 # Logs
 npm-debug.log*

@@ -1,8 +1,16 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Message from './Message';
 import StreamingMessage from './StreamingMessage';
 
-const MessageList = ({ messages, streamingMessage, onCancel, onQuickQuery, onGenerateDocument }) => {
+const MessageList = ({ 
+  messages, 
+  streamingMessage, 
+  onCancel, 
+  onQuickQuery, 
+  onGenerateDocument,
+  setStreamingMessage,
+  setCurrentTask
+}) => {
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
@@ -63,15 +71,12 @@ const MessageList = ({ messages, streamingMessage, onCancel, onQuickQuery, onGen
           onGenerateDocument={onGenerateDocument}
         />
       ))}
-      {streamingMessage && !streamingMessage.isCompleted && (
-        <StreamingMessage
-          streamingMessage={streamingMessage}
-          onContentUpdate={(content, chatStatus) => {
-            // 这里可以处理状态更新
-            if (chatStatus) {
-              console.log('Received chat status:', chatStatus);
-            }
-          }}
+      {streamingMessage && (
+        <StreamingMessage 
+          streamingMessage={streamingMessage} 
+          onCancel={onCancel}
+          setStreamingMessage={setStreamingMessage}
+          setCurrentTask={setCurrentTask}
         />
       )}
       <div ref={messagesEndRef} />

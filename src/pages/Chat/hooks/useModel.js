@@ -21,7 +21,7 @@ export const useModel = () => {
           { value: 'gpt-4o', label: 'GPT-4o', provider: 'openai', description: '更强大的推理能力，适合复杂任务' },
           { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4', provider: 'anthropic', description: '最新Claude模型，优秀的推理和创作能力' },
           { value: 'claude-3-7-sonnet-20250219-thinking', label: 'Claude 3.7 Sonnet (Thinking)', provider: 'anthropic', description: '具有深度思考能力的Claude模型' },
-          { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet', provider: 'anthropic', description: '平衡性能和速度的Claude模型' },
+          { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet', provider: 'anthropic', description: '平衡性能和速度的Claude模型' },
           { value: 'deepseek-r1-250528', label: 'DeepSeek R1', provider: 'deepseek', description: '中文优化的强推理模型' }
         ];
         setAvailableModels(defaultModels);
@@ -32,7 +32,7 @@ export const useModel = () => {
         { value: 'gpt-4o', label: 'GPT-4o', provider: 'openai', description: '更强大的推理能力，适合复杂任务' },
         { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4', provider: 'anthropic', description: '最新Claude模型，优秀的推理和创作能力' },
         { value: 'claude-3-7-sonnet-20250219-thinking', label: 'Claude 3.7 Sonnet (Thinking)', provider: 'anthropic', description: '具有深度思考能力的Claude模型' },
-        { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet', provider: 'anthropic', description: '平衡性能和速度的Claude模型' },
+        { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet', provider: 'anthropic', description: '平衡性能和速度的Claude模型' },
         { value: 'deepseek-r1-250528', label: 'DeepSeek R1', provider: 'deepseek', description: '中文优化的强推理模型' }
       ];
       setAvailableModels(defaultModels);

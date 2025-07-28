@@ -122,6 +122,18 @@ export const useMessaging = (state, modelState, agentState) => {
               };
               
               setTaskHistory(prev => [...prev, stepInfo]);
+
+              // Bug Fix: Decouple background status updates from UI streaming updates.
+              if (data.type === 'background_status_update') {
+                if (data.data && data.data.chat_status) {
+                  console.log("📥 [Direct] 后台状态更新，保存chat_status:", data.data.chat_status);
+                  setLastChatStatus(data.data.chat_status);
+                } else {
+                  console.log("⚠️ background_status_update事件中没有chat_status数据");
+                }
+                // Continue to the next event, do not trigger a streamingMessage update.
+                continue; 
+              }
               
               setStreamingMessage(prev => {
                 if (!prev || prev.id !== streamingId) return prev;
@@ -168,18 +180,14 @@ export const useMessaging = (state, modelState, agentState) => {
                     updated.status = data.content;
                     break;
 
-                  case 'background_status_update':
-                    // 后台状态更新，保存chat_status但不影响UI
-                    if (data.data && data.data.chat_status) {
-                      console.log("📥 后台状态更新，保存chat_status:", data.data.chat_status);
-                      setLastChatStatus(data.data.chat_status);
-                    }
-                    break;
-
                   case 'complete':
                     updated.status = 'complete';
                     updated.isCompleted = true;
                     
+                    // 立即解锁UI，不再等待流关闭
+                    console.log("✅ 收到Complete事件，立即解锁UI")
+                    setIsLoading(false);
+
                     // 确保最终内容被设置
                     finalContent = updated.content || '';
                     updated.content = finalContent;
@@ -241,9 +249,11 @@ export const useMessaging = (state, modelState, agentState) => {
       setStreamingMessage(null);
       setCurrentTask(null);
       setAbortController(null);
-    } finally {
-      setIsLoading(false);
-    }
+    } 
+    //  finally {
+    //   // This is now handled within the 'complete' event to allow for background status collection.
+    //   setIsLoading(false);
+    // }
   };
 
   const sendMessage = async (inputValue) => {

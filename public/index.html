@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
     <meta name="theme-color" content="#165DFF" />
     <meta name="description" content="SocialPulse AI - 智能社交媒体运营助手" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
@@ -11,6 +11,54 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>SocialPulse AI - 智能社交媒体运营助手</title>
+    <style>
+      /* 防止缩放时元素溢出的全局样式 */
+      * {
+        box-sizing: border-box;
+      }
+      
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        max-width: 100vw;
+        font-size: 14px; /* 基础字体大小 */
+      }
+      
+      #root {
+        max-width: 100vw;
+        overflow-x: hidden;
+      }
+      
+      /* 响应式字体缩放 */
+      @media (max-width: 768px) {
+        html { font-size: 13px; }
+      }
+      
+      @media (max-width: 480px) {
+        html { font-size: 12px; }
+      }
+      
+      /* 高缩放级别时的处理 */
+      @media (min-resolution: 2dppx) {
+        body { 
+          font-size: 0.9em;
+        }
+      }
+      
+      /* 确保所有元素不会水平溢出 */
+      img, video, iframe, pre, code {
+        max-width: 100%;
+        height: auto;
+      }
+      
+      /* 长文本处理 */
+      p, div, span {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+      }
+    </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

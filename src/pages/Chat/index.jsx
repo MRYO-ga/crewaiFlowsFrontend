@@ -16,6 +16,7 @@ import ChatInput from './components/ChatInput';
 import SettingsDrawer from './components/SettingsDrawer';
 import { agentOptions } from './components/agentOptions';
 import DocumentPanel from './components/DocumentPanel';
+import XhsResultsPanel from './components/XhsResultsPanel';
 
 const getUserId = () => localStorage.getItem('userId') || 'default_user';
 
@@ -41,6 +42,11 @@ const ChatPage = () => {
   const [showDocumentPanel, setShowDocumentPanel] = useState(false);
   const [documentContent, setDocumentContent] = useState('');
 
+  const [xhsResults, setXhsResults] = useState([]);
+  const [isXhsPanelVisible, setIsXhsPanelVisible] = useState(false);
+
+  const [xhsPanelWidth, setXhsPanelWidth] = useState(400);
+
   useEffect(() => {
     initializeMcpConnection();
     loadComprehensiveData();
@@ -57,8 +63,6 @@ const ChatPage = () => {
       setDocumentContent(content);
       setShowDocumentPanel(true);
     };
-
-
 
     return () => {
       delete window.openDocumentPanel;
@@ -152,6 +156,70 @@ const ChatPage = () => {
       }
     }
   }, [chatState.streamingMessage?.documentContent]);
+
+  // 监听小红书笔记结果
+  useEffect(() => {
+    const chunk = messagingState.lastJsonMessage;
+    if (!chunk) return;
+
+    // 处理文档相关事件
+    if (chunk.type === 'generating_document' && chunk.data) {
+        console.log('📄 [ChatPage] 开始生成文档，关闭小红书侧边栏');
+        // 关闭小红书侧边栏
+        setIsXhsPanelVisible(false);
+        // 打开文档侧边栏
+        setDocumentContent(chunk.data.content || '');
+        setShowDocumentPanel(true);
+    } else if (chunk.type === 'document_content') {
+        setDocumentContent(prev => prev + chunk.content);
+    } else if (chunk.type === 'document_complete') {
+        console.log('📄 [ChatPage] 文档生成完成');
+        // 确保文档侧边栏处于打开状态
+        setShowDocumentPanel(true);
+    }
+    
+    // 处理小红书笔记结果事件
+    else if (chunk.type === 'xhs_notes_result' && chunk.data) {
+        console.log('📱 [ChatPage] 处理小红书笔记结果:', chunk.data);
+        console.log('📱 [ChatPage] 笔记数据结构检查:', {
+            hasNotesData: !!chunk.data.notes_data,
+            hasNotes: !!(chunk.data.notes_data && chunk.data.notes_data.notes),
+            notesCount: chunk.data.notes_data?.notes?.length || 0,
+            toolName: chunk.data.tool_name,
+            groupId: chunk.data.group_id
+        });
+        
+        // 详细检查第一个笔记的数据结构
+        if (chunk.data.notes_data?.notes?.[0]) {
+            const firstNote = chunk.data.notes_data.notes[0];
+            console.log('📱 [ChatPage] 第一个笔记详细信息:', {
+                title: firstNote.display_title,
+                hasCover: !!firstNote.cover,
+                coverImage: firstNote.cover_image,
+                coverDefault: firstNote.cover?.url_default,
+                userAvatar: firstNote.user?.avatar,
+                interactInfo: firstNote.interact_info
+            });
+        }
+        
+        // 只有当数据结构正确时才添加到结果中
+        if (chunk.data.notes_data && chunk.data.notes_data.notes && chunk.data.notes_data.notes.length > 0) {
+            setXhsResults(prev => {
+                const newResults = [...prev, chunk.data];
+                console.log('📱 [ChatPage] 更新xhsResults，新数量:', newResults.length);
+                return newResults;
+            });
+    
+            setIsXhsPanelVisible(true);
+            
+
+            
+            console.log('📱 [ChatPage] 小红书侧边栏已设置为可见');
+        } else {
+            console.warn('📱 [ChatPage] 小红书笔记数据结构不正确，跳过显示');
+        }
+    }
+  }, [messagingState.lastJsonMessage]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -315,24 +383,145 @@ const ChatPage = () => {
     );
   };
 
+  // 临时测试函数 - 包含图片的测试数据
+  const testXhsPanel = () => {
+    const testData = {
+        tool_name: "search_notes",
+        tool_args: { keywords: "测试" },
+        notes_data: {
+            success: true,
+            total_items: 2,
+            notes: [
+                {
+                    id: "test1",
+                    display_title: "测试笔记1",
+                    desc: "这是一个测试笔记的描述",
+                    cover: {
+                        url_default: "https://sns-webpic-qc.xhscdn.com/202312121415/c8e8b0b1e7e8d1f2a3b4c5d6e7f8g9h0/1040g2sg31hck0snljo7g4abpkrlfhm53ocdciko!nc_n_webp_mw_1"
+                    },
+                    cover_image: "https://sns-webpic-qc.xhscdn.com/202312121415/c8e8b0b1e7e8d1f2a3b4c5d6e7f8g9h0/1040g2sg31hck0snljo7g4abpkrlfhm53ocdciko!nc_n_webp_mw_1",
+                    user: { 
+                        nickname: "测试用户1", 
+                        avatar: "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31hck0snljo7g4abpkrlfhm53ocdciko?imageView2/2/w/80/format/jpg" 
+                    },
+                    interact_info: { liked_count: "100", comment_count: "20" },
+                    time: "2024-01-01",
+                    ip_location: "北京"
+                },
+                {
+                    id: "test2", 
+                    display_title: "测试笔记2",
+                    desc: "另一个测试笔记",
+                    cover: {
+                        url_default: "https://sns-webpic-qc.xhscdn.com/202312121416/a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6/1040g2sg31hck0snljo7g4abpkrlfhm53ocdcikp!nc_n_webp_mw_1"
+                    },
+                    cover_image: "https://sns-webpic-qc.xhscdn.com/202312121416/a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6/1040g2sg31hck0snljo7g4abpkrlfhm53ocdcikp!nc_n_webp_mw_1",
+                    user: { 
+                        nickname: "测试用户2", 
+                        avatar: "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31hck0snljo7g4abpkrlfhm53ocdcikq?imageView2/2/w/80/format/jpg" 
+                    },
+                    interact_info: { liked_count: "200", comment_count: "30" },
+                    time: "2024-01-02",
+                    ip_location: "上海"
+                }
+            ]
+        },
+        group_id: "test-group-123"
+    };
+    
+    setXhsResults([testData]);
+    setIsXhsPanelVisible(true);
+    console.log('🧪 [测试] 手动显示小红书侧边栏，包含图片数据');
+  };
+
+
+
   return (
-    <div className="chat-container" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <div style={{display: 'flex', flex: 1, overflow: 'hidden'}}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column'}}>
+    <div className="chat-container" style={{ 
+      height: '100vh', 
+      maxHeight: '100vh',
+      display: 'flex', 
+      flexDirection: 'column',
+      maxWidth: '100vw',
+      overflow: 'hidden',
+      position: 'relative'
+    }}>
       <style jsx>{`
+        /* 防止缩放时元素溢出 */
+        * {
+          box-sizing: border-box;
+        }
+        
+        .chat-container {
+          background: #fafafa;
+          max-width: 100vw;
+          max-height: 100vh;
+          overflow: hidden;
+          position: relative;
+        }
+        
+        /* 动画效果 */
         @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-        .message-item { display: flex; margin-bottom: 16px; align-items: flex-start; animation: fadeInUp 0.3s ease-out; }
+        
+        /* 消息相关样式 */
+        .message-item { 
+          display: flex; 
+          margin-bottom: 16px; 
+          align-items: flex-start; 
+          animation: fadeInUp 0.3s ease-out;
+          max-width: 100%;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
+        }
         .message-item.user { flex-direction: row-reverse; }
-        .message-content { max-width: 80%; flex: 1; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 20px; background: linear-gradient(to bottom, #fafafa, #ffffff); }
-        .chat-input-area { padding: 20px; background: white; border-top: 1px solid #f0f0f0; box-shadow: 0 -2px 8px rgba(0,0,0,0.1); }
-        .chat-container { background: #fafafa; }
+        .message-content { 
+          max-width: 80%; 
+          flex: 1; 
+          min-width: 0; /* 允许flex项目缩小 */
+          overflow-wrap: break-word;
+        }
+        
+        /* 聊天区域样式 */
+        .chat-messages { 
+          flex: 1; 
+          overflow-y: auto; 
+          overflow-x: hidden; /* 防止水平溢出 */
+          padding: 20px; 
+          background: linear-gradient(to bottom, #fafafa, #ffffff);
+          max-width: 100%;
+        }
+        
+        .chat-input-area { 
+          padding: 20px; 
+          background: white; 
+          border-top: 1px solid #f0f0f0; 
+          box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+          max-width: 100%;
+          overflow: hidden;
+        }
+        
+        /* 工具详情样式 */
         details summary::-webkit-details-marker { display: none; }
         details summary::before { content: '▶'; margin-right: 8px; transition: transform 0.2s ease; display: inline-block; }
         details[open] summary::before { transform: rotate(90deg); }
         details summary:hover { background: #e9ecef !important; }
+        
+        /* 响应式处理 */
+        @media (max-width: 768px) {
+          .message-content { max-width: 90%; }
+          .chat-messages { padding: 10px; }
+          .chat-input-area { padding: 15px; }
+        }
+        
+        @media (max-width: 480px) {
+          .message-content { max-width: 95%; }
+          .chat-messages { padding: 8px; }
+          .chat-input-area { padding: 12px; }
+        }
       `}</style>
+      
+      {/* Header 独立在顶部，不受侧边栏影响 */}
       <Header
         mcpStatus={mcpState.mcpStatus}
         chatHistory={dataManagementState.chatHistory}
@@ -343,12 +532,26 @@ const ChatPage = () => {
         contextLoading={dataManagementState.contextLoading}
         loadComprehensiveData={loadComprehensiveData}
       />
+      
+      {/* 主要内容区域：MessageList 和 ChatInput，与侧边栏并列布局 */}
+      <div style={{display: 'flex', flex: 1, overflow: 'hidden'}}>
+        <div style={{ 
+          flex: 1, 
+          display: 'flex', 
+          flexDirection: 'column',
+          minWidth: 0
+        }}>
+      
+
+      
       <MessageList
         messages={messages}
         streamingMessage={chatState.streamingMessage}
         onCancel={messagingState.cancelCurrentTask}
         onQuickQuery={messagingState.sendQuickQuery}
         onGenerateDocument={messagingState.generateDocument}
+        onRegenerate={messagingState.handleRegenerate}
+        onCopy={messagingState.handleCopy}
         setStreamingMessage={chatState.setStreamingMessage}
         setCurrentTask={chatState.setCurrentTask}
       />
@@ -391,7 +594,15 @@ const ChatPage = () => {
         {showDocumentPanel && (
             <DocumentPanel
                 content={documentContent}
-                onClose={() => setShowDocumentPanel(false)}
+                onClose={() => {
+                    console.log('📄 [ChatPage] 用户关闭文档侧边栏');
+                    setShowDocumentPanel(false);
+                    // 如果有小红书结果，可以重新打开小红书侧边栏
+                    if (xhsResults.length > 0) {
+                        console.log('📱 [ChatPage] 重新打开小红书侧边栏');
+                        setIsXhsPanelVisible(true);
+                    }
+                }}
                 onCopy={() => {
                     navigator.clipboard.writeText(documentContent);
                     // 可以添加成功提示，但需要先导入message
@@ -407,6 +618,15 @@ const ChatPage = () => {
                     document.body.removeChild(link);
                     URL.revokeObjectURL(url);
                 }}
+            />
+        )}
+            
+            {isXhsPanelVisible && (
+                <XhsResultsPanel
+                    results={xhsResults}
+                    isVisible={isXhsPanelVisible}
+                    onClose={() => setIsXhsPanelVisible(false)}
+                    onWidthChange={setXhsPanelWidth}
             />
         )}
         </div>

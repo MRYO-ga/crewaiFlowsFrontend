@@ -3,6 +3,7 @@ import { Avatar, Card, Typography, Tag, Button, Spin, Space, Tooltip } from 'ant
 import { UserOutlined, RobotOutlined, DownloadOutlined, CheckCircleOutlined, SyncOutlined, CopyOutlined, FileTextOutlined } from '@ant-design/icons';
 import EnhancedMarkdown from './EnhancedMarkdown';
 
+
 const { Text, Paragraph } = Typography;
 
 const renderStatusIndicator = (status) => {
@@ -117,36 +118,48 @@ const renderConversationFlow = (message) => {
           );
         }
         if (part.type === 'tool') {
+          const isXhsTool = part.call.data?.name === 'search_notes' || part.call.data?.name === 'home_feed';
+          const toolDisplayName = isXhsTool 
+            ? (part.call.data?.name === 'search_notes' 
+                ? `搜索小红书笔记: "${part.call.data?.args?.keywords || '未知关键词'}"` 
+                : '获取小红书首页推荐')
+            : (part.call.data?.name || '工具调用');
+          
           return (
             <div key={index} style={{ margin: '12px 0' }}>
               <details open style={{ 
-                border: '1px solid #e8e8e8',
-                borderRadius: 6,
+                border: isXhsTool ? '1px solid #ff4757' : '1px solid #e8e8e8',
+                borderRadius: 8,
                 padding: 0,
-                backgroundColor: '#fafafa'
-              }}>
+                backgroundColor: isXhsTool ? '#fff5f5' : '#fafafa',
+                cursor: isXhsTool ? 'pointer' : 'default'
+              }}
+>
                 <summary style={{ 
-                  padding: '8px 12px',
+                  padding: '10px 14px',
                   backgroundColor: '#f5f5f5',
-                  borderRadius: '6px 6px 0 0',
+                  borderRadius: '8px 8px 0 0',
                   borderBottom: '1px solid #e8e8e8',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  fontSize: '12px',
+                  fontSize: '13px',
                   cursor: 'pointer'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span style={{ marginRight: 8, fontSize: '12px', display: 'flex', alignItems: 'center' }}>
-                      {part.result ? '✅' : <Spin size="small" />}
+                    <span style={{ marginRight: 10, fontSize: '14px', display: 'flex', alignItems: 'center' }}>
+                      {isXhsTool ? '📱' : (part.result ? '✅' : <Spin size="small" />)}
                     </span>
-                    <Text strong style={{ fontSize: '12px' }}>
-                      {part.call.data?.name || '工具调用'}
+                    <Text strong style={{ fontSize: '13px', color: '#333' }}>
+                      {toolDisplayName}
                     </Text>
                   </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    
                   <Text type="secondary" style={{ fontSize: '11px' }}>
-                    点击{part.result ? '查看' : '隐藏'}详情
+                      {part.result ? '查看' : '隐藏'}详情
                   </Text>
+                  </div>
                 </summary>
                 
                 <div style={{ padding: '12px' }}>
@@ -267,6 +280,8 @@ const renderConversationFlow = (message) => {
 const Message = ({ message, onCancel, onQuickQuery, onGenerateDocument, onRegenerate, onCopy }) => {
   const isUser = message.type === 'user';
   const isAssistant = message.type === 'assistant';
+  
+
 
   return (
     <div key={message.id} className={`message-item ${isUser ? 'user' : 'assistant'}`}>
@@ -312,7 +327,6 @@ const Message = ({ message, onCancel, onQuickQuery, onGenerateDocument, onRegene
                 <Paragraph style={{ marginBottom: 0, flex: 1 }}>
                   {message.content}
                 </Paragraph>
-                <Tag color="green" style={{ marginLeft: 16 }}>需求输入</Tag>
               </div>
               {message.attachedData && message.attachedData.length > 0 && (
                 <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #f0f0f0' }}>
@@ -330,6 +344,8 @@ const Message = ({ message, onCancel, onQuickQuery, onGenerateDocument, onRegene
           ) : (
             <div style={{ padding: '12px' }}>
               {renderConversationFlow(message)}
+              
+
               
               <div style={{
                 display: 'flex',

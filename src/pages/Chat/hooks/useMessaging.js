@@ -1,38 +1,8 @@
 import { message } from 'antd';
+import { useState } from 'react';
 import { agentOptions } from '../components/agentOptions';
 
 const getUserId = () => localStorage.getItem('userId') || 'default_user';
-
-const checkForDocumentReady = (content) => {
-  if (!content.includes('document_ready') || !content.includes('true')) {
-    return { isDocument: false };
-  }
-  const jsonBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-  if (jsonBlockMatch && jsonBlockMatch[1]) {
-    try {
-      let jsonContent = jsonBlockMatch[1].trim();
-      if (jsonContent.charAt(0) !== '{') {
-        const firstBrace = jsonContent.indexOf('{');
-        if (firstBrace !== -1) {
-          jsonContent = jsonContent.substring(firstBrace);
-        }
-      }
-      if (jsonContent.includes('document_ready') && jsonContent.includes('true')) {
-        try {
-          const parsed = JSON.parse(jsonContent);
-          if (parsed.document_ready === true) {
-            return {
-              isDocument: true,
-              summary: parsed.summary || '文档已生成',
-              document: parsed.document || ''
-            };
-          }
-        } catch (innerE) {}
-      }
-    } catch (e) {}
-  }
-  return { isDocument: false };
-};
 
 export const useMessaging = (state, modelState, agentState) => {
   const { 
@@ -44,6 +14,9 @@ export const useMessaging = (state, modelState, agentState) => {
   } = state;
   const { selectedModel } = modelState;
   const { selectedAgent } = agentState;
+
+  // 新增 lastJsonMessage 状态
+  const [lastJsonMessage, setLastJsonMessage] = useState(null);
 
   const performMessageSending = async (queryContent, currentAttachedData) => {
     const controller = new AbortController();
@@ -114,6 +87,10 @@ export const useMessaging = (state, modelState, agentState) => {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
+              
+              // 设置最新的JSON消息，供主页面使用
+              setLastJsonMessage(data);
+              
               const stepInfo = {
                 timestamp: Date.now(),
                 type: data.type,
@@ -123,7 +100,7 @@ export const useMessaging = (state, modelState, agentState) => {
               
               setTaskHistory(prev => [...prev, stepInfo]);
 
-              // Bug Fix: Decouple background status updates from UI streaming updates.
+              // 处理特殊事件，但不拦截 xhs_notes_result
               if (data.type === 'background_status_update') {
                 if (data.data && data.data.chat_status) {
                   console.log("📥 [Direct] 后台状态更新，保存chat_status:", data.data.chat_status);
@@ -131,8 +108,14 @@ export const useMessaging = (state, modelState, agentState) => {
                 } else {
                   console.log("⚠️ background_status_update事件中没有chat_status数据");
                 }
-                // Continue to the next event, do not trigger a streamingMessage update.
                 continue; 
+              }
+              
+              // 对于 xhs_notes_result 事件，不在这里处理，让主页面处理
+              if (data.type === 'xhs_notes_result') {
+                console.log("📱 [useMessaging] 收到小红书笔记结果事件，传递给主页面处理");
+                console.log("📱 [useMessaging] xhs_notes_result 数据:", data);
+                continue;
               }
               
               setStreamingMessage(prev => {
@@ -402,5 +385,9 @@ export const useMessaging = (state, modelState, agentState) => {
     handleRegenerate,
     handleCopy,
     generateDocument,
+    lastJsonMessage,  // 新增返回
+    handleSend: sendMessage,  // 添加别名
+    handleStop: cancelCurrentTask,  // 添加别名
+    handleClearHistory: () => setMessages([])  // 添加清空历史方法
   };
 };

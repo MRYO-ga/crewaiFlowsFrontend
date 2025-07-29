@@ -8,12 +8,16 @@ const MessageList = ({
   onCancel, 
   onQuickQuery, 
   onGenerateDocument,
+  onRegenerate,
+  onCopy,
   setStreamingMessage,
   setCurrentTask
 }) => {
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+  
+
 
   // 检查是否在容器底部附近
   const isNearBottom = () => {
@@ -69,6 +73,8 @@ const MessageList = ({
           onCancel={onCancel}
           onQuickQuery={onQuickQuery}
           onGenerateDocument={onGenerateDocument}
+          onRegenerate={onRegenerate}
+          onCopy={onCopy}
         />
       ))}
       {streamingMessage && (
@@ -79,6 +85,9 @@ const MessageList = ({
           setCurrentTask={setCurrentTask}
         />
       )}
+      
+
+      
       <div ref={messagesEndRef} />
     </div>
   );

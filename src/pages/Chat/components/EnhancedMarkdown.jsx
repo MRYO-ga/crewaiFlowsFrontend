@@ -3,7 +3,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import MermaidDiagram from './MermaidDiagram';
 
-const EnhancedMarkdown = ({ children, fontSize = '13px' }) => {
+const EnhancedMarkdown = ({ content, children, fontSize = '13px' }) => {
+  const markdownContent = content || children;
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -122,7 +123,7 @@ const EnhancedMarkdown = ({ children, fontSize = '13px' }) => {
         em: ({children}) => <em style={{fontStyle: 'italic', color: '#666'}}>{children}</em>
       }}
     >
-      {children}
+      {markdownContent}
     </ReactMarkdown>
   );
 };

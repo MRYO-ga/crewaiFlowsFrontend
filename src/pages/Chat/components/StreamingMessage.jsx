@@ -14,7 +14,9 @@ const StreamingMessage = ({ streamingMessage, onCancel }) => {
         content: streamingMessage.content,
         steps: streamingMessage.steps,
         status: streamingMessage.status,
-        isCompleted: streamingMessage.isCompleted
+        isCompleted: streamingMessage.isCompleted,
+        documentContent: streamingMessage.documentContent,
+        documentReady: streamingMessage.documentReady
       }}
       onCancel={onCancel}
     />

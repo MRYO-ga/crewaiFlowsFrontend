@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar, Card, Typography, Tag, Button, Spin, Space, Tooltip } from 'antd';
-import { UserOutlined, RobotOutlined, DownloadOutlined, CheckCircleOutlined, SyncOutlined, CopyOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined, DownloadOutlined, CheckCircleOutlined, SyncOutlined, CopyOutlined, FileTextOutlined } from '@ant-design/icons';
 import EnhancedMarkdown from './EnhancedMarkdown';
 
 const { Text, Paragraph } = Typography;
@@ -13,6 +13,8 @@ const renderStatusIndicator = (status) => {
       thinking: { color: '#faad14', text: 'AI思考中', icon: '🤔' },
       ai_analysing_tool_result: { color: '#faad14', text: '更新记忆中', icon: '🤔' }, // 更新记忆
       calling_tool: { color: '#1890ff', text: '调用工具中', icon: '⚙️' },
+      generating_document: { color: '#722ed1', text: '生成文档中', icon: '📝' },
+      document_ready: { color: '#52c41a', text: '文档已完成', icon: '📄' },
       tool_completed: { color: '#52c41a', text: '工具完成', icon: '✅' },
       generating_answer: { color: '#13c2c2', text: '生成回答中', icon: '✍️' },
       generating_document: { color: '#13c2c2', text: '生成文档中', icon: '📄' }, // 生成文档
@@ -94,6 +96,16 @@ const renderConversationFlow = (message) => {
     }
   });
 
+  // 检查是否有文档内容
+  if (message.documentContent || message.documentReady) {
+    conversationParts.push({ 
+      type: 'document', 
+      content: message.documentContent || '',
+      ready: message.documentReady || false,
+      status: message.status
+    });
+  }
+
   return (
     <div>
       {conversationParts.map((part, index) => {
@@ -164,6 +176,85 @@ const renderConversationFlow = (message) => {
                   )}
                 </div>
               </details>
+            </div>
+          );
+        }
+        if (part.type === 'document') {
+          const extractTitle = (markdown) => {
+            if (!markdown) return '未命名文档';
+            const h1Match = markdown.match(/^#\s+(.*)/m);
+            if (h1Match) return h1Match[1];
+            
+            const firstLine = markdown.split('\n').find(line => line.trim() !== '');
+            return firstLine ? firstLine.substring(0, 50) : '未命名文档';
+          };
+
+          const title = extractTitle(part.content);
+
+          const handleDownloadClick = (e) => {
+            e.stopPropagation();
+            if (!part.content) return;
+            const blob = new Blob([part.content], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${title}.md`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          };
+          
+          return (
+            <div 
+              key={index} 
+              style={{
+                maxWidth: '75%',
+                width: 'fit-content',
+                backgroundColor: '#f8f9fa',
+                border: '1px solid #e9ecef',
+                borderRadius: '12px',
+                padding: '12px 16px',
+                cursor: 'pointer',
+                marginTop: '8px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                transition: 'box-shadow 0.2s ease-in-out',
+              }}
+              onClick={() => {
+                if (window.openDocumentPanel) {
+                  window.openDocumentPanel(part.content);
+                }
+              }}
+              onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'}
+              onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)'}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', minWidth: 0, paddingRight: '16px' }}>
+                  <FileTextOutlined style={{ fontSize: '24px', color: '#1890ff', marginRight: '12px', flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <Text 
+                      strong 
+                      style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                      title={title}
+                    >
+                      {title}
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: '11px' }}>
+                      {part.ready ? `创建时间: ${message.timestamp}` : '正在生成文档...'}
+                    </Text>
+                  </div>
+                </div>
+                {part.ready && (
+                  <Tooltip title="下载文档">
+                    <Button 
+                      type="text" 
+                      shape="circle"
+                      icon={<DownloadOutlined style={{color: '#8c8c8c'}} />}
+                      onClick={handleDownloadClick}
+                    />
+                  </Tooltip>
+                )}
+              </div>
             </div>
           );
         }

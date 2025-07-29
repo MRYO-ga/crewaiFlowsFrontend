@@ -15,6 +15,7 @@ import MessageList from './components/MessageList';
 import ChatInput from './components/ChatInput';
 import SettingsDrawer from './components/SettingsDrawer';
 import { agentOptions } from './components/agentOptions';
+import DocumentPanel from './components/DocumentPanel';
 
 const getUserId = () => localStorage.getItem('userId') || 'default_user';
 
@@ -37,6 +38,8 @@ const ChatPage = () => {
   const location = useLocation();
 
   const [showSettings, setShowSettings] = useState(false);
+  const [showDocumentPanel, setShowDocumentPanel] = useState(false);
+  const [documentContent, setDocumentContent] = useState('');
 
   useEffect(() => {
     initializeMcpConnection();
@@ -48,6 +51,18 @@ const ChatPage = () => {
     if (messages.length === 0) {
       showWelcomeMessage();
     }
+
+    // 设置全局函数来打开文档面板
+    window.openDocumentPanel = (content) => {
+      setDocumentContent(content);
+      setShowDocumentPanel(true);
+    };
+
+
+
+    return () => {
+      delete window.openDocumentPanel;
+    };
   }, []);
 
   useEffect(() => {
@@ -127,6 +142,16 @@ const ChatPage = () => {
       displayPersonaIntroduction();
     }
   }, [showPersonaIntro, currentPersonaIntro]);
+
+  // 监听流式消息中的文档内容
+  useEffect(() => {
+    if (chatState.streamingMessage && chatState.streamingMessage.documentContent) {
+      setDocumentContent(chatState.streamingMessage.documentContent);
+      if (!showDocumentPanel) {
+        setShowDocumentPanel(true);
+      }
+    }
+  }, [chatState.streamingMessage?.documentContent]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -292,6 +317,8 @@ const ChatPage = () => {
 
   return (
     <div className="chat-container" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{display: 'flex', flex: 1, overflow: 'hidden'}}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column'}}>
       <style jsx>{`
         @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
@@ -360,6 +387,29 @@ const ChatPage = () => {
         contextLoading={dataManagementState.contextLoading}
         loadComprehensiveData={loadComprehensiveData}
       />
+            </div>
+        {showDocumentPanel && (
+            <DocumentPanel
+                content={documentContent}
+                onClose={() => setShowDocumentPanel(false)}
+                onCopy={() => {
+                    navigator.clipboard.writeText(documentContent);
+                    // 可以添加成功提示，但需要先导入message
+                }}
+                onDownload={() => {
+                    const blob = new Blob([documentContent], { type: 'text/markdown;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'document.md';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                }}
+            />
+        )}
+        </div>
     </div>
   );
 };

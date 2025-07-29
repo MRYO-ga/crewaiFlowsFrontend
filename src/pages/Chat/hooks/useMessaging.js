@@ -176,6 +176,17 @@ export const useMessaging = (state, modelState, agentState) => {
                     updated.documentData = data.data;
                     break;
 
+                  case 'document_content':
+                    updated.status = 'generating_document';
+                    // 累加文档内容
+                    updated.documentContent = (updated.documentContent || '') + data.content;
+                    break;
+
+                  case 'document_complete':
+                    updated.status = 'document_ready';
+                    updated.documentReady = true;
+                    break;
+
                   case 'status_change':
                     updated.status = data.content;
                     break;
@@ -211,6 +222,8 @@ export const useMessaging = (state, modelState, agentState) => {
                             steps: currentStream.steps || [],
                             executionTime: Math.floor((Date.now() - currentStream.startTime) / 1000),
                             isCompleted: true,
+                            documentContent: currentStream.documentContent,
+                            documentReady: currentStream.documentReady,
                           };
                           setMessages(prevMessages => [...prevMessages, completedMessage]);
                           return null; // 清空流式消息

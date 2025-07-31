@@ -17,6 +17,7 @@ import ExamplesPage from './pages/Examples';
 import HomePage from './pages/GuidePage';
 import KnowledgeGraphPage from './pages/KnowledgeGraphPage';
 import KnowledgePage from './pages/Knowledge';
+import LightRAGPage from './pages/LightRAG';
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
           <Route path="xhs" element={<XhsManagementPage />} />
           <Route path="knowledge-graph" element={<KnowledgeGraphPage />} />
           <Route path="knowledge" element={<KnowledgePage />} />
+          <Route path="lightrag" element={<LightRAGPage />} />
         </Route>
         <Route path="/guide" element={<HomePage />} />
         <Route path="/knowledge-graph" element={<KnowledgeGraphPage />} />

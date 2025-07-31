@@ -30,7 +30,8 @@ const MainLayout = () => {
       items: [
         { path: '/account', name: '账号人设', icon: 'fa-user-gear' },
         { path: '/product', name: '产品品牌信息', icon: 'fa-shopping-bag' },
-        { path: '/knowledge', name: '知识库', icon: 'fa-book' }
+        { path: '/knowledge', name: '知识库', icon: 'fa-book' },
+        { path: '/lightrag', name: 'LightRAG', icon: 'fa-microchip' }
       ]
     },
     {

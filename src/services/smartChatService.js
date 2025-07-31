@@ -2,7 +2,7 @@
 
 import { accountApi, contentApi, competitorApi, taskApi, scheduleApi, sopApi } from './api';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:9000';
+import { API_BASE_URL } from '../configs/env';
 
 class SmartChatService {
   constructor() {

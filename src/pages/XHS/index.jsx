@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import { Card, Row, Col, Table, Button, Input, Space, Select, message, Tag, Statistic, Modal, Tabs, Descriptions } from 'antd';
 import { SearchOutlined, ReloadOutlined, EyeOutlined, DeleteOutlined, BarChartOutlined, ApiOutlined } from '@ant-design/icons';
 import axios from 'axios';
-
+import { API_BASE_URL } from '../../configs/env';
 // 配置axios基础URL
 const api = axios.create({
-  baseURL: 'http://localhost:9000'
+  baseURL: API_BASE_URL
 });
 
 const { Search } = Input;

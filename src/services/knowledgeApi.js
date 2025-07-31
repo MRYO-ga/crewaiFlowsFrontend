@@ -1,7 +1,9 @@
 // 知识库API服务
 import axios from 'axios';
 
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:9000';
+import { API_BASE_URL } from '../configs/env';
+
+const BASE_URL = API_BASE_URL;
 
 // 创建axios实例
 const knowledgeApi = axios.create({

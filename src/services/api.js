@@ -1,9 +1,11 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
+import { API_BASE_URL } from '../configs/env';
+
 // 创建axios实例
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:9000',
+  baseURL: API_BASE_URL,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
@@ -85,7 +87,7 @@ export const chatApi = {
     if (isPersonaRequest) {
       // 为人设构建请求使用更长的超时时间
       const personaApi = axios.create({
-        baseURL: process.env.REACT_APP_API_URL || 'http://localhost:9000',
+        baseURL: API_BASE_URL,
         timeout: 120000, // 120秒
         headers: {
           'Content-Type': 'application/json'

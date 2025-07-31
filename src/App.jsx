@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
+import HomePage from './pages/Home';
 import ChatPage from './pages/Chat';
 import TaskPage from './pages/Task';
 import CompetitorPage from './pages/Competitor';
@@ -14,7 +15,7 @@ import ApiTestPage from './pages/ApiTest';
 import MCPTestPage from './pages/MCP/MCPTest';
 import XhsManagementPage from './pages/XHS';
 import ExamplesPage from './pages/Examples';
-import HomePage from './pages/GuidePage';
+import WorkflowPage from './pages/WorkflowPage';
 import KnowledgeGraphPage from './pages/KnowledgeGraphPage';
 import KnowledgePage from './pages/Knowledge';
 import LightRAGPage from './pages/LightRAG';
@@ -23,8 +24,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<HomePage />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/app" element={<MainLayout />}>
+          <Route index element={<Navigate to="/app/workflow" replace />} />
+          <Route path="workflow" element={<WorkflowPage />} />
           <Route path="chat" element={<ChatPage />} />
           <Route path="task" element={<TaskPage />} />
           <Route path="competitor" element={<CompetitorPage />} />
@@ -42,8 +45,6 @@ function App() {
           <Route path="knowledge" element={<KnowledgePage />} />
           <Route path="lightrag" element={<LightRAGPage />} />
         </Route>
-        <Route path="/guide" element={<HomePage />} />
-        <Route path="/knowledge-graph" element={<KnowledgeGraphPage />} />
       </Routes>
     </Router>
   );

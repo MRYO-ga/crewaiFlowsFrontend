@@ -4,7 +4,7 @@ import { personaService } from '../services/personaApi';
 import { productService } from '../services/productApi';
 import { message } from 'antd';
 
-const HomePage = () => {
+const WorkflowPage = () => {
   const navigate = useNavigate();
   const [activeNode, setActiveNode] = useState(null);
   const flowContainerRef = useRef(null);
@@ -517,4 +517,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage; 
+export default WorkflowPage; 

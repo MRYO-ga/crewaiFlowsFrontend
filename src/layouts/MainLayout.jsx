@@ -15,36 +15,37 @@ const MainLayout = () => {
       title: '主功能区', 
       items: [
         { path: '/', name: '首页', icon: 'fa-home' },
-        { path: '/chat', name: '智能对话', icon: 'fa-comments' },
-        // { path: '/task', name: '任务中心', icon: 'fa-clipboard-list' },
-        { path: '/competitor', name: '竞品分析', icon: 'fa-magnifying-glass-chart' },
-        { path: '/content', name: '内容库', icon: 'fa-file-lines' },
-        { path: '/schedule', name: '发布计划', icon: 'fa-calendar' },
-        { path: '/examples', name: '功能样例', icon: 'fa-lightbulb' },
-        { path: '/xhs', name: '小红书数据', icon: 'fa-database' },
-        // { path: '/mcp-test', name: 'MCP测试', icon: 'fa-plug' },
+        { path: '/app/workflow', name: 'SOP', icon: 'fa-calendar' },
+        { path: '/app/chat', name: '智能对话', icon: 'fa-comments' },
+        // { path: '/app/task', name: '任务中心', icon: 'fa-clipboard-list' },
+        { path: '/app/competitor', name: '竞品分析', icon: 'fa-magnifying-glass-chart' },
+        { path: '/app/content', name: '内容库', icon: 'fa-file-lines' },
+        { path: '/app/schedule', name: '发布计划', icon: 'fa-calendar' },
+        { path: '/app/examples', name: '功能样例', icon: 'fa-lightbulb' },
+        { path: '/app/xhs', name: '小红书数据', icon: 'fa-database' },
+        // { path: '/app/mcp-test', name: 'MCP测试', icon: 'fa-plug' },
       ]
     },
     {
       title: '文档管理',
       items: [
-        { path: '/account', name: '账号人设', icon: 'fa-user-gear' },
-        { path: '/product', name: '产品品牌信息', icon: 'fa-shopping-bag' },
-        { path: '/knowledge', name: '知识库', icon: 'fa-book' },
-        { path: '/lightrag', name: 'LightRAG', icon: 'fa-microchip' }
+        { path: '/app/account', name: '账号人设', icon: 'fa-user-gear' },
+        { path: '/app/product', name: '产品品牌信息', icon: 'fa-shopping-bag' },
+        { path: '/app/knowledge', name: '知识库', icon: 'fa-book' },
+        { path: '/app/lightrag', name: 'LightRAG', icon: 'fa-microchip' }
       ]
     },
     {
       title: '快速访问',
       items: [
-        { path: '/favorites', name: '收藏的分析', icon: 'fa-bookmark' },
-        { path: '/history', name: '最近历史', icon: 'fa-clock-rotate-left' }
+        { path: '/app/favorites', name: '收藏的分析', icon: 'fa-bookmark' },
+        { path: '/app/history', name: '最近历史', icon: 'fa-clock-rotate-left' }
       ]
     },
     {
       title: '开发工具',
       items: [
-        { path: '/api-test', name: 'API接口测试', icon: 'fa-code' }
+        { path: '/app/api-test', name: 'API接口测试', icon: 'fa-code' }
       ]
     }
   ];
@@ -61,7 +62,7 @@ const MainLayout = () => {
                 <i className="fa-solid fa-bolt text-white text-xl"></i>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-dark">SocialPulse<span className="text-primary">AI</span></h1>
+                <h1 className="text-xl font-bold text-dark">Social AgentMind<span className="text-primary">AI</span></h1>
                 <p className="text-xs text-gray-400">智能社交媒体运营助手</p>
               </div>
             </div>
@@ -166,7 +167,7 @@ const MainLayout = () => {
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-primary/70 flex items-center justify-center">
                     <i className="fa-solid fa-bolt text-white text-xl"></i>
                   </div>
-                  <h1 className="text-xl font-bold text-dark">SocialPulse<span className="text-primary">AI</span></h1>
+                  <h1 className="text-xl font-bold text-dark">Social AgentMind<span className="text-primary">AI</span></h1>
                 </div>
                 <button onClick={() => setShowMobileMenu(false)}>
                   <i className="fa-solid fa-times text-gray-500 text-xl"></i>

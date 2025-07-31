@@ -12,7 +12,7 @@ const Navbar = () => {
               <i className="fa-solid fa-bolt text-white text-xl"></i>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-dark">SocialPulse<span className="text-primary">AI</span></h1>
+              <h1 className="text-xl font-bold text-dark">Social AgentMind<span className="text-primary">AI</span></h1>
               <p className="text-xs text-gray-400">智能社交媒体运营助手</p>
             </div>
           </div>

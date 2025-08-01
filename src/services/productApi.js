@@ -1,13 +1,11 @@
 // 产品品牌信息API服务
 import axios from 'axios';
 
-import { API_BASE_URL } from '../configs/env';
-
-const BASE_URL = API_BASE_URL;
+import { API_PATHS } from '../configs/env';
 
 // 创建axios实例
 const productApi = axios.create({
-  baseURL: `${BASE_URL}/api/products`,
+  baseURL: API_PATHS.PRODUCTS,
   headers: {
     'Content-Type': 'application/json',
   },

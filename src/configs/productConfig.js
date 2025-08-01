@@ -3,6 +3,7 @@ import { Input, Tag, Button, Space, Popconfirm } from 'antd';
 import { ShoppingOutlined, CalendarOutlined, EyeOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
 import { message } from 'antd'; // Added message import
+import { API_PATHS } from './env';
 
 const productConfig = {
   // 基础配置
@@ -360,10 +361,6 @@ const productConfig = {
                 try {
                   // 显示加载状态
                   message.loading({ content: '正在解析...', key: 'parsing' });
-
-                  // 获取正确的 API 基础URL
-                  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:9000';
-                  
                   console.log('发送解析请求:', text.substring(0, 100) + '...');
                   
                   // 构建请求体
@@ -377,7 +374,7 @@ const productConfig = {
                   console.log('请求体:', JSON.stringify(requestBody).substring(0, 500) + '...');
 
                   // 调用chat API解析文本
-                  const response = await fetch(`${baseUrl}/api/chat`, {
+                  const response = await fetch(`${API_PATHS.CHAT}`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',

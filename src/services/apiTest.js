@@ -1,7 +1,7 @@
 // API接口测试用例
 // 测试所有后端API接口是否正常工作
 
-const API_BASE_URL = 'http://localhost:9000';
+import { API_BASE_URL } from '../configs/env';
 
 class APITester {
     constructor() {

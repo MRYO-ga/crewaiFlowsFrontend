@@ -1,13 +1,11 @@
 // 人设构建API服务
 import axios from 'axios';
 
-import { API_BASE_URL } from '../configs/env';
-
-const BASE_URL = API_BASE_URL;
+import { API_PATHS } from '../configs/env';
 
 // 创建axios实例
 const personaApi = axios.create({
-  baseURL: `${BASE_URL}/api/persona`,
+  baseURL: API_PATHS.PERSONA,
   headers: {
     'Content-Type': 'application/json',
   },

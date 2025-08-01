@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Alert, Spin, Select, Input, Space, Typography, Divider, message } from 'antd';
 import { PlayCircleOutlined, ReloadOutlined, ApiOutlined, ToolOutlined, LinkOutlined } from '@ant-design/icons';
+import { API_PATHS } from '../../configs/env';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -56,7 +57,7 @@ const MCPTestPage = () => {
     const loadServers = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:9000/api/mcp/servers');
+            const response = await fetch(`${API_PATHS.MCP}/servers`);
             const data = await response.json();
             setServers(data.servers || []);
             setCurrentServer(data.current_server);
@@ -72,7 +73,7 @@ const MCPTestPage = () => {
     const connectToAllServers = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:9000/api/mcp/multi-connect', {
+            const response = await fetch(`${API_PATHS.MCP}/multi-connect`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -96,7 +97,7 @@ const MCPTestPage = () => {
     const connectToServer = async (serverName) => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:9000/api/mcp/connect-by-name', {
+            const response = await fetch(`${API_PATHS.MCP}/connect-by-name`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ server_name: serverName })
@@ -122,7 +123,7 @@ const MCPTestPage = () => {
     const loadMultiTools = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:9000/api/mcp/multi-tools');
+            const response = await fetch(`${API_PATHS.MCP}/multi-tools`);
             const data = await response.json();
             setTools(data.tools || []);
             addTestResult('获取多服务器工具列表', true, `找到 ${data.tools?.length || 0} 个工具`);
@@ -137,7 +138,7 @@ const MCPTestPage = () => {
     const loadTools = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:9000/api/mcp/tools');
+            const response = await fetch(`${API_PATHS.MCP}/tools`);
             const data = await response.json();
             setTools(data.tools || []);
             addTestResult('获取工具列表', true, `找到 ${data.tools?.length || 0} 个工具`);
@@ -164,7 +165,7 @@ const MCPTestPage = () => {
                 throw new Error('参数格式错误，请输入有效的JSON格式');
             }
 
-            const endpoint = useMultiServer ? 'http://localhost:9000/api/mcp/multi-tools/call' : 'http://localhost:9000/api/mcp/tools/call';
+            const endpoint = useMultiServer ? `${API_PATHS.MCP}/multi-tools/call` : `${API_PATHS.MCP}/tools/call`;
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -253,7 +254,7 @@ const MCPTestPage = () => {
                 message="使用前请确保"
                 description={
                     <ul className="mt-2">
-                        <li>• 后端服务已启动 (http://localhost:9000)</li>
+                        <li>• 后端服务已启动 ({API_PATHS.MCP})</li>
                         <li>• MCP服务器配置正确</li>
                         <li>• 小红书cookie已配置（如需测试小红书功能）</li>
                     </ul>

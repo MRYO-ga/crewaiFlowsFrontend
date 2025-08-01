@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Card, Progress, Typography, Space, Divider, Alert, Spin } from 'antd';
 import { PlayCircleOutlined, ReloadOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { API_BASE_URL } from '../configs/env';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -118,7 +119,7 @@ const ApiTestPage = () => {
                 message="使用前请确保"
                 description={
                     <ul className="mt-2">
-                        <li>• 后端服务已启动 (http://localhost:9000)</li>
+                        <li>• 后端服务已启动 ({API_BASE_URL})</li>
                         <li>• 数据库连接正常</li>
                         <li>• 所有依赖已安装</li>
                     </ul>

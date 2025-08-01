@@ -1,3 +1,5 @@
+import { API_PATHS } from './configs/env';
+
 export async function submitCrewRequest(data) {
   console.log('提交到后端的数据:', data);
   
@@ -39,7 +41,7 @@ export async function submitCrewRequest(data) {
   console.log('格式化后的请求数据:', requestData);
   
   try {
-    const res = await fetch('http://localhost:9000/api/crew', {
+    const res = await fetch(`${API_PATHS.CREW}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestData)
@@ -64,12 +66,12 @@ export async function submitCrewRequest(data) {
 }
 
 export async function getJobStatus(jobId) {
-  const res = await fetch(`http://localhost:9000/api/crew/${jobId}`);
+  const res = await fetch(`${API_PATHS.CREW}/${jobId}`);
   return res.json();
 }
 
 export async function chatWithAgent(message, history) {
-  const res = await fetch('http://localhost:9000/api/chat', {
+  const res = await fetch(`${API_PATHS.CHAT}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -82,7 +84,7 @@ export async function chatWithAgent(message, history) {
 
 // MCP 相关 API 函数
 export async function getMCPServers() {
-  const res = await fetch('http://localhost:9000/api/mcp/servers');
+  const res = await fetch(`${API_PATHS.MCP}/servers`);
   if (!res.ok) {
     throw new Error('获取MCP服务器列表失败');
   }
@@ -90,7 +92,7 @@ export async function getMCPServers() {
 }
 
 export async function getMCPStatus() {
-  const res = await fetch('http://localhost:9000/api/mcp/status');
+  const res = await fetch(`${API_PATHS.MCP}/status`);
   if (!res.ok) {
     throw new Error('获取MCP状态失败');
   }
@@ -98,7 +100,7 @@ export async function getMCPStatus() {
 }
 
 export async function enableMCPServer(serverName) {
-  const res = await fetch(`http://localhost:9000/api/mcp/servers/${serverName}/enable`, {
+  const res = await fetch(`${API_PATHS.MCP}/servers/${serverName}/enable`, {
     method: 'POST'
   });
   if (!res.ok) {
@@ -108,7 +110,7 @@ export async function enableMCPServer(serverName) {
 }
 
 export async function disableMCPServer(serverName) {
-  const res = await fetch(`http://localhost:9000/api/mcp/servers/${serverName}/disable`, {
+  const res = await fetch(`${API_PATHS.MCP}/servers/${serverName}/disable`, {
     method: 'POST'
   });
   if (!res.ok) {
@@ -118,7 +120,7 @@ export async function disableMCPServer(serverName) {
 }
 
 export async function connectMCPServer(serverName) {
-  const res = await fetch('http://localhost:9000/api/mcp/connect-by-name', {
+  const res = await fetch(`${API_PATHS.MCP}/connect-by-name`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ server_name: serverName })
@@ -130,7 +132,7 @@ export async function connectMCPServer(serverName) {
 }
 
 export async function autoConnectMCP() {
-  const res = await fetch('http://localhost:9000/api/mcp/auto-connect', {
+  const res = await fetch(`${API_PATHS.MCP}/auto-connect`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ force_reconnect: false })
@@ -142,7 +144,7 @@ export async function autoConnectMCP() {
 }
 
 export async function refreshMCPServers() {
-  const res = await fetch('http://localhost:9000/api/mcp/refresh-servers', {
+  const res = await fetch(`${API_PATHS.MCP}/refresh-servers`, {
     method: 'POST'
   });
   if (!res.ok) {
@@ -152,7 +154,7 @@ export async function refreshMCPServers() {
 }
 
 export async function getMCPTools() {
-  const res = await fetch('http://localhost:9000/api/mcp/tools');
+  const res = await fetch(`${API_PATHS.MCP}/tools`);
   if (!res.ok) {
     throw new Error('获取MCP工具列表失败');
   }

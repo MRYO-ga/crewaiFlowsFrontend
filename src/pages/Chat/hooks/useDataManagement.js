@@ -3,6 +3,7 @@ import smartChatService from '../../../services/smartChatService';
 import { personaService } from '../../../services/personaApi';
 import { productService } from '../../../services/productApi';
 import { message } from 'antd';
+import { API_PATHS } from '../../../configs/env';
 
 export const useDataManagement = (userId) => {
   const [userContext, setUserContext] = useState(null);
@@ -52,7 +53,7 @@ export const useDataManagement = (userId) => {
   const loadCacheData = async () => {
     try {
       setCacheLoading(true);
-      const response = await fetch(`http://localhost:9000/api/chat/reference-categories/${userId}`);
+      const response = await fetch(`${API_PATHS.CHAT}/reference-categories/${userId}`);
       const data = await response.json();
       if (data.status === 'success') {
         setCacheData(data.data);

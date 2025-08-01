@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { message } from 'antd';
+import { API_PATHS } from '../../../configs/env';
 
 export const useMcp = () => {
   const [mcpStatus, setMcpStatus] = useState({
@@ -12,7 +13,7 @@ export const useMcp = () => {
   const loadMcpStatus = async () => {
     try {
       setMcpLoading(true);
-      const response = await fetch('http://localhost:9000/api/chat/mcp-status');
+      const response = await fetch(`${API_PATHS.CHAT}/mcp-status`);
       const data = await response.json();
       
       if (data.status === 'success') {
@@ -32,13 +33,13 @@ export const useMcp = () => {
       setMcpLoading(true);
       await loadMcpStatus();
       
-      const statusResponse = await fetch('http://localhost:9000/api/chat/mcp-status');
+      const statusResponse = await fetch(`${API_PATHS.CHAT}/mcp-status`);
       const statusData = await statusResponse.json();
       
       if (!statusData.data?.connected || statusData.data?.tools_count === 0) {
         message.loading('正在自动连接开发工具 (SQL数据库 + 小红书工具)...', 0);
         
-        const connectResponse = await fetch('http://localhost:9000/api/mcp/multi-connect', {
+        const connectResponse = await fetch(`${API_PATHS.MCP}/multi-connect`, {
           method: 'POST'
         });
         const connectData = await connectResponse.json();
@@ -64,7 +65,7 @@ export const useMcp = () => {
       setMcpLoading(true);
       message.loading('正在连接开发工具 (SQL数据库 + 小红书工具)...', 0);
       
-      const response = await fetch('http://localhost:9000/api/mcp/multi-connect', {
+      const response = await fetch(`${API_PATHS.MCP}/multi-connect`, {
         method: 'POST'
       });
       const data = await response.json();

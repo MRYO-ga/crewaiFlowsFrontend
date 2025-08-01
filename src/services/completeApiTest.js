@@ -1,7 +1,7 @@
 // 完整的API接口测试用例
 // 测试CrewAI Flows项目的所有后端API接口
 
-const API_BASE_URL = 'http://localhost:9000';
+import { API_BASE_URL } from '../configs/env';
 
 class CompleteAPITester {
     constructor() {
@@ -692,7 +692,6 @@ class CompleteAPITester {
             
             if (moduleTests.length > 0) {
                 const passed = moduleTests.filter(t => t.status.includes('PASS')).length;
-                const failed = moduleTests.filter(t => t.status.includes('FAIL')).length;
                 
                 console.log(`\n🔸 ${module.name} (${passed}/${moduleTests.length} 通过):`);
                 moduleTests.forEach(test => {

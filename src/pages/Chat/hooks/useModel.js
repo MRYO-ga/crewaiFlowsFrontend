@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_PATHS } from '../../../configs/env';
 
 export const useModel = () => {
   const [selectedModel, setSelectedModel] = useState(
@@ -10,7 +11,7 @@ export const useModel = () => {
   const loadAvailableModels = async () => {
     try {
       setModelsLoading(true);
-      const response = await fetch('http://localhost:9000/api/chat/available-models');
+      const response = await fetch(`${API_PATHS.CHAT}/available-models`);
       const data = await response.json();
       
       if (data.status === 'success' && data.models && data.models.length > 0) {

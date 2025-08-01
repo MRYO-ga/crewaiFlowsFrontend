@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:9000/api/lightrag';
+import { API_PATHS } from '../../configs/env';
 
 const LightRAGPage = () => {
   const [documents, setDocuments] = useState('');
@@ -20,7 +20,7 @@ const LightRAGPage = () => {
 
   const checkServerStatus = async () => {
     try {
-      const response = await axios.get(`${API_URL}/status`);
+      const response = await axios.get(`${API_PATHS.LIGHTRAG}/status`);
       setServerStatus(response.data);
     } catch (err) {
       setServerStatus({ status: 'error', connected: false, error: err.message });
@@ -37,7 +37,7 @@ const LightRAGPage = () => {
     setResult(null);
     try {
       const docs = documents.split('\n').filter(doc => doc.trim() !== '');
-      const response = await axios.post(`${API_URL}/insert`, { documents: docs });
+      const response = await axios.post(`${API_PATHS.LIGHTRAG}/insert`, { documents: docs });
       setResult(response.data);
       setDocuments(''); // 清空输入
     } catch (err) {
@@ -56,7 +56,7 @@ const LightRAGPage = () => {
     setError('');
     setResult(null);
     try {
-      const response = await axios.post(`${API_URL}/query`, { 
+      const response = await axios.post(`${API_PATHS.LIGHTRAG}/query`, { 
         query, 
         mode,
         top_k: 10
@@ -72,7 +72,7 @@ const LightRAGPage = () => {
   const loadEntities = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/entities`);
+      const response = await axios.get(`${API_PATHS.LIGHTRAG}/entities`);
       setEntities(response.data.entities || []);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to load entities.');
@@ -84,7 +84,7 @@ const LightRAGPage = () => {
   const loadRelations = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/relations`);
+      const response = await axios.get(`${API_PATHS.LIGHTRAG}/relations`);
       setRelations(response.data.relations || []);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to load relations.');
@@ -101,7 +101,7 @@ const LightRAGPage = () => {
     
     setLoading(true);
     try {
-      await axios.delete(`${API_URL}/entity/${encodeURIComponent(entityName)}`);
+      await axios.delete(`${API_PATHS.LIGHTRAG}/entity/${encodeURIComponent(entityName)}`);
       setResult({ message: `Entity "${entityName}" deleted successfully` });
       loadEntities(); // 重新加载实体列表
     } catch (err) {

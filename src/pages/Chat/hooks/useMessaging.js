@@ -1,6 +1,7 @@
 import { message } from 'antd';
 import { useState } from 'react';
 import { agentOptions } from '../components/agentOptions';
+import { API_PATHS } from '../../../configs/env';
 
 const getUserId = () => localStorage.getItem('userId') || 'default_user';
 
@@ -47,7 +48,7 @@ export const useMessaging = (state, modelState, agentState) => {
     //   setStreamingMessage(null);
     // }
     try {
-      const response = await fetch('http://localhost:9000/api/chat/stream', {
+      const response = await fetch(`${API_PATHS.CHAT}/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

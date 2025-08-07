@@ -14,7 +14,7 @@ const MainLayout = () => {
     { 
       title: '主功能区', 
       items: [
-        { path: '/', name: '首页', icon: 'fa-home' },
+        // { path: '/', name: '首页', icon: 'fa-home' },
         { path: '/app/workflow', name: 'SOP', icon: 'fa-calendar' },
         { path: '/app/chat', name: '智能对话', icon: 'fa-comments' },
         // { path: '/app/task', name: '任务中心', icon: 'fa-clipboard-list' },

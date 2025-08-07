@@ -53,7 +53,7 @@ export const useDataManagement = (userId) => {
   const loadCacheData = async () => {
     try {
       setCacheLoading(true);
-      const response = await fetch(`${API_PATHS.CHAT}/reference-categories/${userId}`);
+      const response = await fetch(`${API_PATHS.CHAT}reference-categories/${userId}`);
       const data = await response.json();
       if (data.status === 'success') {
         setCacheData(data.data);

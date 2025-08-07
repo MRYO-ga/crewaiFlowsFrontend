@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { personaService } from '../services/personaApi';
-import { productService } from '../services/productApi';
+import { personaService } from '../../services/personaApi';
+import { productService } from '../../services/productApi';
 import { message } from 'antd';
 
 const WorkflowPage = () => {
@@ -91,7 +91,7 @@ const WorkflowPage = () => {
       if (agentType === 'competitor_blogger_analysis') {
         try {
           // 动态导入竞品API
-          const { competitorApi } = await import('../services/api');
+          const { competitorApi } = await import('../../services/api');
           const competitorResponse = await competitorApi.get('', { limit: 5 });
           const competitorsList = Array.isArray(competitorResponse) ? competitorResponse : (competitorResponse.competitors || []);
           
@@ -168,8 +168,15 @@ const WorkflowPage = () => {
           message.warning('建议先创建账号人设和产品信息，以获得更精准的痛点分析结果');
         }
       }
+
+      // 如果是用户洞察分析，建议先有产品信息
+      if (agentType === 'user_insight_analysis') {
+        if (!productData) {
+          message.warning('建议先完成产品与品牌信息分析，以获得更精准的用户洞察分析结果');
+        }
+      }
       
-      navigate('/chat', { 
+      navigate('/app/chat', { 
         state: { 
           defaultQuestion: enhancedQuestion,
           agentType,
@@ -194,16 +201,25 @@ const WorkflowPage = () => {
           icon: 'fa-box',
           progress: 60,
           description: '将"官方信息"转化为"小红书用户可感知的价值点"，建立"信息底座"',
-          action: () => navigateTo('/product'),
+          action: () => navigateTo('/app/product'),
           actionText: '开始分析'
         },
         {
           id: 2,
+          title: '用户洞察深度分析',
+          icon: 'fa-users',
+          progress: 45,
+          description: '进行分层用户洞察，从数据到人性的深度穿透分析',
+          action: () => navigateToChat("请对我的目标用户进行深度分析", "user_insight_analysis"),
+          actionText: '洞察分析'
+        },
+        {
+          id: 3,
           title: '账号人设与定位精准锚定',
           icon: 'fa-user-circle',
           progress: 80,
           description: '打造"让用户觉得像身边人"的账号，降低信任成本',
-          action: () => navigateTo('/account'),
+          action: () => navigateTo('/app/account'),
           actionText: '设置人设'
         }
       ]
@@ -213,7 +229,7 @@ const WorkflowPage = () => {
       title: '策略规划层（内容启动前）',
       nodes: [
         {
-          id: 3,
+          id: 4,
           title: '痛点与需求深度挖掘',
           icon: 'fa-bullseye',
           progress: 50,
@@ -222,7 +238,7 @@ const WorkflowPage = () => {
           actionText: '分析痛点'
         },
         {
-          id: 4,
+          id: 5,
           title: '选题库与内容框架搭建',
           icon: 'fa-lightbulb',
           progress: 70,
@@ -231,7 +247,7 @@ const WorkflowPage = () => {
           actionText: '生成选题'
         },
         {
-          id: 5,
+          id: 6,
           title: '同类博主与竞品策略深度对标',
           icon: 'fa-chart-line',
           progress: 40,
@@ -246,7 +262,7 @@ const WorkflowPage = () => {
       title: '执行运营层（内容发布-互动）',
       nodes: [
         {
-          id: 6,
+          id: 7,
           title: '内容生成与合规预审',
           icon: 'fa-pencil',
           progress: 65,
@@ -255,16 +271,16 @@ const WorkflowPage = () => {
           actionText: '智能生成'
         },
         {
-          id: 7,
+          id: 8,
           title: '精细化发布计划与执行',
           icon: 'fa-calendar',
           progress: 30,
           description: '让内容在"用户最活跃+平台流量高峰"时曝光，提升初始流量',
-          action: () => navigateTo('/schedule'),
+          action: () => navigateTo('/app/schedule'),
           actionText: '发布计划'
         },
         {
-          id: 8,
+          id: 9,
           title: '互动运营与舆情处理',
           icon: 'fa-comments',
           progress: 45,
@@ -284,7 +300,7 @@ const WorkflowPage = () => {
           icon: 'fa-chart-bar',
           progress: 90,
           description: '找到"哪些动作能带来高流量/高转化"，用数据反哺策略',
-          action: () => navigateTo('/xhs'),
+          action: () => navigateTo('/app/xhs'),
           actionText: '查看数据'
         },
         {

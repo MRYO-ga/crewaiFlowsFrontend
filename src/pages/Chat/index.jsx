@@ -554,6 +554,8 @@ const ChatPage = () => {
         onCopy={messagingState.handleCopy}
         setStreamingMessage={chatState.setStreamingMessage}
         setCurrentTask={chatState.setCurrentTask}
+        onReflectionChoice={messagingState.handleReflectionChoice}
+        onReflectionFeedback={messagingState.handleReflectionFeedback}
       />
       <ChatInput
         inputValue={chatState.inputValue}

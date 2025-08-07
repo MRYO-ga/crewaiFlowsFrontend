@@ -11,7 +11,9 @@ const MessageList = ({
   onRegenerate,
   onCopy,
   setStreamingMessage,
-  setCurrentTask
+  setCurrentTask,
+  onReflectionChoice,
+  onReflectionFeedback
 }) => {
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
@@ -83,6 +85,8 @@ const MessageList = ({
           onCancel={onCancel}
           setStreamingMessage={setStreamingMessage}
           setCurrentTask={setCurrentTask}
+          onReflectionChoice={onReflectionChoice}
+          onReflectionFeedback={onReflectionFeedback}
         />
       )}
       

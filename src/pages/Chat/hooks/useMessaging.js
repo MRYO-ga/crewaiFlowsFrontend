@@ -48,7 +48,7 @@ export const useMessaging = (state, modelState, agentState) => {
     //   setStreamingMessage(null);
     // }
     try {
-      const response = await fetch(`${API_PATHS.CHAT}/stream`, {
+      const response = await fetch(`${API_PATHS.CHAT}stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -76,18 +76,42 @@ export const useMessaging = (state, modelState, agentState) => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let finalContent = '';
+      let fullResponse = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         const text = decoder.decode(value);
+        fullResponse += text;
+        
+        // 检查累积的响应是否是完整的JSON错误格式
+        if (fullResponse.trim().startsWith('{"') && fullResponse.trim().endsWith('}')) {
+          try {
+            const errorData = JSON.parse(fullResponse.trim());
+            if (errorData.error || errorData.reply) {
+              // 这是一个错误响应，抛出错误
+              throw new Error(errorData.error || errorData.reply);
+            }
+          } catch (parseError) {
+            // 如果不是有效的JSON，继续正常处理
+            if (parseError.message.startsWith('LLM') || parseError.message.includes('error')) {
+              throw parseError;
+            }
+          }
+        }
+        
         const lines = text.split('\n');
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
+              
+              // 检查是否是错误响应
+              if (data.error) {
+                throw new Error(data.error);
+              }
               
               // 设置最新的JSON消息，供主页面使用
               setLastJsonMessage(data);
@@ -175,6 +199,14 @@ export const useMessaging = (state, modelState, agentState) => {
                     updated.status = data.content;
                     break;
 
+                  case 'reflection_choices':
+                    updated.status = 'waiting_for_reflection_choices';
+                    updated.reflectionChoices = data.data;
+                    updated.waitingForReflection = true;
+                    console.log('🤔 收到反思选择数据:', data.data);
+                    // 不解锁UI，等待用户选择
+                    break;
+
                   case 'complete':
                     updated.status = 'complete';
                     updated.isCompleted = true;
@@ -242,15 +274,38 @@ export const useMessaging = (state, modelState, agentState) => {
         message.info('任务已取消');
       } else {
         message.error('发送失败，请检查网络连接');
+        
+        // 为失败的消息创建一个错误记录，以便可以重新生成
+        if (streamingMessage) {
+          const failedMessage = {
+            ...streamingMessage,
+            content: streamingMessage.content || '发送失败，请检查网络连接',
+            status: 'error',
+            isCompleted: true, // 重要：标记为已完成，以便显示重新生成按钮
+            hasError: true,
+            errorMessage: error.message || '网络连接失败'
+          };
+          
+          setMessages(prevMessages => [...prevMessages, failedMessage]);
+        }
       }
+      
+      // 检查是否在等待用户反思选择（在清除streamingMessage之前检查）
+      const currentStreamingMessage = streamingMessage;
+      const isWaitingForReflection = currentStreamingMessage && currentStreamingMessage.waitingForReflection;
+      
       setStreamingMessage(null);
       setCurrentTask(null);
       setAbortController(null);
-    } 
-    //  finally {
-    //   // This is now handled within the 'complete' event to allow for background status collection.
-    //   setIsLoading(false);
-    // }
+      
+      // 只有在不等待反思选择时才解锁UI
+      if (!isWaitingForReflection) {
+        setIsLoading(false); // 重要：确保UI解锁
+        console.log("✅ 流式处理完成，UI已解锁");
+      } else {
+        console.log("🤔 等待用户反思选择，保持UI锁定状态");
+      }
+    }
   };
 
   const sendMessage = async (inputValue) => {
@@ -326,8 +381,15 @@ export const useMessaging = (state, modelState, agentState) => {
   };
 
   const handleRegenerate = (messageId) => {
+    console.log('🔄 重新生成消息，ID:', messageId);
+    
     const messageIndex = messages.findIndex(m => m.id === messageId);
-    if (messageIndex === -1) return;
+    if (messageIndex === -1) {
+      console.error("无法找到指定的消息:", messageId);
+      return;
+    }
+
+    console.log('📍 找到消息索引:', messageIndex);
 
     // We need to find the user message that prompted this AI response.
     // It's usually the one right before the first AI message in a sequence.
@@ -341,16 +403,31 @@ export const useMessaging = (state, modelState, agentState) => {
 
     if (userMessageIndex === -1) {
       console.error("无法找到对应的用户提问来进行重新生成");
+      message.error("无法找到对应的用户提问，请重新发送消息");
       return;
     }
+
+    console.log('👤 找到用户消息索引:', userMessageIndex);
 
     const userMessage = messages[userMessageIndex];
     const historyUpToThatPoint = messages.slice(0, userMessageIndex);
     
+    console.log('🔄 准备重新生成，用户消息:', userMessage.content);
+    console.log('📜 历史消息数量:', historyUpToThatPoint.length);
+    
     // Set the messages state to be the history up to the point of that user message
     setMessages(historyUpToThatPoint);
+    // Clear any existing streaming state
+    setStreamingMessage(null);
+    setCurrentTask(null);
+    
+    // Set the attached data for the regeneration
+    if (userMessage.attachedData && userMessage.attachedData.length > 0) {
+      setAttachedData(userMessage.attachedData);
+    }
+    
     // Then, resend that user's message
-    sendMessage(userMessage.content, userMessage.attachedData);
+    sendMessage(userMessage.content);
   };
 
   const handleCopy = (content) => {
@@ -379,6 +456,60 @@ export const useMessaging = (state, modelState, agentState) => {
     message.success(`📄 文档已下载: ${filename}`);
   };
 
+  // 处理反思选择
+  const handleReflectionChoice = async (selectedOptions) => {
+    console.log('🤔 用户选择的优化选项:', selectedOptions);
+    
+    // 构建反馈消息
+    const feedbackMessage = `我选择了以下优化方向：${selectedOptions.join(', ')}。请基于这些选择继续优化分析。`;
+    
+    // 清除反思状态并解锁UI
+    setStreamingMessage(prev => {
+      if (prev) {
+        return {
+          ...prev,
+          waitingForReflection: false,
+          reflectionChoices: null
+        };
+      }
+      return prev;
+    });
+    
+    // 解锁UI，准备发送新消息
+    setIsLoading(false);
+    console.log('🔓 用户选择完成，UI已解锁，准备发送反馈');
+    
+    // 发送优化指令
+    await sendMessage(feedbackMessage);
+  };
+
+  // 处理自定义反馈
+  const handleReflectionFeedback = async (customFeedback) => {
+    console.log('🤔 用户提供的自定义反馈:', customFeedback);
+    
+    // 构建反馈消息
+    const feedbackMessage = `基于我的反馈意见："${customFeedback}"，请继续优化分析。`;
+    
+    // 清除反思状态
+    setStreamingMessage(prev => {
+      if (prev) {
+        return {
+          ...prev,
+          waitingForReflection: false,
+          reflectionChoices: null
+        };
+      }
+      return prev;
+    });
+    
+    // 解锁UI，准备发送新消息
+    setIsLoading(false);
+    console.log('🔓 用户反馈完成，UI已解锁，准备发送反馈');
+    
+    // 发送优化指令
+    await sendMessage(feedbackMessage);
+  };
+
   return {
     sendMessage,
     sendQuickQuery,
@@ -386,6 +517,8 @@ export const useMessaging = (state, modelState, agentState) => {
     handleRegenerate,
     handleCopy,
     generateDocument,
+    handleReflectionChoice,
+    handleReflectionFeedback,
     lastJsonMessage,  // 新增返回
     handleSend: sendMessage,  // 添加别名
     handleStop: cancelCurrentTask,  // 添加别名

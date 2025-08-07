@@ -15,7 +15,7 @@ import ApiTestPage from './pages/ApiTest';
 import MCPTestPage from './pages/MCP/MCPTest';
 import XhsManagementPage from './pages/XHS';
 import ExamplesPage from './pages/Examples';
-import WorkflowPage from './pages/WorkflowPage';
+import WorkflowPage from './pages/workflow/WorkflowPage';
 import KnowledgeGraphPage from './pages/KnowledgeGraphPage';
 import KnowledgePage from './pages/Knowledge';
 import LightRAGPage from './pages/LightRAG';

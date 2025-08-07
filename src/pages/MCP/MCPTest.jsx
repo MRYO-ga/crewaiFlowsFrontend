@@ -57,7 +57,7 @@ const MCPTestPage = () => {
     const loadServers = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_PATHS.MCP}/servers`);
+            const response = await fetch(`${API_PATHS.MCP}servers`);
             const data = await response.json();
             setServers(data.servers || []);
             setCurrentServer(data.current_server);
@@ -73,7 +73,7 @@ const MCPTestPage = () => {
     const connectToAllServers = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_PATHS.MCP}/multi-connect`, {
+            const response = await fetch(`${API_PATHS.MCP}multi-connect`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -97,7 +97,7 @@ const MCPTestPage = () => {
     const connectToServer = async (serverName) => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_PATHS.MCP}/connect-by-name`, {
+            const response = await fetch(`${API_PATHS.MCP}connect-by-name`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ server_name: serverName })
@@ -123,7 +123,7 @@ const MCPTestPage = () => {
     const loadMultiTools = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_PATHS.MCP}/multi-tools`);
+            const response = await fetch(`${API_PATHS.MCP}multi-tools`);
             const data = await response.json();
             setTools(data.tools || []);
             addTestResult('获取多服务器工具列表', true, `找到 ${data.tools?.length || 0} 个工具`);
@@ -138,7 +138,7 @@ const MCPTestPage = () => {
     const loadTools = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_PATHS.MCP}/tools`);
+            const response = await fetch(`${API_PATHS.MCP}tools`);
             const data = await response.json();
             setTools(data.tools || []);
             addTestResult('获取工具列表', true, `找到 ${data.tools?.length || 0} 个工具`);
@@ -165,7 +165,7 @@ const MCPTestPage = () => {
                 throw new Error('参数格式错误，请输入有效的JSON格式');
             }
 
-            const endpoint = useMultiServer ? `${API_PATHS.MCP}/multi-tools/call` : `${API_PATHS.MCP}/tools/call`;
+            const endpoint = useMultiServer ? `${API_PATHS.MCP}multi-tools/call` : `${API_PATHS.MCP}tools/call`;
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

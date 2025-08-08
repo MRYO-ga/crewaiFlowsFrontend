@@ -17,6 +17,8 @@ import SettingsDrawer from './components/SettingsDrawer';
 import { agentOptions } from './components/agentOptions';
 import DocumentPanel from './components/DocumentPanel';
 import XhsResultsPanel from './components/XhsResultsPanel';
+import UniversalGuide from '../../components/UniversalGuide';
+import { guideConfigs } from '../../configs/guideConfig';
 
 const getUserId = () => localStorage.getItem('userId') || 'default_user';
 
@@ -557,11 +559,12 @@ const ChatPage = () => {
         onReflectionChoice={messagingState.handleReflectionChoice}
         onReflectionFeedback={messagingState.handleReflectionFeedback}
       />
-      <ChatInput
-        inputValue={chatState.inputValue}
-        setInputValue={chatState.setInputValue}
-        sendMessage={() => messagingState.sendMessage(chatState.inputValue)}
-        isLoading={chatState.isLoading}
+      <div className="chat-input">
+        <ChatInput
+          inputValue={chatState.inputValue}
+          setInputValue={chatState.setInputValue}
+          sendMessage={() => messagingState.sendMessage(chatState.inputValue)}
+          isLoading={chatState.isLoading}
         attachedData={dataManagementState.attachedData}
         removeDataReference={dataManagementState.removeDataReference}
         showDataSelector={dataManagementState.showDataSelector}
@@ -577,7 +580,8 @@ const ChatPage = () => {
         handleKeyDown={handleKeyDown}
         currentTask={chatState.currentTask}
         cancelCurrentTask={messagingState.cancelCurrentTask}
-      />
+        />
+      </div>
       <SettingsDrawer
         showSettings={showSettings}
         setShowSettings={setShowSettings}
@@ -631,6 +635,18 @@ const ChatPage = () => {
                     onWidthChange={setXhsPanelWidth}
             />
         )}
+        
+        {/* 页面引导系统 */}
+        <UniversalGuide
+          pageType="chat"
+          pageConfig={guideConfigs.chat}
+          hasData={messages.length > 0}
+          onCreateAction={() => {/* 可以触发发送示例问题 */}}
+          onViewExample={() => {
+            setInputValue('请帮我分析目标用户特征和行为模式');
+            messagingState.sendMessage('请帮我分析目标用户特征和行为模式');
+          }}
+        />
         </div>
     </div>
   );

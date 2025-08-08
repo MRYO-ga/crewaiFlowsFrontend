@@ -1,0 +1,132 @@
+/* 浮动帮助按钮样式 */
+.floating-help {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  z-index: 1000;
+}
+
+.help-button {
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.3);
+  border: none;
+  background: #1890ff;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.help-button:hover {
+  background: #40a9ff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(24, 144, 255, 0.4);
+}
+
+.help-button:active {
+  transform: translateY(0);
+}
+
+.help-button .anticon {
+  font-size: 20px;
+  color: white;
+}
+
+/* 下拉菜单样式 */
+.floating-help .ant-dropdown {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.floating-help .ant-dropdown-menu {
+  border-radius: 8px;
+  padding: 8px 0;
+  min-width: 160px;
+}
+
+.floating-help .ant-dropdown-menu-item {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.floating-help .ant-dropdown-menu-item:hover {
+  background: #f0f9ff;
+  color: #1890ff;
+}
+
+.floating-help .ant-dropdown-menu-item .anticon {
+  font-size: 16px;
+  width: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .floating-help {
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .help-button {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .help-button .anticon {
+    font-size: 18px;
+  }
+  
+  .floating-help .ant-dropdown-menu {
+    min-width: 140px;
+  }
+  
+  .floating-help .ant-dropdown-menu-item {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+}
+
+/* 动画效果 */
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.help-button {
+  animation: bounce 2s infinite;
+  animation-delay: 3s;
+}
+
+.help-button:hover {
+  animation: none;
+}
+
+/* 脉冲效果 */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 4px 16px rgba(24, 144, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(24, 144, 255, 0.5);
+  }
+  100% {
+    box-shadow: 0 4px 16px rgba(24, 144, 255, 0.3);
+  }
+}
+
+.help-button.pulse {
+  animation: pulse 2s infinite;
+}

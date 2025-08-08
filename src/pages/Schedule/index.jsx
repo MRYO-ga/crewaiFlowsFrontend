@@ -787,21 +787,6 @@ const SchedulePage = () => {
       </div>
     );
   }
-
-  if (!sopData) {
-    return (
-      <div className="schedule-page">
-        <Alert
-          message="暂无数据"
-          description="运营计划数据为空，请联系管理员"
-          type="warning"
-          showIcon
-          style={{ margin: '24px' }}
-        />
-      </div>
-    );
-  }
-
   const progress = progressData;
   const currentStageStatus = getCurrentStageStatus();
 

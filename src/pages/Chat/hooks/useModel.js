@@ -20,6 +20,7 @@ export const useModel = () => {
         const defaultModels = [
           { value: 'gpt-4o-mini', label: 'GPT-4o Mini', provider: 'openai', description: '快速、经济的模型，适合日常对话' },
           { value: 'gpt-4o', label: 'GPT-4o', provider: 'openai', description: '更强大的推理能力，适合复杂任务' },
+          { value: 'gpt-5-2025-08-07', label: 'GPT-5 (2025-08-07)', provider: 'openai', description: '最新一代GPT-5，增强推理与工具使用能力' },
           { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4', provider: 'anthropic', description: '最新Claude模型，优秀的推理和创作能力' },
           { value: 'claude-3-7-sonnet-20250219-thinking', label: 'Claude 3.7 Sonnet (Thinking)', provider: 'anthropic', description: '具有深度思考能力的Claude模型' },
           { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet', provider: 'anthropic', description: '平衡性能和速度的Claude模型' },
@@ -31,6 +32,7 @@ export const useModel = () => {
       const defaultModels = [
         { value: 'gpt-4o-mini', label: 'GPT-4o Mini', provider: 'openai', description: '快速、经济的模型，适合日常对话' },
         { value: 'gpt-4o', label: 'GPT-4o', provider: 'openai', description: '更强大的推理能力，适合复杂任务' },
+        { value: 'gpt-5-2025-08-07', label: 'GPT-5 (2025-08-07)', provider: 'openai', description: '最新一代GPT-5，增强推理与工具使用能力' },
         { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4', provider: 'anthropic', description: '最新Claude模型，优秀的推理和创作能力' },
         { value: 'claude-3-7-sonnet-20250219-thinking', label: 'Claude 3.7 Sonnet (Thinking)', provider: 'anthropic', description: '具有深度思考能力的Claude模型' },
         { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet', provider: 'anthropic', description: '平衡性能和速度的Claude模型' },

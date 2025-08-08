@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { personaService } from '../../services/personaApi';
 import { productService } from '../../services/productApi';
 import { message } from 'antd';
+import UniversalGuide from '../../components/UniversalGuide';
+import { guideConfigs } from '../../configs/guideConfig';
 
 const WorkflowPage = () => {
   const navigate = useNavigate();
@@ -332,7 +334,7 @@ const WorkflowPage = () => {
     return (
       <div 
         key={node.id}
-        className={`bg-white rounded-xl p-5 border ${isActive ? 'border-primary shadow-lg' : 'border-gray-100 shadow-sm'} hover:shadow-md transition-all relative cursor-pointer`}
+        className={`flow-node bg-white rounded-xl p-5 border ${isActive ? 'border-primary shadow-lg' : 'border-gray-100 shadow-sm'} hover:shadow-md transition-all relative cursor-pointer`}
         onMouseEnter={() => setActiveNode(node.id)}
         onMouseLeave={() => setActiveNode(null)}
       >
@@ -367,7 +369,7 @@ const WorkflowPage = () => {
         <p className="text-gray-600 text-sm mb-4">{node.description}</p>
         
         <button 
-          className={`w-full py-2 border ${isActive ? 'bg-primary text-white' : 'border-primary text-primary hover:bg-primary hover:text-white'} rounded-lg transition-colors flex items-center justify-center`}
+          className={`analysis-button w-full py-2 border ${isActive ? 'bg-primary text-white' : 'border-primary text-primary hover:bg-primary hover:text-white'} rounded-lg transition-colors flex items-center justify-center`}
           onClick={node.action}
         >
           <i className="fa-solid fa-arrow-right mr-2"></i> {node.actionText}
@@ -413,6 +415,11 @@ const WorkflowPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* 页面头部 */}
+      <div className="workflow-header mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">SOP 运营流程</h1>
+        <p className="text-gray-600">系统化的小红书运营标准作业程序</p>
+      </div>
 
       <section className="mb-10">
         <div className="bg-white rounded-2xl p-6 shadow-sm">
@@ -421,7 +428,7 @@ const WorkflowPage = () => {
           </h3>
           
           {/* 总进度指示器 */}
-          <div className="mb-8">
+          <div className="progress-indicator mb-8">
             <div className="flex justify-between items-center mb-2">
               <h4 className="font-medium text-dark">总体完成进度</h4>
               <span className="text-primary font-medium">68%</span>
@@ -439,7 +446,7 @@ const WorkflowPage = () => {
           {/* 流程节点图 - 添加滚动容器 */}
           <div 
             ref={flowContainerRef}
-            className="relative max-h-[calc(100vh-250px)] overflow-y-auto pr-2 custom-scrollbar"
+            className="workflow-flow relative max-h-[calc(100vh-250px)] overflow-y-auto pr-2 custom-scrollbar"
             onScroll={handleScroll}
           >
             {/* 流程主线 */}
@@ -529,6 +536,15 @@ const WorkflowPage = () => {
           background: #888;
         }
       `}</style>
+      
+      {/* 页面引导系统 */}
+      <UniversalGuide
+        pageType="workflow"
+        pageConfig={guideConfigs.workflow}
+        hasData={true}
+        onCreateAction={() => navigate('/app/product')}
+        onViewExample={() => message.info('正在加载示例数据...')}
+      />
     </div>
   );
 };

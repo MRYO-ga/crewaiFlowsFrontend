@@ -147,5 +147,42 @@ export const knowledgeService = {
       console.error('获取知识库统计信息失败:', error);
       throw error;
     }
+  },
+
+  // 下载知识库文档
+  downloadKnowledgeDocument: async (documentId) => {
+    try {
+      console.log('调用下载API:', `/documents/${documentId}/download`);
+      const response = await knowledgeApi.get(`/documents/${documentId}/download`, {
+        responseType: 'blob' // 重要：设置响应类型为blob以处理文件下载
+      });
+      console.log('下载API响应:', response);
+      return response;
+    } catch (error) {
+      console.error('下载知识库文档失败:', error);
+      throw error;
+    }
+  },
+
+  // 直接下载知识库文档（使用浏览器原生下载）
+  directDownloadKnowledgeDocument: async (documentId, title) => {
+    try {
+      const downloadUrl = `${knowledgeApi.defaults.baseURL}documents/${documentId}/download`;
+      // 创建一个隐藏的iframe来触发下载
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = downloadUrl;
+      document.body.appendChild(iframe);
+      
+      // 3秒后清理iframe
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 3000);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('直接下载知识库文档失败:', error);
+      throw error;
+    }
   }
 }; 

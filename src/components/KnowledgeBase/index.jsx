@@ -229,6 +229,69 @@ const KnowledgeBase = ({
     }
   };
 
+  // 下载文档
+  const handleDownloadDocument = async (document) => {
+    try {
+      console.log('开始下载文档:', document.id);
+      
+      // 检查是否在浏览器环境中
+      if (typeof window === 'undefined' || !window.document) {
+        message.error('当前环境不支持文件下载');
+        return;
+      }
+      
+      // 使用直接下载方法
+      if (service.directDownloadKnowledgeDocument) {
+        await service.directDownloadKnowledgeDocument(document.id, document.title);
+        message.success('开始下载文档');
+      } else {
+        // 回退到原来的下载方法
+        const response = await service.downloadKnowledgeDocument(document.id);
+        
+        // 检查必要的API是否存在
+        if (!window.URL || !window.URL.createObjectURL) {
+          message.error('浏览器不支持文件下载功能');
+          return;
+        }
+        
+        // 创建Blob对象
+        const blob = new Blob([response.data], { type: 'text/markdown;charset=utf-8' });
+        
+        // 使用更兼容的方式创建下载链接
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        
+        // 检查元素创建是否成功
+        if (!link) {
+          message.error('无法创建下载链接');
+          return;
+        }
+        
+        link.href = url;
+        
+        // 使用文档标题作为文件名，确保文件名安全
+        const filename = `${document.title.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_')}.md`;
+        link.setAttribute('download', filename);
+        link.style.display = 'none';
+        
+        // 添加到DOM并触发点击
+        document.body.appendChild(link);
+        link.click();
+        
+        // 延迟清理以确保下载触发
+        setTimeout(() => {
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      }
+      
+      message.success('文档下载成功');
+    } catch (err) {
+      console.error('下载文档失败:', err);
+      message.error(`下载文档失败: ${err.message || '未知错误'}`);
+    }
+  };
+
   // 分页改变处理
   const handlePaginationChange = (page, pageSize) => {
     setPagination(prev => ({
@@ -322,6 +385,14 @@ const KnowledgeBase = ({
             size="small"
           >
             查看
+          </Button>
+          <Button 
+            type="text" 
+            icon={<FileTextOutlined />} 
+            onClick={() => handleDownloadDocument(record)}
+            size="small"
+          >
+            下载
           </Button>
           <Button 
             type="text" 

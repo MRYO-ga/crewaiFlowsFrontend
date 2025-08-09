@@ -19,6 +19,7 @@ import WorkflowPage from './pages/workflow/WorkflowPage';
 import KnowledgeGraphPage from './pages/KnowledgeGraphPage';
 import KnowledgePage from './pages/Knowledge';
 import LightRAGPage from './pages/LightRAG';
+import CategorizedNotesPage from './pages/CategorizedNotesPage';
 
 function App() {
   return (
@@ -44,10 +45,11 @@ function App() {
           <Route path="knowledge-graph" element={<KnowledgeGraphPage />} />
           <Route path="knowledge" element={<KnowledgePage />} />
           <Route path="lightrag" element={<LightRAGPage />} />
+          <Route path="categorized-notes" element={<CategorizedNotesPage />} />
         </Route>
       </Routes>
     </Router>
   );
 }
 
-export default App; 
+export default App;

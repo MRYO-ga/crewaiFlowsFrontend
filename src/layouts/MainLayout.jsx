@@ -23,6 +23,7 @@ const MainLayout = () => {
         { path: '/app/schedule', name: '发布计划', icon: 'fa-calendar' },
         { path: '/app/examples', name: '功能样例', icon: 'fa-lightbulb' },
         { path: '/app/xhs', name: '小红书数据', icon: 'fa-database' },
+        { path: '/app/categorized-notes', name: '分类笔记', icon: 'fa-tags' },
         // { path: '/app/mcp-test', name: 'MCP测试', icon: 'fa-plug' },
       ]
     },
@@ -214,4 +215,4 @@ const MainLayout = () => {
   );
 };
 
-export default MainLayout; 
+export default MainLayout;

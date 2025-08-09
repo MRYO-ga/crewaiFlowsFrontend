@@ -32,5 +32,6 @@ export const API_PATHS = {
   COMPETITORS: `${API_BASE_URL}/api/competitors/`,
   SCHEDULES: `${API_BASE_URL}/api/schedules/`,
   TASKS: `${API_BASE_URL}/api/tasks/`,
-  SOPS: `${API_BASE_URL}/api/sops/`
+  SOPS: `${API_BASE_URL}/api/sops/`,
+  CATEGORIZED_NOTES: `${API_BASE_URL}/api/categorized-notes`
 };

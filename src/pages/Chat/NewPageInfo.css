@@ -1,0 +1,43 @@
+.info-page-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #e6f7ff 0%, #f9f0ff 100%);
+    text-align: center;
+    color: #333;
+  }
+  
+  .info-page-content {
+    max-width: 600px;
+    padding: 40px;
+  }
+  
+  .info-page-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .info-page-heading {
+    font-size: 36px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  
+  .info-page-subheading {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+  
+  .info-page-start-button {
+    font-size: 18px;
+    height: 50px;
+    padding: 0 40px;
+  }

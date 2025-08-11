@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { DatabaseOutlined, FileTextOutlined, SearchOutlined, UserOutlined, ShoppingOutlined, ReloadOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons';
+import { DatabaseOutlined, FileTextOutlined, SearchOutlined, UserOutlined, ShoppingOutlined, ReloadOutlined, PlusOutlined, TeamOutlined, RobotOutlined } from '@ant-design/icons';
 import { Button, Space, Tooltip, Badge } from 'antd';
 
 import { useChatState } from './hooks/useChatState';
@@ -31,6 +31,8 @@ const ChatPage = () => {
   const [lastChatStatus, setLastChatStatus] = useState(null);
   const messagingState = useMessaging({ ...chatState, ...dataManagementState, lastChatStatus, setLastChatStatus }, modelState, agentState);
 
+  const [isChatStarted, setIsChatStarted] = useState(false);
+
   const { messages, setMessages, setStreamingMessage, setCurrentTask, setInputValue, inputRef } = chatState;
   const { selectedAgent, showPersonaIntro, setShowPersonaIntro, currentPersonaIntro } = agentState;
   const { loadComprehensiveData, loadCacheData, loadPersonaData, loadProductData } = dataManagementState;
@@ -56,8 +58,8 @@ const ChatPage = () => {
     loadPersonaData();
     loadProductData();
     loadAvailableModels();
-    if (messages.length === 0) {
-      showWelcomeMessage();
+    if (messages.length > 0) {
+      setIsChatStarted(true);
     }
 
     // 设置全局函数来打开文档面板
@@ -107,26 +109,6 @@ const ChatPage = () => {
       }
     };
   }, [chatState.streamingMessage, chatState.streamingMessage?.isCompleted]);
-
-  const showWelcomeMessage = () => {
-    const selectedAgentOption = agentOptions.find(option => option.value === selectedAgent);
-    const personaIntroduction = selectedAgentOption ? selectedAgentOption.introduction : agentOptions[0].introduction;
-    
-    const welcomeMessage = {
-      id: Date.now(),
-      type: 'assistant',
-      content: personaIntroduction + '\n\n🎉 **欢迎使用Social AgentMind - 智能社交媒体运营助手！**\n\n我是你的专业社交媒体运营顾问，具备以下核心能力：\n\n🤖 **多元化AI策略**\n• 行业关键词提取策略 - 精准挖掘领域核心词\n• 用户需求精准捕捉 - 深度分析痛点情绪\n• 数据驱动选题挖掘 - 发现蓝海机会\n• 内容生成与合规审核 - 真实感强且安全合规\n\n🛠️ **强大工具支持**\n• 📊 数据库分析工具（账号数据、用户画像）\n• 🔍 小红书平台工具（内容搜索、趋势分析）\n• 📈 智能分析引擎（竞品分析、选题建议）\n• 📝 内容生成引擎（文案创作、合规检测）\n\n💡 **使用建议**\n1. 在右上角选择不同的AI策略\n2. 每种策略都有专属的默认提问\n3. 结合你的具体需求进行深度对话\n\n快速开始，试试以下功能：',
-      timestamp: new Date().toLocaleTimeString(),
-      suggestions: [
-        { title: '🔍 行业关键词分析', description: '分析特定领域的核心关键词', query: '我想为我的美妆博主账号提取行业关键词，请帮我分析小红书上美妆领域的热门关键词和选题方向。' },
-        { title: '🎯 用户需求洞察', description: '深度挖掘目标用户的真实需求', query: '我做的是职场穿搭内容，想要精准捕捉目标用户的真实需求和痛点，请帮我分析这个领域用户的核心需求。' },
-        { title: '📊 数据驱动选题', description: '发现蓝海选题机会', query: '请帮我分析护肤领域的选题规律，挖掘哪些关键词组合是蓝海机会，有哪些数据驱动的选题建议？' },
-        { title: '📈 账号数据分析', description: '分析现有账号的运营数据', query: '帮我分析一下当前账号的数据情况，包括用户数、内容数等统计信息' },
-        { title: '📝 内容生成与合规', description: '生成真实感强且合规安全的内容', query: '请基于我的人设风格和产品信息，生成一篇小红书内容，包括文案、配图建议，并进行合规审核，确保内容真实感强且符合平台规则。' }
-      ]
-    };
-    setMessages([welcomeMessage]);
-  };
 
   const displayPersonaIntroduction = () => {
     const selectedAgentOption = agentOptions.find(option => option.value === selectedAgent);
@@ -223,10 +205,19 @@ const ChatPage = () => {
     }
   }, [messagingState.lastJsonMessage]);
 
+  const handleSendMessage = () => {
+    if (chatState.inputValue.trim()) {
+      messagingState.sendMessage(chatState.inputValue);
+      if (!isChatStarted) {
+        setIsChatStarted(true);
+      }
+    }
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      messagingState.sendMessage(chatState.inputValue);
+      handleSendMessage();
     }
   };
 
@@ -385,58 +376,6 @@ const ChatPage = () => {
     );
   };
 
-  // 临时测试函数 - 包含图片的测试数据
-  const testXhsPanel = () => {
-    const testData = {
-        tool_name: "search_notes",
-        tool_args: { keywords: "测试" },
-        notes_data: {
-            success: true,
-            total_items: 2,
-            notes: [
-                {
-                    id: "test1",
-                    display_title: "测试笔记1",
-                    desc: "这是一个测试笔记的描述",
-                    cover: {
-                        url_default: "https://sns-webpic-qc.xhscdn.com/202312121415/c8e8b0b1e7e8d1f2a3b4c5d6e7f8g9h0/1040g2sg31hck0snljo7g4abpkrlfhm53ocdciko!nc_n_webp_mw_1"
-                    },
-                    cover_image: "https://sns-webpic-qc.xhscdn.com/202312121415/c8e8b0b1e7e8d1f2a3b4c5d6e7f8g9h0/1040g2sg31hck0snljo7g4abpkrlfhm53ocdciko!nc_n_webp_mw_1",
-                    user: { 
-                        nickname: "测试用户1", 
-                        avatar: "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31hck0snljo7g4abpkrlfhm53ocdciko?imageView2/2/w/80/format/jpg" 
-                    },
-                    interact_info: { liked_count: "100", comment_count: "20" },
-                    time: "2024-01-01",
-                    ip_location: "北京"
-                },
-                {
-                    id: "test2", 
-                    display_title: "测试笔记2",
-                    desc: "另一个测试笔记",
-                    cover: {
-                        url_default: "https://sns-webpic-qc.xhscdn.com/202312121416/a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6/1040g2sg31hck0snljo7g4abpkrlfhm53ocdcikp!nc_n_webp_mw_1"
-                    },
-                    cover_image: "https://sns-webpic-qc.xhscdn.com/202312121416/a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6/1040g2sg31hck0snljo7g4abpkrlfhm53ocdcikp!nc_n_webp_mw_1",
-                    user: { 
-                        nickname: "测试用户2", 
-                        avatar: "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31hck0snljo7g4abpkrlfhm53ocdcikq?imageView2/2/w/80/format/jpg" 
-                    },
-                    interact_info: { liked_count: "200", comment_count: "30" },
-                    time: "2024-01-02",
-                    ip_location: "上海"
-                }
-            ]
-        },
-        group_id: "test-group-123"
-    };
-    
-    setXhsResults([testData]);
-    setIsXhsPanelVisible(true);
-    console.log('🧪 [测试] 手动显示小红书侧边栏，包含图片数据');
-  };
-
-
 
   return (
     <div className="chat-container" style={{ 
@@ -455,7 +394,7 @@ const ChatPage = () => {
         }
         
         .chat-container {
-          background: #fafafa;
+          background: #F7F8FC;
           max-width: 100vw;
           max-height: 100vh;
           overflow: hidden;
@@ -484,23 +423,59 @@ const ChatPage = () => {
           overflow-wrap: break-word;
         }
         
+        .chat-input-wrapper {
+          padding: 16px 24px;
+          background: #ffffff; 
+          border-top: 1px solid #e5e7eb;
+        }
+        .chat-input-wrapper.start-screen {
+          background: transparent;
+          border-top: none;
+          padding: 0;
+        }
+        .chat-input-controls {
+          display: flex;
+          align-items: center;
+          width: 100%;
+        }
+        .chat-input-main {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          position: relative;
+        }
+        .chat-textarea {
+          flex: 1;
+          border-radius: 12px !important;
+          border: 1px solid #d1d5db !important;
+          font-size: 16px !important;
+          padding: 12px 16px !important;
+          resize: none !important;
+          transition: border-color 0.2s, box-shadow 0.2s !important;
+        }
+        .chat-textarea:focus {
+          border-color: #4F46E5 !important;
+          box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
+        }
+        .send-button {
+          width: 48px !important;
+          height: 48px !important;
+        }
+
         /* 聊天区域样式 */
         .chat-messages { 
           flex: 1; 
           overflow-y: auto; 
           overflow-x: hidden; /* 防止水平溢出 */
-          padding: 20px; 
-          background: linear-gradient(to bottom, #fafafa, #ffffff);
+          padding: 24px;
+          background: transparent;
           max-width: 100%;
         }
         
         .chat-input-area { 
-          padding: 20px; 
-          background: white; 
-          border-top: 1px solid #f0f0f0; 
-          box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-          max-width: 100%;
-          overflow: hidden;
+          padding: 16px 24px;
+          background: #ffffff; 
+          border-top: 1px solid #e5e7eb;
         }
         
         /* 工具详情样式 */
@@ -541,62 +516,109 @@ const ChatPage = () => {
           flex: 1, 
           display: 'flex', 
           flexDirection: 'column',
-          minWidth: 0
+          minWidth: 0,
+          justifyContent: isChatStarted ? 'space-between' : 'center',
+          alignItems: isChatStarted ? 'stretch' : 'center',
+          height: '100%',
         }}>
-      
-
-      
-      <MessageList
-        messages={messages}
-        streamingMessage={chatState.streamingMessage}
-        onCancel={messagingState.cancelCurrentTask}
-        onQuickQuery={messagingState.sendQuickQuery}
-        onGenerateDocument={messagingState.generateDocument}
-        onRegenerate={messagingState.handleRegenerate}
-        onCopy={messagingState.handleCopy}
-        setStreamingMessage={chatState.setStreamingMessage}
-        setCurrentTask={chatState.setCurrentTask}
-        onReflectionChoice={messagingState.handleReflectionChoice}
-        onReflectionFeedback={messagingState.handleReflectionFeedback}
-      />
-      <div className="chat-input">
-        <ChatInput
-          inputValue={chatState.inputValue}
-          setInputValue={chatState.setInputValue}
-          sendMessage={() => messagingState.sendMessage(chatState.inputValue)}
-          isLoading={chatState.isLoading}
-        attachedData={dataManagementState.attachedData}
-        removeDataReference={dataManagementState.removeDataReference}
-        showDataSelector={dataManagementState.showDataSelector}
-        setShowDataSelector={dataManagementState.setShowDataSelector}
-        renderDataSelector={renderDataSelector}
-        selectedModel={modelState.selectedModel}
-        handleModelChange={modelState.handleModelChange}
-        modelsLoading={modelState.modelsLoading}
-        availableModels={modelState.availableModels}
-        selectedAgent={agentState.selectedAgent}
-        handleAgentChange={agentState.handleAgentChange}
-        inputRef={inputRef}
-        handleKeyDown={handleKeyDown}
-        currentTask={chatState.currentTask}
-        cancelCurrentTask={messagingState.cancelCurrentTask}
-        />
-      </div>
-      <SettingsDrawer
-        showSettings={showSettings}
-        setShowSettings={setShowSettings}
-        selectedModel={modelState.selectedModel}
-        availableModels={modelState.availableModels}
-        modelsLoading={modelState.modelsLoading}
-        loadAvailableModels={loadAvailableModels}
-        mcpStatus={mcpState.mcpStatus}
-        mcpLoading={mcpState.mcpLoading}
-        reconnectMcp={mcpState.reconnectMcp}
-        comprehensiveData={dataManagementState.comprehensiveData}
-        contextLoading={dataManagementState.contextLoading}
-        loadComprehensiveData={loadComprehensiveData}
-      />
+          {isChatStarted ? (
+            <>
+              <MessageList
+                messages={messages}
+                streamingMessage={chatState.streamingMessage}
+                onCancel={messagingState.cancelCurrentTask}
+                onQuickQuery={messagingState.sendQuickQuery}
+                onGenerateDocument={messagingState.generateDocument}
+                onRegenerate={messagingState.handleRegenerate}
+                onCopy={messagingState.handleCopy}
+                setStreamingMessage={chatState.setStreamingMessage}
+                setCurrentTask={chatState.setCurrentTask}
+                onReflectionChoice={messagingState.handleReflectionChoice}
+                onReflectionFeedback={messagingState.handleReflectionFeedback}
+              />
+              <div className="chat-input-area">
+                <ChatInput
+                  inputValue={chatState.inputValue}
+                  setInputValue={chatState.setInputValue}
+                  sendMessage={handleSendMessage}
+                  isLoading={chatState.isLoading}
+                  attachedData={dataManagementState.attachedData}
+                  removeDataReference={dataManagementState.removeDataReference}
+                  showDataSelector={dataManagementState.showDataSelector}
+                  setShowDataSelector={dataManagementState.setShowDataSelector}
+                  renderDataSelector={renderDataSelector}
+                  selectedModel={modelState.selectedModel}
+                  handleModelChange={modelState.handleModelChange}
+                  modelsLoading={modelState.modelsLoading}
+                  availableModels={modelState.availableModels}
+                  selectedAgent={agentState.selectedAgent}
+                  handleAgentChange={agentState.handleAgentChange}
+                  inputRef={inputRef}
+                  handleKeyDown={handleKeyDown}
+                  currentTask={chatState.currentTask}
+                  cancelCurrentTask={messagingState.cancelCurrentTask}
+                />
+              </div>
+            </>
+          ) : (
+            <div style={{ 
+              width: '100%', 
+              maxWidth: '800px', 
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              padding: '0 24px'
+            }}>
+              <RobotOutlined style={{ fontSize: 48, color: '#4F46E5', marginBottom: 16 }} />
+              <h1 style={{ fontSize: 28, fontWeight: 'bold', color: '#111827', margin: 0 }}>
+                开始您的智能协作之旅
+              </h1>
+              <p style={{ fontSize: 16, color: '#6b7280', marginTop: 8, marginBottom: 32 }}>
+                选择数据、模型和策略，然后提出您的问题。
+              </p>
+              <div style={{width: '100%'}}>
+                <ChatInput
+                  inputValue={chatState.inputValue}
+                  setInputValue={chatState.setInputValue}
+                  sendMessage={handleSendMessage}
+                  isLoading={chatState.isLoading}
+                  attachedData={dataManagementState.attachedData}
+                  removeDataReference={dataManagementState.removeDataReference}
+                  showDataSelector={dataManagementState.showDataSelector}
+                  setShowDataSelector={dataManagementState.setShowDataSelector}
+                  renderDataSelector={renderDataSelector}
+                  selectedModel={modelState.selectedModel}
+                  handleModelChange={modelState.handleModelChange}
+                  modelsLoading={modelState.modelsLoading}
+                  availableModels={modelState.availableModels}
+                  selectedAgent={agentState.selectedAgent}
+                  handleAgentChange={agentState.handleAgentChange}
+                  inputRef={inputRef}
+                  handleKeyDown={handleKeyDown}
+                  currentTask={chatState.currentTask}
+                  cancelCurrentTask={messagingState.cancelCurrentTask}
+                  isStartScreen={true}
+                />
+              </div>
             </div>
+          )}
+        </div>
+
+        <SettingsDrawer
+          showSettings={showSettings}
+          setShowSettings={setShowSettings}
+          selectedModel={modelState.selectedModel}
+          availableModels={modelState.availableModels}
+          modelsLoading={modelState.modelsLoading}
+          loadAvailableModels={loadAvailableModels}
+          mcpStatus={mcpState.mcpStatus}
+          mcpLoading={mcpState.mcpLoading}
+          reconnectMcp={mcpState.reconnectMcp}
+          comprehensiveData={dataManagementState.comprehensiveData}
+          contextLoading={dataManagementState.contextLoading}
+          loadComprehensiveData={loadComprehensiveData}
+        />
         {showDocumentPanel && (
             <DocumentPanel
                 content={documentContent}
@@ -647,7 +669,7 @@ const ChatPage = () => {
             messagingState.sendMessage('请帮我分析目标用户特征和行为模式');
           }}
         />
-        </div>
+      </div>
     </div>
   );
 };

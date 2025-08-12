@@ -4,7 +4,16 @@ import remarkGfm from 'remark-gfm';
 import MermaidDiagram from './MermaidDiagram';
 
 const EnhancedMarkdown = ({ content, children, fontSize = '13px' }) => {
-  const markdownContent = content || children;
+  let markdownContent = content || children;
+  
+  // 清理内容，移除特殊标签
+  if (typeof markdownContent === 'string') {
+    markdownContent = markdownContent
+      .replace(/<note_generation>[\s\S]*?<\/note_generation>/g, '')
+      .replace(/<\/?:?markdown>/g, '')
+      .trim();
+  }
+  
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}

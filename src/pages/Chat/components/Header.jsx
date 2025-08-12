@@ -2,12 +2,12 @@ import React from 'react';
 import { Button, Space, Tooltip, Badge, Tag, Typography } from 'antd';
 import {
   RobotOutlined,
-  HistoryOutlined,
   SettingOutlined,
   ReloadOutlined,
   DatabaseOutlined,
   CheckCircleOutlined,
-  CloseCircleOutlined
+  CloseCircleOutlined,
+  PlusOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,13 +15,16 @@ const { Text } = Typography;
 
 const Header = ({
   mcpStatus,
-  chatHistory,
-  loadChatHistory,
   setShowSettings,
   mcpLoading,
   reconnectMcp,
   contextLoading,
-  loadComprehensiveData
+  loadComprehensiveData,
+  setMessages,
+  setStreamingMessage,
+  setCurrentSessionId,
+  setCurrentTask,
+  setIsChatStarted
 }) => {
   const navigate = useNavigate();
 
@@ -52,15 +55,23 @@ const Header = ({
           </Tag>
         )}
         
-        <Tooltip title="聊天历史">
+        <Tooltip title="新对话">
           <Button 
             type="text" 
             shape="circle"
-            icon={<HistoryOutlined style={{ color: '#4b5563' }} />}
-            onClick={loadChatHistory}
+            icon={<PlusOutlined style={{ color: '#4b5563' }} />}
+            onClick={() => {
+              // 重置会话状态
+              setMessages([]);
+              setStreamingMessage(null);
+              setCurrentSessionId(null);
+              setCurrentTask(null);
+              setIsChatStarted(false); // 重置聊天状态，回到初始页面
+            }}
           />
         </Tooltip>
         
+
         <Tooltip title="开发工具设置">
           <Button
             type="text"

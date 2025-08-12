@@ -2,6 +2,7 @@ import React from 'react';
 import { Avatar, Card, Typography, Tag, Button, Spin, Space, Tooltip } from 'antd';
 import { UserOutlined, RobotOutlined, DownloadOutlined, CheckCircleOutlined, SyncOutlined, CopyOutlined, FileTextOutlined } from '@ant-design/icons';
 import EnhancedMarkdown from './EnhancedMarkdown';
+import NoteGenerationCard from './NoteGenerationCard';
 
 
 const { Text, Paragraph } = Typography;
@@ -66,16 +67,48 @@ const renderStatusIndicator = (status) => {
     );
 };
 
+// 提取笔记生成内容的函数
+const extractNoteGenerationContent = (content) => {
+  if (!content || typeof content !== 'string') return null;
+  const match = content.match(/<note_generation>([\s\S]*?)<\/note_generation>/);
+  return match ? match[1].trim() : null;
+};
+
+// 清理消息内容，移除note_generation标签
+const cleanMessageContentForDisplay = (content) => {
+  if (!content || typeof content !== 'string') return content;
+  return content.replace(/<note_generation>[\s\S]*?<\/note_generation>/g, '').trim();
+};
+
 const renderConversationFlow = (message) => {
   if (!message) return null;
 
   const hasSteps = message.steps && message.steps.length > 0;
   if (!hasSteps) {
-    return message.content ? (
-      <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#262626' }}>
-        <EnhancedMarkdown fontSize="13px">{message.content}</EnhancedMarkdown>
+    // 检查是否包含笔记生成内容
+    const noteContent = extractNoteGenerationContent(message.content);
+    const cleanedContent = cleanMessageContentForDisplay(message.content);
+    
+    return (
+      <div>
+        {/* 显示清理后的常规内容 */}
+        {cleanedContent && (
+          <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#262626', marginBottom: noteContent ? 16 : 0 }}>
+            <EnhancedMarkdown fontSize="13px">{cleanedContent}</EnhancedMarkdown>
+          </div>
+        )}
+        
+        {/* 显示生成的笔记 */}
+        {noteContent && (
+          <NoteGenerationCard 
+            content={noteContent}
+            onCopy={(content) => {
+              navigator.clipboard.writeText(content);
+            }}
+          />
+        )}
       </div>
-    ) : null;
+    );
   }
   
   const orderedSteps = [...message.steps].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
@@ -85,11 +118,30 @@ const renderConversationFlow = (message) => {
 
   orderedSteps.forEach(step => {
     if (step.type === 'ai_message' && step.content) {
-      if (!lastTextContent) {
-        lastTextContent = { type: 'text', content: '' };
-        conversationParts.push(lastTextContent);
+      // 检查步骤中是否包含笔记生成内容
+      const noteContent = extractNoteGenerationContent(step.content);
+      if (noteContent) {
+        // 如果包含笔记，将其作为单独的部分
+        conversationParts.push({ type: 'note_generation', content: noteContent });
+        lastTextContent = null;
+        
+        // 添加清理后的文本内容（如果有的话）
+        const cleanedStepContent = cleanMessageContentForDisplay(step.content);
+        if (cleanedStepContent) {
+          if (!lastTextContent) {
+            lastTextContent = { type: 'text', content: '' };
+            conversationParts.push(lastTextContent);
+          }
+          lastTextContent.content += cleanedStepContent;
+        }
+      } else {
+        // 常规文本内容
+        if (!lastTextContent) {
+          lastTextContent = { type: 'text', content: '' };
+          conversationParts.push(lastTextContent);
+        }
+        lastTextContent.content += step.content;
       }
-      lastTextContent.content += step.content;
     } else if (step.type === 'tool_calling') {
       const resultStep = orderedSteps.find(r => r.type === 'tool_result' && r.data?.name === step.data.name);
       conversationParts.push({ type: 'tool', call: step, result: resultStep });
@@ -114,6 +166,18 @@ const renderConversationFlow = (message) => {
           return (
             <div key={index} style={{ fontSize: '13px', lineHeight: 1.6, color: '#262626' }}>
               <EnhancedMarkdown fontSize="13px">{part.content}</EnhancedMarkdown>
+            </div>
+          );
+        }
+        if (part.type === 'note_generation') {
+          return (
+            <div key={index} style={{ margin: '16px 0' }}>
+              <NoteGenerationCard 
+                content={part.content}
+                onCopy={(content) => {
+                  navigator.clipboard.writeText(content);
+                }}
+              />
             </div>
           );
         }
@@ -297,7 +361,9 @@ const Message = ({ message, onCancel, onQuickQuery, onGenerateDocument, onRegene
         <div className="message-meta" style={{ justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
           <Text strong>{isUser ? '开发者' : 'AI助手'}</Text>
           <Text type="secondary" style={{ marginLeft: 8, fontSize: '12px' }}>
-            {new Date(message.timestamp).toLocaleTimeString()}
+            {message.timestamp && message.timestamp !== 'Invalid Date' ? 
+              (message.timestamp.includes(':') ? message.timestamp : new Date(message.timestamp).toLocaleTimeString()) 
+              : new Date().toLocaleTimeString()}
           </Text>
           {isAssistant && message.executionTime > 0 && (
             <Text type="secondary" style={{ marginLeft: 8, fontSize: '12px' }}>

@@ -76,6 +76,9 @@ export async function chatWithAgent(message, history) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       user_input: message,
+      user_id: "default_user",
+      model: "gpt-4o-mini",
+      save_to_history: true,
       conversation_history: history
     })
   });

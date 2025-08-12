@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring, useInView } from 'framer-motion';
+import Typewriter from 'typewriter-effect';
 import './HomePage.css';
+import TrustSection from './components/TrustSection';
+import CTASection from './components/CTASection';
+import LandingFooter from './components/LandingFooter';
+import { API_PATHS } from '../../configs/env';
 
 // 创建一个动画计数器组件
 const AnimatedCounter = ({ target, duration = 2000, suffix = "" }) => {
@@ -55,18 +60,70 @@ const FloatingCard = ({ children, delay = 0, className = "" }) => {
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeScenario, setActiveScenario] = useState(0);
+  const [autoSwitchProgress, setAutoSwitchProgress] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const containerRef = useRef(null);
   
   // 使用 framer-motion 的 useScroll
   const { scrollYProgress } = useScroll();
 
+  // 自动切换场景
   useEffect(() => {
-    setIsLoaded(true);
-  }, []);
+    if (isPaused) return;
+    
+    const switchInterval = 4000; // 4秒切换
+    const progressInterval = 50; // 进度更新间隔
+    
+    let progress = 0;
+    const progressTimer = setInterval(() => {
+      progress += progressInterval;
+      setAutoSwitchProgress((progress % switchInterval) / switchInterval * 100);
+    }, progressInterval);
+
+    const switchTimer = setInterval(() => {
+      setActiveScenario((prev) => (prev + 1) % scenarios.length);
+    }, switchInterval);
+
+    return () => {
+      clearInterval(progressTimer);
+      clearInterval(switchTimer);
+    };
+  }, [isPaused]);
+
+  const handleTabClick = (index) => {
+    setActiveScenario(index);
+    setIsPaused(true);
+    setAutoSwitchProgress(0);
+    
+    // 5秒后恢复自动切换
+    setTimeout(() => {
+      setIsPaused(false);
+    }, 5000);
+  };
 
   const handleEnterApp = () => {
     navigate('/app');
+  };
+
+  const handleWatchDemo = () => {
+    setShowVideoModal(true);
+  };
+
+  const handleBookDemo = () => {
+    setShowContactModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowVideoModal(false);
+    setShowContactModal(false);
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
   };
 
   const features = [
@@ -84,36 +141,59 @@ const HomePage = () => {
     },
     {
       icon: 'fa-chart-line',
-      title: '实时数据洞察',
-      description: '实时监控和分析业务数据，提供深度洞察和预测',
+      title: '增长闭环',
+      description: '实时追踪表现与自动复盘，沉淀成功要素，形成可复制的增长闭环。',
       color: 'from-cyan-500 to-teal-500'
-    },
-    {
-      icon: 'fa-cogs',
-      title: '自动化工作流',
-      description: '智能自动化工作流程，提升效率，减少人工干预',
-      color: 'from-teal-500 to-green-500'
     }
   ];
 
   const stats = [
-    { target: 2000, label: '创造者', suffix: '+' },
-    { target: 100, label: '活动', suffix: '+' },
-    { target: 5, label: '城市', suffix: '+' },
-    { target: 98, label: '满意度', suffix: '%' }
+    { target: 70, label: '减少重复性人工操作', suffix: '%' },
+    { target: 3, label: '提升内容生产效率', suffix: 'x' },
+    { target: 15, label: '持续优化投放ROI', suffix: '%+' },
+    { target: 1, label: '0经验团队当天可上手', suffix: '天' }
   ];
+
+  const scenarios = [
+    {
+      id: 0,
+      question: "如何找到我的下一个爆款选题？",
+      answer: "AI分析全网热点，智能推荐高潜力选题",
+      description: "只需输入行业关键词，AI立即分析全网数据，按热度、竞争度、转化潜力推荐选题，让每次创作都踩中流量密码。",
+      features: ["实时热点监控", "竞争度分析", "转化潜力预测", "选题日历规划"],
+      mockup: "trending-topics"
+    },
+    {
+      id: 1,
+      question: "如何让内容生产效率提升10倍？",
+      answer: "一键生成全套内容，从文案到视觉全覆盖",
+      description: "输入选题后，AI自动生成完整内容方案：标题、正文、配图建议、视频脚本、发布时机，一应俱全。",
+      features: ["智能文案生成", "配图自动匹配", "视频脚本创作", "发布时机优化"],
+      mockup: "content-generation"
+    },
+    {
+      id: 2,
+      question: "如何知道我的投入是否有回报？",
+      answer: "实时数据复盘，让每一分钱都有迹可循",
+      description: "全方位追踪内容表现，智能识别成功要素，自动优化投放策略，确保ROI持续提升。",
+      features: ["实时数据监控", "成功要素分析", "策略自动优化", "ROI趋势预测"],
+      mockup: "analytics-dashboard"
+    }
+  ];
+
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const progressWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   return (
     <div className="homepage-container" ref={containerRef}>
+      {typeof document !== 'undefined' && (document.title = 'Social AgentMind - AI营销增长引擎')}
       {/* 滚动进度条 */}
-      <div className="scroll-progress">
-        <motion.div 
-          className="scroll-progress-bar" 
-          style={{ 
-            width: useTransform(scrollYProgress, [0, 1], ["0%", "100%"])
-          }}
-        />
-      </div>
+        <div className="scroll-progress">
+          <motion.div 
+            className="scroll-progress-bar" 
+            style={prefersReducedMotion ? undefined : { width: progressWidth }}
+          />
+        </div>
 
       {/* 顶部菜单栏 */}
       <motion.header 
@@ -140,12 +220,12 @@ const HomePage = () => {
               <i className="fa-solid fa-brain"></i>
             </div>
             <span className="logo-text">
-              <span className="gradient-text">AgentMind</span>
+              <span className="gradient-text">Social AgentMind</span>
             </span>
           </motion.div>
           
           <motion.nav 
-            className="nav-menu"
+            className={`nav-menu ${mobileMenuOpen ? 'mobile-open' : ''}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ 
@@ -155,15 +235,16 @@ const HomePage = () => {
             }}
           >
             {[
-              { label: '简介', href: '#intro' },
-              { label: '特色', href: '#features' },
-              { label: '数据', href: '#stats' },
-              { label: '优势', href: '#advantages' }
+              { label: '产品价值', href: '#intro' },
+              { label: '核心功能', href: '#features' },
+              { label: '成功案例', href: '#stats' },
+              { label: '为何是我们', href: '#advantages' }
             ].map((item, index) => (
               <motion.a 
                 key={item.label}
                 href={item.href} 
                 className="nav-link"
+                onClick={() => setMobileMenuOpen(false)}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ 
@@ -200,6 +281,15 @@ const HomePage = () => {
               <i className="fa-solid fa-rocket mr-2"></i>
               立即体验
             </motion.button>
+            <motion.button 
+              className="mobile-menu-toggle"
+              aria-label="展开或关闭移动端菜单"
+              onClick={toggleMobileMenu}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <i className={`fa-solid ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+            </motion.button>
           </motion.div>
         </div>
       </motion.header>
@@ -225,7 +315,7 @@ const HomePage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.5 }}
                 >
-                  <span className="badge-text">新一代AI智能体平台</span>
+                  <span className="badge-text">AI驱动的内容营销增长引擎</span>
                 </motion.div>
 
                 <motion.h1 
@@ -234,9 +324,25 @@ const HomePage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.7 }}
                 >
-                  <span className="gradient-text">AgentMind</span>
+                   停止营销猜想，
                   <br />
-                  <span className="title-highlight">智能体协作平台</span>
+                  开启可预测的
+                  <span style={{ marginLeft: '1rem' }}>
+                    <Typewriter
+                      options={{
+                        strings: [
+                          '<span class="gradient-text">内容增长</span>',
+                          '<span class="gradient-text">用户增长</span>',
+                          '<span class="gradient-text">品牌增长</span>',
+                          '<span class="gradient-text">业务增长</span>',
+                        ],
+                        autoStart: true,
+                        loop: true,
+                        delay: 75,
+                        deleteSpeed: 50,
+                      }}
+                    />
+                  </span>
                 </motion.h1>
 
                 <motion.p 
@@ -245,9 +351,9 @@ const HomePage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.9 }}
                 >
-                  基于最新AI技术，打造智能决策支持、多智能体协作、实时数据洞察的下一代平台
+                  专为品牌打造的AI营销增长引擎，集成市场洞察、内容创作、数据分析于一体，
                   <br />
-                  让AI助力您的每一个决策，创造无限可能
+                  让您的每一次营销投入都能获得可预测、可复制的高质量回报。
                 </motion.p>
 
                 <motion.div 
@@ -263,15 +369,17 @@ const HomePage = () => {
                     whileTap={{ scale: 0.95 }}
                   >
                     <i className="fa-solid fa-rocket mr-2"></i>
-                    立即开始
+                    立即开始免费体验
                   </motion.button>
-                  <motion.button 
-                    className="btn-hero-secondary"
+          <motion.button 
+            className="btn-hero-secondary"
+            aria-label="观看演示视频"
+            onClick={handleWatchDemo}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
                     <i className="fa-solid fa-play mr-2"></i>
-                    观看演示
+                    观看1分钟演示
                   </motion.button>
                 </motion.div>
               </div>
@@ -298,10 +406,9 @@ const HomePage = () => {
                   {/* 浮动卡片 */}
                   <div className="floating-elements">
                     {[
-                      { icon: 'fa-robot', text: '智能体', position: 'top-left' },
-                      { icon: 'fa-chart-line', text: '数据分析', position: 'top-right' },
-                      { icon: 'fa-cogs', text: '自动化', position: 'bottom-left' },
-                      { icon: 'fa-lightbulb', text: '决策支持', position: 'bottom-right' }
+                      { icon: 'fa-compass', text: '发现与定位', position: 'top-left' },
+                      { icon: 'fa-wand-magic-sparkles', text: '策略与创作', position: 'top-right' },
+                      { icon: 'fa-chart-line', text: '学习与扩展', position: 'bottom-left' }
                     ].map((item, index) => (
                       <FloatingCard 
                         key={index}
@@ -352,19 +459,19 @@ const HomePage = () => {
               viewport={{ once: true, amount: 0.3 }}
             >
               <h2 className="section-title">
-                <span className="gradient-text">AgentMind</span>
+                <span className="gradient-text">您的营销是否正面临这些挑战？</span>
               </h2>
               <p className="section-description">
-                一个专注于AI智能体协作的创新平台，帮助企业实现智能化转型
+                高昂的团队成本、不确定的内容效果、难以规模化的增长瓶颈
               </p>
             </motion.div>
 
             <div className="intro-grid">
               {[
-                { icon: 'fa-brain', title: '专注AI', desc: '基于最新AI技术构建的智能体平台' },
-                { icon: 'fa-users', title: '协作社区', desc: '连接开发者、企业和创新者的生态社区' },
-                { icon: 'fa-code', title: '开源精神', desc: '倡导开源协作，共同打造更好的产品' },
-                { icon: 'fa-globe', title: '全球视野', desc: '面向全球用户，提供多语言支持' }
+                { icon: 'fa-solid fa-question-circle', title: '策略凭感觉', desc: '市场洞察滞后，选题依赖灵感，无法精准把握用户需求。' },
+                { icon: 'fa-solid fa-person-digging', title: '内容生产慢', desc: '团队被重复性工作淹没，从策划到发布周期长、效率低。' },
+                { icon: 'fa-solid fa-dice', title: '爆款靠运气', desc: '缺乏科学方法论，内容表现不稳定，难以复制成功。' },
+                { icon: 'fa-solid fa-wallet', title: '效果难衡量', desc: '数据分散，无法有效归因，预算花得不明不白。' }
               ].map((item, index) => (
                 <motion.div 
                   key={index}
@@ -400,14 +507,33 @@ const HomePage = () => {
               transition={{ duration: 0.8 }}
               viewport={{ once: true, amount: 0.3 }}
             >
-              <h2 className="section-title">强大功能特色</h2>
+              <h2 className="section-title">三步，构建您的AI内容增长飞轮</h2>
               <p className="section-description">
-                多样化的功能模块，满足不同场景的需求
+                Social AgentMind 将顶尖营销专家的方法论，转化为简单、高效的自动化工作流。
               </p>
             </motion.div>
             
             <div className="features-grid">
-              {features.map((feature, index) => (
+              {[
+                {
+                  icon: 'fa-solid fa-compass',
+                  title: '第一步：发现与定位',
+                  description: '智能分析行业数据、挖掘用户画像、监测竞品动态，30分钟完成传统需要3天的市场调研，精准定位您的增长机会。',
+                  color: 'linear-gradient(135deg, #667eea 0%, #5a67d8 100%)'
+                },
+                {
+                  icon: 'fa-solid fa-wand-magic-sparkles',
+                  title: '第二步：策略与创作',
+                  description: '基于定位自动生成内容策略，一键创建图文、视频、直播脚本等多形式内容，日产能提升10倍，质量媲美专业团队。',
+                  color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                },
+                {
+                  icon: 'fa-solid fa-chart-line',
+                  title: '第三步：学习与扩展',
+                  description: '实时监控内容数据，智能识别爆款要素，自动优化投放策略，让每次成功都能被复制和放大，实现持续增长。',
+                  color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                }
+              ].map((feature, index) => (
                 <motion.div 
                   key={index} 
                   className="feature-card"
@@ -425,8 +551,8 @@ const HomePage = () => {
                   }}
                 >
                   <div className="feature-content">
-                    <div className={`feature-icon gradient-${index + 1}`}>
-                      <i className={`fa-solid ${feature.icon}`}></i>
+                    <div className="feature-icon" style={{ background: feature.color }}>
+                      <i className={feature.icon}></i>
                     </div>
                     <h3 className="feature-title">{feature.title}</h3>
                     <p className="feature-description">{feature.description}</p>
@@ -435,11 +561,192 @@ const HomePage = () => {
                       whileHover={{ x: 5 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      了解更多 <i className="fa-solid fa-arrow-right ml-2"></i>
+                      <a href="#features" aria-label="了解更多核心功能">了解更多 <i className="fa-solid fa-arrow-right ml-2"></i></a>
                     </motion.button>
                   </div>
                 </motion.div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 应用场景展示 */}
+        <section className="scenarios-section">
+          <div className="section-container">
+            <motion.div 
+              className="section-header"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true, amount: 0.3 }}
+            >
+              <h2 className="section-title">它如何解决您的实际问题？</h2>
+              <p className="section-description">
+                看看 Social AgentMind 如何在真实场景中为您创造价值
+              </p>
+            </motion.div>
+
+            <div className="scenarios-container">
+              {/* Tab导航 */}
+              <motion.div 
+                className="scenario-tabs"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true, amount: 0.3 }}
+              >
+                {scenarios.map((scenario, index) => (
+                  <motion.button
+                    key={scenario.id}
+                    className={`scenario-tab ${activeScenario === index ? 'active' : ''}`}
+                    onClick={() => setActiveScenario(index)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <div className="tab-number">{index + 1}</div>
+                    <div className="tab-content">
+                      <h4 className="tab-question">{scenario.question}</h4>
+                      <p className="tab-answer">{scenario.answer}</p>
+                    </div>
+                  </motion.button>
+                ))}
+              </motion.div>
+
+              {/* 场景详情 */}
+              <motion.div 
+                className="scenario-details"
+                key={activeScenario}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <div className="scenario-content">
+                  <div className="scenario-info">
+                    <h3 className="scenario-title">{scenarios[activeScenario].question}</h3>
+                    <p className="scenario-description">{scenarios[activeScenario].description}</p>
+                    
+                    <div className="scenario-features">
+                      {scenarios[activeScenario].features.map((feature, index) => (
+                        <motion.div 
+                          key={index}
+                          className="feature-tag"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.4, delay: index * 0.1 }}
+                        >
+                          <i className="fa-solid fa-check"></i>
+                          <span>{feature}</span>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    <motion.button 
+                      className="scenario-cta"
+                      onClick={() => {
+                        const target = scenarios[activeScenario].mockup;
+                        if (target === 'trending-topics') {
+                          navigate('/app/competitor');
+                        } else if (target === 'content-generation') {
+                          navigate('/app/content');
+                        } else if (target === 'analytics-dashboard') {
+                          navigate('/app/schedule');
+                        } else {
+                          navigate('/app');
+                        }
+                      }}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <i className="fa-solid fa-arrow-right mr-2"></i>
+                      立即体验这个功能
+                    </motion.button>
+                  </div>
+
+                  <div className="scenario-visual">
+                    <div className={`mockup-container ${scenarios[activeScenario].mockup}`}>
+                      {scenarios[activeScenario].mockup === 'trending-topics' && (
+                        <div className="mockup-screen">
+                          <div className="mockup-header">
+                            <i className="fa-solid fa-search"></i>
+                            <span>早C晚A</span>
+                          </div>
+                          <div className="mockup-content">
+                            <div className="topic-item hot">
+                              <div className="topic-tag">🔥 超热</div>
+                              <div className="topic-title">早C晚A正确使用顺序</div>
+                              <div className="topic-stats">热度: 98% | 竞争: 低</div>
+                            </div>
+                            <div className="topic-item good">
+                              <div className="topic-tag">⭐ 优质</div>
+                              <div className="topic-title">敏感肌早C晚A搭配指南</div>
+                              <div className="topic-stats">热度: 85% | 竞争: 中</div>
+                            </div>
+                            <div className="topic-item rising">
+                              <div className="topic-tag">📈 上升</div>
+                              <div className="topic-title">学生党平价早C晚A推荐</div>
+                              <div className="topic-stats">热度: 72% | 竞争: 低</div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {scenarios[activeScenario].mockup === 'content-generation' && (
+                        <div className="mockup-screen">
+                          <div className="mockup-header">
+                            <i className="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>内容创作中...</span>
+                          </div>
+                          <div className="mockup-content">
+                            <div className="generation-step completed">
+                              <i className="fa-solid fa-check-circle"></i>
+                              <span>标题生成完成 (3个版本)</span>
+                            </div>
+                            <div className="generation-step completed">
+                              <i className="fa-solid fa-check-circle"></i>
+                              <span>正文大纲已生成</span>
+                            </div>
+                            <div className="generation-step active">
+                              <i className="fa-solid fa-spinner fa-spin"></i>
+                              <span>配图方案生成中...</span>
+                            </div>
+                            <div className="generation-step">
+                              <i className="fa-regular fa-circle"></i>
+                              <span>视频脚本待生成</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {scenarios[activeScenario].mockup === 'analytics-dashboard' && (
+                        <div className="mockup-screen">
+                          <div className="mockup-header">
+                            <i className="fa-solid fa-chart-line"></i>
+                            <span>数据复盘</span>
+                          </div>
+                          <div className="mockup-content">
+                            <div className="analytics-metric">
+                              <div className="metric-label">本月ROI</div>
+                              <div className="metric-value positive">+24.5%</div>
+                            </div>
+                            <div className="analytics-metric">
+                              <div className="metric-label">最佳发布时间</div>
+                              <div className="metric-value">21:00-22:00</div>
+                            </div>
+                            <div className="analytics-insight">
+                              <i className="fa-solid fa-lightbulb"></i>
+                              <span>视频内容比图文转化率高 3.2x</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             </div>
           </div>
         </section>
@@ -454,9 +761,9 @@ const HomePage = () => {
               transition={{ duration: 0.8 }}
               viewport={{ once: true, amount: 0.3 }}
             >
-              <h2 className="section-title">数据亮点</h2>
+              <h2 className="section-title">可量化的价值，看得见的增长</h2>
               <p className="section-description">
-                见证创新的力量，加入我们的创造者社区
+                与众多品牌用户一起，见证效率与效果的持续提升
               </p>
             </motion.div>
 
@@ -498,41 +805,34 @@ const HomePage = () => {
               transition={{ duration: 0.8 }}
               viewport={{ once: true, amount: 0.3 }}
             >
-              <h2 className="section-title">为什么选择 AgentMind</h2>
+              <h2 className="section-title">不止是工具，更是您的AI营销伙伴</h2>
               <p className="section-description">
-                企业级的可靠性与创新性的完美结合
+                我们提供的不是零散的功能，而是一套完整的增长系统
               </p>
             </motion.div>
 
             <div className="advantages-grid">
               {[
                 { 
-                  icon: 'fa-shield-halved', 
-                  title: '企业级安全', 
-                  desc: '银行级安全标准，端到端加密保护',
-                  metric: '99.9%',
-                  metricLabel: '安全保障'
+                  icon: 'fa-solid fa-sitemap', 
+                  title: '全链路增长闭环', 
+                  desc: '从市场洞察到数据优化，打通所有环节，消除数据孤岛，提供系统性的增长解决方案。',
+                  metric: '一体化',
+                  metricLabel: '增长系统'
                 },
                 { 
-                  icon: 'fa-bolt', 
-                  title: '极速响应', 
-                  desc: '毫秒级响应时间，实时处理用户请求',
-                  metric: '<10ms',
-                  metricLabel: '响应时间'
+                  icon: 'fa-solid fa-microchip', 
+                  title: '内置专家知识库', 
+                  desc: '我们将顶尖营销方法论融入AI Agent，让每个用户都能轻松做出专家级的决策。',
+                  metric: '专家级',
+                  metricLabel: '决策支持'
                 },
                 { 
-                  icon: 'fa-puzzle-piece', 
-                  title: '灵活集成', 
-                  desc: '丰富的API接口，快速集成现有系统',
-                  metric: '100+',
-                  metricLabel: 'API接口'
-                },
-                { 
-                  icon: 'fa-headset', 
-                  title: '专业支持', 
-                  desc: '7x24小时技术支持，专业团队服务',
-                  metric: '24/7',
-                  metricLabel: '技术支持'
+                  icon: 'fa-solid fa-arrows-spin', 
+                  title: '数据驱动自我进化', 
+                  desc: '您的每一次使用都在训练AI，让AgentMind越来越懂您的业务，实现真正的个性化增长。',
+                  metric: '自进化',
+                  metricLabel: '智能伙伴'
                 }
               ].map((item, index) => (
                 <motion.div 
@@ -552,7 +852,7 @@ const HomePage = () => {
                   }}
                 >
                   <div className="advantage-icon">
-                    <i className={`fa-solid ${item.icon}`}></i>
+                    <i className={item.icon}></i>
                   </div>
                   <div className="advantage-content">
                     <h3 className="advantage-title">{item.title}</h3>
@@ -568,95 +868,132 @@ const HomePage = () => {
           </div>
         </section>
 
+        {/* 信任背书 */}
+        <TrustSection />
+
         {/* 行动号召 */}
-        <section className="cta-section">
-          <div className="section-container">
-            <motion.div 
-              className="cta-content"
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true, amount: 0.3 }}
-            >
-              <motion.h2 
-                className="cta-title"
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                准备开始您的AI之旅了吗？
-              </motion.h2>
-              <motion.p 
-                className="cta-description"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                viewport={{ once: true }}
-              >
-                加入数千家企业的行列，体验AgentMind带来的智能化变革
-              </motion.p>
-              
-              <motion.div 
-                className="cta-actions"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                viewport={{ once: true }}
-              >
-                <motion.button 
-                  className="btn-cta-primary" 
-                  onClick={handleEnterApp}
-                  whileHover={{ scale: 1.05, y: -3 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <i className="fa-solid fa-rocket mr-2"></i>
-                  立即开始免费体验
-                </motion.button>
-                <motion.button 
-                  className="btn-cta-secondary"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <i className="fa-solid fa-calendar mr-2"></i>
-                  预约演示
-                </motion.button>
-              </motion.div>
-              
-              <motion.div 
-                className="trust-badges"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-                viewport={{ once: true }}
-              >
-                {[
-                  { icon: 'fa-check-circle', text: '14天免费试用' },
-                  { icon: 'fa-shield-halved', text: '企业级安全' },
-                  { icon: 'fa-headset', text: '专业技术支持' }
-                ].map((item, index) => (
-                  <motion.div 
-                    key={index} 
-                    className="trust-badge"
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ 
-                      duration: 0.5, 
-                      delay: 0.9 + index * 0.1 
-                    }}
-                    viewport={{ once: true }}
-                  >
-                    <i className={`fa-solid ${item.icon}`}></i>
-                    <span>{item.text}</span>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </motion.div>
-          </div>
-        </section>
+        <CTASection onPrimary={handleEnterApp} onSecondary={handleBookDemo} />
       </main>
 
-      {/* 返回顶部按钮 */}
+      {/* 页脚（Landing页） */}
+      <LandingFooter />
+
+      {/* 视频演示模态框 */}
+      {showVideoModal && (
+        <motion.div 
+          className="modal-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={handleCloseModal}
+        >
+          <motion.div 
+            className="video-modal"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className="modal-close" onClick={handleCloseModal}>
+              <i className="fa-solid fa-times"></i>
+            </button>
+            <div className="video-container">
+              <iframe 
+                width="100%" 
+                src="https://player.bilibili.com/player.html?bvid=BV1xx411c7mD&autoplay=0" 
+                frameBorder="0" 
+                aria-label="功能演示视频"
+                allowFullScreen
+                title="Social AgentMind 演示视频"
+              ></iframe>
+            </div>
+            <div className="video-info">
+              <h3>Social AgentMind 1 分钟功能演示</h3>
+              <p>了解如何通过AI驱动您的内容营销增长</p>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* 预约演示模态框 */}
+      {showContactModal && (
+        <motion.div 
+          className="modal-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={handleCloseModal}
+        >
+          <motion.div 
+            className="contact-modal"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className="modal-close" onClick={handleCloseModal}>
+              <i className="fa-solid fa-times"></i>
+            </button>
+            <div className="contact-form">
+              <h3>预约专属演示</h3>
+              <p>我们的专家将为您展示 Social AgentMind 如何帮助您的业务增长</p>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const payload = {
+                  name: form.querySelector('input[placeholder="您的姓名"]').value,
+                  email: form.querySelector('input[placeholder="企业邮箱"]').value,
+                  phone: form.querySelector('input[placeholder="联系电话"]').value,
+                  company: form.querySelector('input[placeholder="公司名称"]').value,
+                  company_size: form.querySelector('select').value,
+                };
+                try {
+                  const res = await fetch(`${API_PATHS.LANDING}book-demo`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                  });
+                  const data = await res.json();
+                  if (res.ok && data.status === 'success') {
+                    alert('预约已提交，我们会尽快联系您');
+                    setShowContactModal(false);
+                  } else {
+                    alert(data.detail || '预约失败，请稍后重试');
+                  }
+                } catch (err) {
+                  alert('网络异常，请稍后重试');
+                }
+              }}>
+                <div className="form-group">
+                  <input type="text" placeholder="您的姓名" required />
+                </div>
+                <div className="form-group">
+                  <input type="email" placeholder="企业邮箱" required />
+                </div>
+                <div className="form-group">
+                  <input type="tel" placeholder="联系电话" required />
+                </div>
+                <div className="form-group">
+                  <input type="text" placeholder="公司名称" required />
+                </div>
+                <div className="form-group">
+                  <select required>
+                    <option value="">请选择公司规模</option>
+                    <option value="1-50">1-50人</option>
+                    <option value="51-200">51-200人</option>
+                    <option value="201-500">201-500人</option>
+                    <option value="500+">500人以上</option>
+                  </select>
+                </div>
+                <button type="submit" className="form-submit">
+                  <i className="fa-solid fa-calendar mr-2"></i>
+                  立即预约
+                </button>
+              </form>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
       <motion.button
         className="back-to-top"
         initial={{ opacity: 0, scale: 0 }}

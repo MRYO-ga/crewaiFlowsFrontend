@@ -57,6 +57,14 @@ class StreamingContentProcessor {
       priority: 5,
       process: (content) => ({ type: 'tool_result', content: content })
     });
+
+    // 笔记生成格式
+    this.formatHandlers.set('note_generation', {
+      start: '<note_generation>',
+      end: '</note_generation>',
+      priority: 6,
+      process: (content) => ({ type: 'note_generation', content: content })
+    });
   }
 
   /**

@@ -15,6 +15,7 @@ const ResearchPage = () => {
   const ctrl = useRef(new AbortController());
   const effectRan = useRef(false);
   const [contextData, setContextData] = useState([]); // 重新引入contextData状态
+  const [currentSessionId, setCurrentSessionId] = useState(null);
 
   const sendMessage = async (text, initialContext = false, attachedData = null) => {
     if (ctrl.current.signal.aborted) {
@@ -37,9 +38,12 @@ const ResearchPage = () => {
       },
       body: JSON.stringify({
         user_input: text,
+        user_id: "default_user",
+        model: "gpt-4o-mini",
+        session_id: currentSessionId,
+        save_to_history: true,
         conversation_history: history,
         attached_data: attachedData || contextData, // 传递结构化数据
-        model: "gpt-4o-mini", // 或者从state中获取
       }),
       signal: ctrl.current.signal,
       onopen(response) {
@@ -52,6 +56,13 @@ const ResearchPage = () => {
       },
       onmessage(event) {
         const data = JSON.parse(event.data);
+
+        // 处理会话ID
+        if (data.type === 'session_id' && data.session_id) {
+          setCurrentSessionId(data.session_id);
+          console.log('✅ [ResearchPage] 设置会话ID:', data.session_id);
+          return;
+        }
 
         if (data.type === 'complete') {
           setIsLoading(false);

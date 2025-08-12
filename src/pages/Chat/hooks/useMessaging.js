@@ -48,225 +48,236 @@ export const useMessaging = (state, modelState, agentState) => {
     //   setStreamingMessage(null);
     // }
     try {
-      const response = await fetch(`${API_PATHS.CHAT}stream`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_input: queryContent,
-          user_id: getUserId(),
-          model: selectedModel,
-          conversation_history: messages.slice(-2).map(msg => ({
-            role: msg.type === 'user' ? 'user' : 'assistant',
-            content: msg.content
-          })),
-          attached_data: [
-            ...(currentAttachedData.length > 0 ? currentAttachedData : []),
-            { 
-              type: 'persona_context', 
-              name: agentOptions.find(a => a.value === selectedAgent)?.label || 'Agent', 
-              data: { agent: selectedAgent } 
-            },
-          ]
-        }),
-        signal: controller.signal
-      });
+        const response = await fetch(`${API_PATHS.CHAT}stream`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_input: queryContent,
+            user_id: getUserId(),
+            model: selectedModel,
+            session_id: state.currentSessionId, // 传递当前会话ID
+            save_to_history: state.saveToHistory, // 传递保存历史设置
+            conversation_history: messages.slice(-10).map(msg => ({
+              role: msg.type === 'user' ? 'user' : 'assistant',
+              content: msg.content
+            })),
+            attached_data: [
+              ...(currentAttachedData.length > 0 ? currentAttachedData : []),
+              { 
+                type: 'persona_context', 
+                name: agentOptions.find(a => a.value === selectedAgent)?.label || 'Agent', 
+                data: { agent: selectedAgent } 
+              },
+            ]
+          }),
+          signal: controller.signal
+        });
 
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let finalContent = '';
-      let fullResponse = '';
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let finalContent = '';
+        let fullResponse = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        const text = decoder.decode(value);
-        fullResponse += text;
-        
-        // 检查累积的响应是否是完整的JSON错误格式
-        if (fullResponse.trim().startsWith('{"') && fullResponse.trim().endsWith('}')) {
-          try {
-            const errorData = JSON.parse(fullResponse.trim());
-            if (errorData.error || errorData.reply) {
-              // 这是一个错误响应，抛出错误
-              throw new Error(errorData.error || errorData.reply);
-            }
-          } catch (parseError) {
-            // 如果不是有效的JSON，继续正常处理
-            if (parseError.message.startsWith('LLM') || parseError.message.includes('error')) {
-              throw parseError;
+          const text = decoder.decode(value);
+          fullResponse += text;
+          
+          // 检查累积的响应是否是完整的JSON错误格式
+          if (fullResponse.trim().startsWith('{"') && fullResponse.trim().endsWith('}')) {
+            try {
+              const errorData = JSON.parse(fullResponse.trim());
+              if (errorData.error || errorData.reply) {
+                // 这是一个错误响应，抛出错误
+                throw new Error(errorData.error || errorData.reply);
+              }
+            } catch (parseError) {
+              // 如果不是有效的JSON，继续正常处理
+              if (parseError.message.startsWith('LLM') || parseError.message.includes('error')) {
+                throw parseError;
+              }
             }
           }
-        }
-        
-        const lines = text.split('\n');
+          
+          const lines = text.split('\n');
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              
-              // 检查是否是错误响应
-              if (data.error) {
-                throw new Error(data.error);
-              }
-              
-              // 设置最新的JSON消息，供主页面使用
-              setLastJsonMessage(data);
-              
-              const stepInfo = {
-                timestamp: Date.now(),
-                type: data.type,
-                content: data.content,
-                data: data.data
-              };
-              
-              setTaskHistory(prev => [...prev, stepInfo]);
-
-              // 处理特殊事件，但不拦截 xhs_notes_result
-              if (data.type === 'background_status_update') {
-                if (data.data && data.data.chat_status) {
-                  console.log("📥 [Direct] 后台状态更新，保存chat_status:", data.data.chat_status);
-                  setLastChatStatus(data.data.chat_status);
-                } else {
-                  console.log("⚠️ background_status_update事件中没有chat_status数据");
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                
+                // 检查是否是错误响应
+                if (data.error) {
+                  throw new Error(data.error);
                 }
-                continue; 
-              }
-              
-              // 对于 xhs_notes_result 事件，不在这里处理，让主页面处理
-              if (data.type === 'xhs_notes_result') {
-                console.log("📱 [useMessaging] 收到小红书笔记结果事件，传递给主页面处理");
-                console.log("📱 [useMessaging] xhs_notes_result 数据:", data);
-                continue;
-              }
-              
-              setStreamingMessage(prev => {
-                if (!prev || prev.id !== streamingId) return prev;
+                
+                // 设置最新的JSON消息，供主页面使用
+                setLastJsonMessage(data);
+                
+                const stepInfo = {
+                  timestamp: Date.now(),
+                  type: data.type,
+                content: data.content,
+                  data: data.data
+                };
+                
+                setTaskHistory(prev => [...prev, stepInfo]);
 
-                const updated = { ...prev };
-                updated.steps = [...(updated.steps || []), stepInfo];
+                // 处理特殊事件，但不拦截 xhs_notes_result
+                if (data.type === 'background_status_update') {
+                  if (data.data && data.data.chat_status) {
+                    console.log("📥 [Direct] 后台状态更新，保存chat_status:", data.data.chat_status);
+                    setLastChatStatus(data.data.chat_status);
+                  } else {
+                    console.log("⚠️ background_status_update事件中没有chat_status数据");
+                  }
+                  continue; 
+                }
+                
+                // 对于 xhs_notes_result 事件，不在这里处理，让主页面处理
+                if (data.type === 'xhs_notes_result') {
+                  console.log("📱 [useMessaging] 收到小红书笔记结果事件，传递给主页面处理");
+                  console.log("📱 [useMessaging] xhs_notes_result 数据:", data);
+                  continue;
+                }
 
-                switch (data.type) {
-                  case 'start':
-                    updated.status = 'processing';
-                    updated.content = data.content;
-                    break;
-                  
-                  case 'chat_status':
-                    // 状态信息，不在UI上显示，但可用于调试或内部逻辑
-                    console.log('Chat Status:', data.content);
-                    break;
+                setStreamingMessage(prev => {
+                  if (!prev || prev.id !== streamingId) return prev;
 
-                  case 'ai_message':
-                    updated.status = 'generating_answer';
+                  const updated = { ...prev };
+                  updated.steps = [...(updated.steps || []), stepInfo];
+
+                  switch (data.type) {
+                    case 'session_id':
+                      // 获取并设置会话ID
+                      if (data.session_id && !state.currentSessionId) {
+                        state.setCurrentSessionId(data.session_id);
+                        console.log('✅ 设置会话ID:', data.session_id);
+                      }
+                      break;
+                      
+                    case 'start':
+                      updated.status = 'processing';
+                      updated.content = data.content;
+                      break;
+                    
+                    case 'chat_status':
+                      // 状态信息，不在UI上显示，但可用于调试或内部逻辑
+                      console.log('Chat Status:', data.content);
+                      break;
+
+                    case 'ai_message':
+                      updated.status = 'generating_answer';
                     // 直接累加Markdown内容
                     updated.content = (updated.content || '') + data.content;
-                    break;
+                      break;
 
-                  case 'tool_calling':
-                    updated.status = 'calling_tool';
-                    console.log('tool_calling:', data);
-                    updated.content = updated.content || ''; // 保持已显示的文本
-                    updated.currentTool = data.data; // 存储工具调用信息
-                    break;
+                    case 'tool_calling':
+                      updated.status = 'calling_tool';
+                      console.log('tool_calling:', data);
+                      updated.content = updated.content || ''; // 保持已显示的文本
+                      updated.currentTool = data.data; // 存储工具调用信息
+                      break;
 
-                  case 'tool_result':
-                    updated.status = 'ai_analysing_tool_result';
-                    updated.content = updated.content || ''; // 保持已显示的文本
-                    updated.currentTool = data.data; // 存储工具调用信息
-                    break;
+                    case 'tool_result':
+                      updated.status = 'ai_analysing_tool_result';
+                      updated.content = updated.content || ''; // 保持已显示的文本
+                      updated.currentTool = data.data; // 存储工具调用信息
+                      break;
 
-                  case 'generating_document':
-                    updated.status = 'generating_document';
-                    updated.documentData = data.data;
-                    break;
+                    case 'generating_document':
+                      updated.status = 'generating_document';
+                      updated.documentData = data.data;
+                      break;
 
-                  case 'document_content':
-                    updated.status = 'generating_document';
-                    // 累加文档内容
-                    updated.documentContent = (updated.documentContent || '') + data.content;
-                    break;
+                    case 'document_content':
+                      updated.status = 'generating_document';
+                      // 累加文档内容
+                      updated.documentContent = (updated.documentContent || '') + data.content;
+                      break;
 
-                  case 'document_complete':
-                    updated.status = 'document_ready';
-                    updated.documentReady = true;
-                    break;
+                    case 'document_complete':
+                      updated.status = 'document_ready';
+                      updated.documentReady = true;
+                      break;
 
-                  case 'status_change':
-                    updated.status = data.content;
-                    break;
+                    case 'status_change':
+                      updated.status = data.content;
+                      break;
 
-                  case 'reflection_choices':
-                    updated.status = 'waiting_for_reflection_choices';
-                    updated.reflectionChoices = data.data;
-                    updated.waitingForReflection = true;
-                    console.log('🤔 收到反思选择数据:', data.data);
-                    // 不解锁UI，等待用户选择
-                    break;
+                    case 'reflection_choices':
+                      updated.status = 'waiting_for_reflection_choices';
+                      updated.reflectionChoices = data.data;
+                      updated.waitingForReflection = true;
+                      console.log('🤔 收到反思选择数据:', data.data);
+                      // 不解锁UI，等待用户选择
+                      break;
 
-                  case 'complete':
-                    updated.status = 'complete';
-                    updated.isCompleted = true;
+                    case 'complete':
+                      updated.status = 'complete';
+                      updated.isCompleted = true;
+                      
+                      // 立即解锁UI，不再等待流关闭
+                      console.log("✅ 收到Complete事件，立即解锁UI")
+                      setIsLoading(false);
+
+                      // 确保最终内容被设置
+                      finalContent = updated.content || '';
+                      updated.content = finalContent;
+
+                      // 在完成时检查并存储chat_status
+                      if (data.data && data.data.chat_status) {
+                        console.log("📥 捕获到chat_status:", data.data.chat_status);
+                        setLastChatStatus(data.data.chat_status);
+                      } else {
+                        console.log("📥 complete事件中无chat_status数据");
+                      }
+
+                      setTimeout(() => {
+                        setStreamingMessage(currentStream => {
+                          if (currentStream && currentStream.id === streamingId) {
+                            const completedMessage = {
+                              id: streamingId,
+                              type: 'assistant',
+                              content: finalContent,
+                              timestamp: currentStream.timestamp,
+                              steps: currentStream.steps || [],
+                              executionTime: Math.floor((Date.now() - currentStream.startTime) / 1000),
+                              isCompleted: true,
+                              documentContent: currentStream.documentContent,
+                              documentReady: currentStream.documentReady,
+                               generatedNotes: currentStream.generatedNotes
+                            };
+                            setMessages(prevMessages => [...prevMessages, completedMessage]);
+                            return null; // 清空流式消息
+                          }
+                          return currentStream;
+                        });
+                        setCurrentTask(null);
+                        setAbortController(null);
+                      }, 100); // 缩短延迟
+                      break;
                     
-                    // 立即解锁UI，不再等待流关闭
-                    console.log("✅ 收到Complete事件，立即解锁UI")
-                    setIsLoading(false);
+                    case 'error':
+                      updated.status = 'error';
+                      updated.content = data.content;
+                      updated.isCompleted = true;
+                      break;
 
-                    // 确保最终内容被设置
-                    finalContent = updated.content || '';
-                    updated.content = finalContent;
-
-                    // 在完成时检查并存储chat_status
-                    if (data.data && data.data.chat_status) {
-                      console.log("📥 捕获到chat_status:", data.data.chat_status);
-                      setLastChatStatus(data.data.chat_status);
-                    } else {
-                      console.log("📥 complete事件中无chat_status数据");
-                    }
-
-                    setTimeout(() => {
-                      setStreamingMessage(currentStream => {
-                        if (currentStream && currentStream.id === streamingId) {
-                          const completedMessage = {
-                            id: streamingId,
-                            type: 'assistant',
-                            content: finalContent,
-                            timestamp: currentStream.timestamp,
-                            steps: currentStream.steps || [],
-                            executionTime: Math.floor((Date.now() - currentStream.startTime) / 1000),
-                            isCompleted: true,
-                            documentContent: currentStream.documentContent,
-                            documentReady: currentStream.documentReady,
-                          };
-                          setMessages(prevMessages => [...prevMessages, completedMessage]);
-                          return null; // 清空流式消息
-                        }
-                        return currentStream;
-                      });
-                      setCurrentTask(null);
-                      setAbortController(null);
-                    }, 100); // 缩短延迟
-                    break;
-                  
-                  case 'error':
-                    updated.status = 'error';
-                    updated.content = data.content;
-                    updated.isCompleted = true;
-                    break;
-
-                  // 可以保留一些旧的状态以兼容，或者移除它们
-                  case 'llm_thinking':
-                    updated.status = 'thinking';
-                    updated.content = data.content;
-                    break;
-                }
-                return updated;
-              });
-            } catch (e) {}
-          }
+                    // 可以保留一些旧的状态以兼容，或者移除它们
+                    case 'llm_thinking':
+                      updated.status = 'thinking';
+                      updated.content = data.content;
+                      break;
+                  }
+                  return updated;
+                });
+              } catch (e) {}
+            }
         }
       }
     } catch (error) {
@@ -334,7 +345,8 @@ export const useMessaging = (state, modelState, agentState) => {
       content: inputValue,
       timestamp: new Date().toLocaleTimeString(),
       attachedData: currentAttachedData,
-      model: selectedModel
+      model: selectedModel,
+      isCompleted: true // 用户消息默认为完成状态
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -391,8 +403,8 @@ export const useMessaging = (state, modelState, agentState) => {
 
     console.log('📍 找到消息索引:', messageIndex);
 
-    // We need to find the user message that prompted this AI response.
-    // It's usually the one right before the first AI message in a sequence.
+    // 我们需要找到触发该AI回复的用户消息：
+    // 1) 优先在该AI消息之前回溯查找最近一条用户消息
     let userMessageIndex = -1;
     for (let i = messageIndex - 1; i >= 0; i--) {
       if (messages[i].type === 'user') {
@@ -401,9 +413,23 @@ export const useMessaging = (state, modelState, agentState) => {
       }
     }
 
+    // 2) 如果未找到，则兜底：在整个消息列表中寻找最后一条用户消息
     if (userMessageIndex === -1) {
-      console.error("无法找到对应的用户提问来进行重新生成");
-      message.error("无法找到对应的用户提问，请重新发送消息");
+      const lastUserIndex = (() => {
+        for (let j = messages.length - 1; j >= 0; j--) {
+          if (messages[j].type === 'user') return j;
+        }
+        return -1;
+      })();
+      if (lastUserIndex !== -1) {
+        userMessageIndex = lastUserIndex;
+        console.log('👤 兜底命中最后一条用户消息索引:', userMessageIndex);
+      }
+    }
+
+    if (userMessageIndex === -1) {
+      console.error("无法找到任何用户提问来进行重新生成");
+      message.error("当前没有可用于重新生成的用户提问，请先发送一条消息");
       return;
     }
 

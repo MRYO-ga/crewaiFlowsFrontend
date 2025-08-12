@@ -18,6 +18,7 @@ import { agentOptions } from './components/agentOptions';
 import DocumentPanel from './components/DocumentPanel';
 import XhsResultsPanel from './components/XhsResultsPanel';
 import UniversalGuide from '../../components/UniversalGuide';
+import { API_PATHS } from '../../configs/env';
 import { guideConfigs } from '../../configs/guideConfig';
 
 const getUserId = () => localStorage.getItem('userId') || 'default_user';
@@ -25,7 +26,7 @@ const getUserId = () => localStorage.getItem('userId') || 'default_user';
 const ChatPage = () => {
   const chatState = useChatState();
   const modelState = useModel();
-  const agentState = useAgent(chatState.setMessages, chatState.setStreamingMessage, chatState.setCurrentTask, chatState.setInputValue, chatState.inputRef);
+  const agentState = useAgent(chatState.setMessages, chatState.setStreamingMessage, chatState.setCurrentTask, chatState.setInputValue, chatState.inputRef, chatState.setCurrentSessionId);
   const dataManagementState = useDataManagement(getUserId());
   const mcpState = useMcp();
   const [lastChatStatus, setLastChatStatus] = useState(null);
@@ -51,6 +52,128 @@ const ChatPage = () => {
 
   const [xhsPanelWidth, setXhsPanelWidth] = useState(400);
 
+  // 恢复会话功能
+  const restoreSession = async (sessionId, sessionTitle) => {
+    try {
+      const response = await fetch(`${API_PATHS.CHAT}sessions/${sessionId}?user_id=${getUserId()}`, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const sessionData = await response.json();
+        if (sessionData && sessionData.messages) {
+          // 恢复消息历史
+          const restoredMessages = sessionData.messages.map(msg => {
+            const baseMessage = {
+              id: msg.id,
+              type: msg.sender,
+              content: msg.content,
+              timestamp: msg.created_at ? new Date(msg.created_at).toLocaleTimeString() : new Date().toLocaleTimeString(),
+              isCompleted: true, // 确保恢复的消息显示为已完成状态
+              model: sessionData.model_name // 添加模型信息
+            };
+
+            // 如果是AI消息且有消息元数据，恢复工具调用步骤
+            if (msg.sender === 'assistant' && msg.message_metadata) {
+              if (msg.message_metadata.steps) {
+                baseMessage.steps = msg.message_metadata.steps;
+              }
+            }
+
+            return baseMessage;
+          });
+          
+          setMessages(restoredMessages);
+          chatState.setCurrentSessionId(sessionId);
+          setIsChatStarted(true);
+          
+          // 恢复侧边栏数据
+          let restoredXhsResults = [];
+          let hasDocumentContent = false;
+          let lastDocumentContent = '';
+          
+          console.log('🔍 开始分析会话数据，消息数量:', sessionData.messages.length);
+          
+          sessionData.messages.forEach((msg, index) => {
+            // 检查XHS结果
+            if (msg.sender === 'assistant' && msg.message_metadata && msg.message_metadata.xhs_results) {
+              const xhsCount = msg.message_metadata.xhs_results.length;
+              restoredXhsResults = restoredXhsResults.concat(msg.message_metadata.xhs_results);
+              console.log(`📱 消息 ${index + 1} 包含 ${xhsCount} 个小红书结果`);
+            }
+            
+            // 检查文档内容
+            if (msg.sender === 'assistant' && msg.message_metadata) {
+              const hasDocInMetadata = msg.message_metadata.document_content || msg.message_metadata.documentContent;
+              const hasDocInSteps = msg.message_metadata.steps && msg.message_metadata.steps.some(step => 
+                step.status === 'document_ready' || step.status === 'generating_document');
+              
+              if (hasDocInMetadata || hasDocInSteps) {
+                hasDocumentContent = true;
+                const newContent = msg.message_metadata.document_content || 
+                                 msg.message_metadata.documentContent || 
+                                 lastDocumentContent;
+                if (newContent) {
+                  lastDocumentContent = newContent;
+                  console.log(`📄 消息 ${index + 1} 包含文档内容，长度:`, newContent.length);
+                }
+              }
+            }
+          });
+          
+          // 根据是否有XHS数据来决定是否显示XHS面板
+          if (restoredXhsResults.length > 0) {
+            setXhsResults(restoredXhsResults);
+            setIsXhsPanelVisible(true);
+            console.log('✅ 已恢复小红书侧边栏数据:', restoredXhsResults.length, '项');
+          } else {
+            // 如果没有XHS数据，确保XHS面板关闭
+            setXhsResults([]);
+            setIsXhsPanelVisible(false);
+            console.log('📱 会话中无小红书数据，关闭小红书侧边栏');
+          }
+          
+          // 根据是否有文档内容来决定是否显示文档面板
+          if (hasDocumentContent && lastDocumentContent) {
+            setDocumentContent(lastDocumentContent);
+            setShowDocumentPanel(true);
+            console.log('📄 已恢复文档侧边栏内容');
+          } else {
+            // 如果没有文档内容，确保文档面板关闭
+            setDocumentContent('');
+            setShowDocumentPanel(false);
+            console.log('📄 会话中无文档内容，关闭文档侧边栏');
+          }
+          
+          console.log('✅ 会话恢复完成，会话ID:', sessionId);
+        }
+      } else {
+        console.error('恢复会话失败:', response.statusText);
+      }
+    } catch (error) {
+      console.error('恢复会话失败:', error);
+    }
+  };
+
+  // 检查并恢复会话的函数
+  const checkAndRestoreSession = () => {
+    const restoreSessionData = localStorage.getItem('restoreSession');
+    if (restoreSessionData) {
+      try {
+        const sessionInfo = JSON.parse(restoreSessionData);
+        // 检查时间戳，避免恢复过期的会话（超过5分钟）
+        if (Date.now() - sessionInfo.timestamp < 5 * 60 * 1000) {
+          restoreSession(sessionInfo.sessionId, sessionInfo.title);
+        }
+        // 清除恢复数据
+        localStorage.removeItem('restoreSession');
+      } catch (error) {
+        console.error('恢复会话失败:', error);
+        localStorage.removeItem('restoreSession');
+      }
+    }
+  };
+
   useEffect(() => {
     initializeMcpConnection();
     loadComprehensiveData();
@@ -62,14 +185,50 @@ const ChatPage = () => {
       setIsChatStarted(true);
     }
 
+    // 初次加载时检查是否需要恢复会话
+    checkAndRestoreSession();
+
     // 设置全局函数来打开文档面板
     window.openDocumentPanel = (content) => {
       setDocumentContent(content);
       setShowDocumentPanel(true);
     };
 
+    // 监听存储变化，用于处理从侧边栏点击恢复会话的情况
+    const handleStorageChange = (e) => {
+      if (e.key === 'restoreSession' && e.newValue) {
+        // 延迟一下执行，确保 localStorage 已经更新
+        setTimeout(checkAndRestoreSession, 100);
+      }
+    };
+
+    // 监听自定义事件，用于立即恢复会话
+    const handleRestoreEvent = () => {
+      checkAndRestoreSession();
+    };
+
+    // 监听新建会话事件
+    const handleNewChatEvent = () => {
+      setMessages([]);
+      setStreamingMessage(null);
+      chatState.setCurrentSessionId(null);
+      setCurrentTask(null);
+      setIsChatStarted(false);
+      setXhsResults([]);
+      setIsXhsPanelVisible(false);
+      setDocumentContent('');
+      setShowDocumentPanel(false);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('restoreSessionEvent', handleRestoreEvent);
+    window.addEventListener('newChatSession', handleNewChatEvent);
+
     return () => {
       delete window.openDocumentPanel;
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('restoreSessionEvent', handleRestoreEvent);
+      window.removeEventListener('newChatSession', handleNewChatEvent);
     };
   }, []);
 
@@ -501,13 +660,16 @@ const ChatPage = () => {
       {/* Header 独立在顶部，不受侧边栏影响 */}
       <Header
         mcpStatus={mcpState.mcpStatus}
-        chatHistory={dataManagementState.chatHistory}
-        loadChatHistory={dataManagementState.loadChatHistory}
         setShowSettings={setShowSettings}
         mcpLoading={mcpState.mcpLoading}
         reconnectMcp={mcpState.reconnectMcp}
         contextLoading={dataManagementState.contextLoading}
         loadComprehensiveData={loadComprehensiveData}
+        setMessages={setMessages}
+        setStreamingMessage={setStreamingMessage}
+        setCurrentSessionId={chatState.setCurrentSessionId}
+        setCurrentTask={setCurrentTask}
+        setIsChatStarted={setIsChatStarted}
       />
       
       {/* 主要内容区域：MessageList 和 ChatInput，与侧边栏并列布局 */}

@@ -11,6 +11,11 @@ export const useChatState = () => {
   const [abortController, setAbortController] = useState(null);
   const [executionTime, setExecutionTime] = useState(0);
   
+  // 聊天历史相关状态
+  const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [saveToHistory, setSaveToHistory] = useState(true);
+  const [showChatHistory, setShowChatHistory] = useState(false);
+  
   const inputRef = useRef(null);
   const executionTimerRef = useRef(null);
 
@@ -33,6 +38,13 @@ export const useChatState = () => {
     setAbortController,
     executionTime,
     setExecutionTime,
+    // 聊天历史状态
+    currentSessionId,
+    setCurrentSessionId,
+    saveToHistory,
+    setSaveToHistory,
+    showChatHistory,
+    setShowChatHistory,
     inputRef,
     executionTimerRef,
   };

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { agentOptions } from '../components/agentOptions';
 
-export const useAgent = (setMessages, setStreamingMessage, setCurrentTask, setInputValue, inputRef) => {
+export const useAgent = (setMessages, setStreamingMessage, setCurrentTask, setInputValue, inputRef, setCurrentSessionId) => {
   const [selectedAgent, setSelectedAgent] = useState(
     localStorage.getItem('selectedAgent') || 'general_chat'
   );
@@ -18,6 +18,7 @@ export const useAgent = (setMessages, setStreamingMessage, setCurrentTask, setIn
       setMessages([]);
       setStreamingMessage(null);
       setCurrentTask(null);
+      setCurrentSessionId(null); // 重置会话ID，开始新对话
       
       setCurrentPersonaIntro(selectedAgentOption.introduction);
       setShowPersonaIntro(true);

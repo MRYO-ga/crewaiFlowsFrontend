@@ -33,5 +33,6 @@ export const API_PATHS = {
   SCHEDULES: `${API_BASE_URL}/api/schedules/`,
   TASKS: `${API_BASE_URL}/api/tasks/`,
   SOPS: `${API_BASE_URL}/api/sops/`,
-  CATEGORIZED_NOTES: `${API_BASE_URL}/api/categorized-notes`
+  CATEGORIZED_NOTES: `${API_BASE_URL}/api/categorized-notes`,
+  LANDING: `${API_BASE_URL}/api/landing/`
 };

@@ -15,7 +15,6 @@ import ProductPage from './pages/Product';
 import MCPTestPage from './pages/MCP/MCPTest';
 import XhsManagementPage from './pages/XHS';
 import ExamplesPage from './pages/Examples';
-import WorkflowPage from './pages/workflow/WorkflowPage';
 import KnowledgeGraphPage from './pages/KnowledgeGraphPage';
 import KnowledgePage from './pages/Knowledge';
 import LightRAGPage from './pages/LightRAG';
@@ -45,7 +44,6 @@ function App() {
           <Route index element={<Navigate to="workflow" replace />} />
           <Route path="new-page-info" element={<NewPageInfo />} />
           <Route path="research" element={<ResearchPage />} />
-          <Route path="workflow" element={<WorkflowPage />} />
           <Route path="chat" element={<ChatPage />} />
           <Route path="task" element={<TaskPage />} />
           <Route path="competitor" element={<CompetitorPage />} />

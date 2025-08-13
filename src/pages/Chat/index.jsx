@@ -236,6 +236,19 @@ const ChatPage = () => {
   useEffect(() => {
     if (location.state) {
       const { defaultQuestion, agentType, attachedData } = location.state;
+      
+      console.log('📥 [ChatPage] 接收到导航数据:', {
+        defaultQuestion,
+        agentType,
+        attachedDataCount: attachedData?.length || 0,
+        attachedData: attachedData?.map(item => ({
+          id: item.id,
+          type: item.type,
+          name: item.name,
+          hasData: !!item.data
+        }))
+      });
+      
       if (agentType && agentOptions.some(option => option.value === agentType)) {
         agentState.handleAgentChange(agentType);
       }
@@ -243,6 +256,7 @@ const ChatPage = () => {
         setInputValue(defaultQuestion);
       }
       if (attachedData && attachedData.length > 0) {
+        console.log('📥 [ChatPage] 设置附加数据到dataManagementState');
         dataManagementState.setAttachedData(attachedData);
       }
       navigate(location.pathname, { replace: true });
@@ -719,6 +733,8 @@ const ChatPage = () => {
                 personaData={dataManagementState.personaData}
                 productData={dataManagementState.productData}
                 attachDataToInput={dataManagementState.attachDataToInput}
+                showSOPPills={false}
+                hasMessages={messages.length > 0}
               />
               </div>
             </>
@@ -765,6 +781,8 @@ const ChatPage = () => {
                    personaData={dataManagementState.personaData}
                    productData={dataManagementState.productData}
                    attachDataToInput={dataManagementState.attachDataToInput}
+                   showSOPPills={true}
+                   hasMessages={messages.length > 0}
                  />
                </div>
             </div>

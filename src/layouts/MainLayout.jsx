@@ -17,7 +17,6 @@ const MainLayout = () => {
     { 
       title: '主功能区', 
       items: [
-        { path: '/app/workflow', name: 'SOP', icon: 'fa-calendar' },
         { path: '/app/chat', name: '智能对话', icon: 'fa-comments' },
         { path: '/app/competitor', name: '竞品分析', icon: 'fa-magnifying-glass-chart' },
         { path: '/app/content', name: '内容库', icon: 'fa-file-lines' },

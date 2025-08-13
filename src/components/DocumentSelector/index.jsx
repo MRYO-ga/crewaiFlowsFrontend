@@ -193,10 +193,17 @@ const DocumentSelector = ({
           const expectedName = document.data.title || document.data.name || document.data.account_name || '未知';
           if (item.name === expectedName || item.name === document.title) return true;
           
-          // 最后检查数据ID匹配
+          // 检查数据ID匹配 - 处理SOPPills和DocumentSelector两种情况
           const documentId = document.data.id || document.data.note_id;
-          const itemDataId = typeof item.data === 'object' && item.data !== null ? 
-            (item.data.id || item.data.note_id) : null;
+          let itemDataId = null;
+          
+          if (item.originalData) {
+            // SOPPills传递的数据，使用originalData进行ID匹配
+            itemDataId = item.originalData.id || item.originalData.note_id;
+          } else if (typeof item.data === 'object' && item.data !== null) {
+            // DocumentSelector手动选择的数据
+            itemDataId = item.data.id || item.data.note_id;
+          }
           
           return documentId && itemDataId && documentId === itemDataId;
         });
@@ -214,21 +221,49 @@ const DocumentSelector = ({
 
   // 检查文档是否已被选择（基于attachedData）
   const isDocumentSelected = (document) => {
-    return attachedData.some(item => {
+    const isSelected = attachedData.some(item => {
       // 首先检查类型是否匹配
       if (item.type !== document.type) return false;
       
       // 然后检查名称匹配（根据attachDataToInput的逻辑）
       const expectedName = document.data.title || document.data.name || document.data.account_name || '未知';
-      if (item.name === expectedName || item.name === document.title) return true;
+      const nameMatch = item.name === expectedName || item.name === document.title;
       
-      // 最后检查数据ID匹配
+      // 检查数据ID匹配 - 处理两种情况：
+      // 1. 通过DocumentSelector手动选择的数据（item.data是字符串，需要用originalData匹配）
+      // 2. 通过SOPPills自动选择的数据（item有originalData字段）
       const documentId = document.data.id || document.data.note_id;
-      const itemDataId = typeof item.data === 'object' && item.data !== null ? 
-        (item.data.id || item.data.note_id) : null;
+      let itemDataId = null;
       
-      return documentId && itemDataId && documentId === itemDataId;
+      if (item.originalData) {
+        // SOPPills传递的数据，使用originalData进行ID匹配
+        itemDataId = item.originalData.id || item.originalData.note_id;
+      } else if (typeof item.data === 'object' && item.data !== null) {
+        // DocumentSelector手动选择的数据
+        itemDataId = item.data.id || item.data.note_id;
+      }
+      
+      const idMatch = documentId && itemDataId && documentId === itemDataId;
+      
+      // 调试日志
+      console.log('🔍 [DocumentSelector] 检查选中状态:', {
+        documentTitle: document.title,
+        documentType: document.type,
+        expectedName,
+        itemName: item.name,
+        itemType: item.type,
+        nameMatch,
+        documentId,
+        itemDataId,
+        hasOriginalData: !!item.originalData,
+        idMatch,
+        finalMatch: nameMatch || idMatch
+      });
+      
+      return nameMatch || idMatch;
     });
+    
+    return isSelected;
   };
 
   const documentPanel = (

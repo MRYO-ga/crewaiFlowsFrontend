@@ -5,7 +5,8 @@ import { agentOptions } from './agentOptions';
 import MCPToolsButton from '../../../components/MCPToolsButton';
 import DigitalPersonSelector from '../../../components/DigitalPersonSelector';
 import DocumentSelector from '../../../components/DocumentSelector';
-import SOPNodes from '../../../components/BottomMenu/SOPNodes';
+import SOPPills from '../../../components/SOPPills';
+
 
 const { TextArea } = Input;
 
@@ -36,9 +37,30 @@ const ChatInput = ({
   personaData,
   productData,
   // 数据处理函数
-  attachDataToInput
+  attachDataToInput,
+  // 控制SOP展示
+  showSOPPills = false,
+  // 聊天状态
+  hasMessages = false
 }) => {
-  // 删除了本地selectedDocuments状态，统一使用attachedData
+  const [selectedSOPPill, setSelectedSOPPill] = useState(null);
+
+  const handleSOPPillSelect = (pill) => {
+    setSelectedSOPPill(pill);
+    
+    // 处理新的数据结构
+    if (pill.prompt) {
+      // 将选中的提示词设置到输入框中，但不直接发送
+      setInputValue(pill.prompt);
+    } else if (pill.agentType) {
+      // 如果有agentType，触发智能对话功能（模拟旧版本的chat功能）
+      setInputValue(pill.prompt || '');
+      // 可以在这里添加更多逻辑，比如自动发送消息
+      if (sendMessage && pill.prompt) {
+        sendMessage();
+      }
+    }
+  };
 
   return (
     <div style={{ 
@@ -99,13 +121,7 @@ const ChatInput = ({
             />
           </div>
 
-          {/* 中间功能区 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* SOP节点 */}
-            <div style={{ transform: 'scale(0.9)', transformOrigin: 'center' }}>
-              <SOPNodes />
-            </div>
-          </div>
+
 
           {/* 右侧工具 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -167,6 +183,15 @@ const ChatInput = ({
           </div>
         </div>
       </div>
+      
+      {/* SOP药丸组件 - 在开始屏幕时显示，或者没有消息时也显示 */}
+      {(isStartScreen || !hasMessages) && showSOPPills && (
+        <SOPPills 
+          onSelect={handleSOPPillSelect}
+          selectedPill={selectedSOPPill}
+          isVisible={showSOPPills}
+        />
+      )}
     </div>
   );
 };

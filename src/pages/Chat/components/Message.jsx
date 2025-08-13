@@ -112,7 +112,7 @@ const renderConversationFlow = (message) => {
   }
   
   const orderedSteps = [...message.steps].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-  
+
   let lastTextContent = null;
   const conversationParts = [];
 

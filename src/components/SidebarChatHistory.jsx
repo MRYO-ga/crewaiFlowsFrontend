@@ -128,6 +128,45 @@ const SidebarChatHistory = ({
         fetchSessions();
     }, [userId]);
 
+    // 监听新会话创建事件，自动刷新历史列表
+    useEffect(() => {
+        let refreshTimeout = null;
+        
+        const handleNewSession = (event) => {
+            console.log('🔄 [SidebarChatHistory] 检测到新会话，准备刷新历史列表', event.detail);
+            
+            // 防抖：延迟1秒刷新，避免频繁请求
+            if (refreshTimeout) {
+                clearTimeout(refreshTimeout);
+            }
+            
+            refreshTimeout = setTimeout(() => {
+                console.log('🔄 [SidebarChatHistory] 执行刷新历史列表');
+                fetchSessions();
+            }, 1000);
+        };
+
+        // 监听自定义事件
+        window.addEventListener('newSessionCreated', handleNewSession);
+        
+        return () => {
+            window.removeEventListener('newSessionCreated', handleNewSession);
+            if (refreshTimeout) {
+                clearTimeout(refreshTimeout);
+            }
+        };
+    }, []);
+
+    // 定期自动刷新（每2分钟刷新一次）
+    useEffect(() => {
+        const interval = setInterval(() => {
+            console.log('⏰ [SidebarChatHistory] 定期刷新历史列表');
+            fetchSessions();
+        }, 120000); // 2分钟
+
+        return () => clearInterval(interval);
+    }, []);
+
     if (collapsed) {
         return null;
     }

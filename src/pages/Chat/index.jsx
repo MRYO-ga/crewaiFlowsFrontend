@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { DatabaseOutlined, FileTextOutlined, SearchOutlined, UserOutlined, ShoppingOutlined, ReloadOutlined, PlusOutlined, TeamOutlined, RobotOutlined } from '@ant-design/icons';
 import { Button, Space, Tooltip, Badge } from 'antd';
+import '../../styles/chat.css';
 
 import { useChatState } from './hooks/useChatState';
 import { useDataManagement } from './hooks/useDataManagement';
@@ -17,7 +18,7 @@ import SettingsDrawer from './components/SettingsDrawer';
 import { agentOptions } from './components/agentOptions';
 import DocumentPanel from './components/DocumentPanel';
 import XhsResultsPanel from './components/XhsResultsPanel';
-import UniversalGuide from '../../components/UniversalGuide';
+
 import { API_PATHS } from '../../configs/env';
 import { guideConfigs } from '../../configs/guideConfig';
 
@@ -657,19 +658,14 @@ const ChatPage = () => {
         }
       `}</style>
       
-      {/* Header 独立在顶部，不受侧边栏影响 */}
-      <Header
-        mcpStatus={mcpState.mcpStatus}
-        setShowSettings={setShowSettings}
-        mcpLoading={mcpState.mcpLoading}
-        reconnectMcp={mcpState.reconnectMcp}
-        contextLoading={dataManagementState.contextLoading}
-        loadComprehensiveData={loadComprehensiveData}
-        setMessages={setMessages}
-        setStreamingMessage={setStreamingMessage}
-        setCurrentSessionId={chatState.setCurrentSessionId}
-        setCurrentTask={setCurrentTask}
-        setIsChatStarted={setIsChatStarted}
+      {/* Header with Guide Button */}
+      <Header 
+        hasData={messages.length > 0}
+        onCreateAction={() => {/* 可以触发发送示例问题 */}}
+        onViewExample={() => {
+          setInputValue('请帮我分析目标用户特征和行为模式');
+          messagingState.sendMessage('请帮我分析目标用户特征和行为模式');
+        }}
       />
       
       {/* 主要内容区域：MessageList 和 ChatInput，与侧边栏并列布局 */}
@@ -699,27 +695,31 @@ const ChatPage = () => {
                 onReflectionFeedback={messagingState.handleReflectionFeedback}
               />
               <div className="chat-input-area">
-                <ChatInput
-                  inputValue={chatState.inputValue}
-                  setInputValue={chatState.setInputValue}
-                  sendMessage={handleSendMessage}
-                  isLoading={chatState.isLoading}
-                  attachedData={dataManagementState.attachedData}
-                  removeDataReference={dataManagementState.removeDataReference}
-                  showDataSelector={dataManagementState.showDataSelector}
-                  setShowDataSelector={dataManagementState.setShowDataSelector}
-                  renderDataSelector={renderDataSelector}
-                  selectedModel={modelState.selectedModel}
-                  handleModelChange={modelState.handleModelChange}
-                  modelsLoading={modelState.modelsLoading}
-                  availableModels={modelState.availableModels}
-                  selectedAgent={agentState.selectedAgent}
-                  handleAgentChange={agentState.handleAgentChange}
-                  inputRef={inputRef}
-                  handleKeyDown={handleKeyDown}
-                  currentTask={chatState.currentTask}
-                  cancelCurrentTask={messagingState.cancelCurrentTask}
-                />
+                              <ChatInput
+                inputValue={chatState.inputValue}
+                setInputValue={chatState.setInputValue}
+                sendMessage={handleSendMessage}
+                isLoading={chatState.isLoading}
+                attachedData={dataManagementState.attachedData}
+                removeDataReference={dataManagementState.removeDataReference}
+                selectedModel={modelState.selectedModel}
+                handleModelChange={modelState.handleModelChange}
+                modelsLoading={modelState.modelsLoading}
+                availableModels={modelState.availableModels}
+                selectedAgent={agentState.selectedAgent}
+                handleAgentChange={agentState.handleAgentChange}
+                inputRef={inputRef}
+                handleKeyDown={handleKeyDown}
+                currentTask={chatState.currentTask}
+                cancelCurrentTask={messagingState.cancelCurrentTask}
+                mcpStatus={mcpState.mcpStatus}
+                mcpLoading={mcpState.mcpLoading}
+                comprehensiveData={dataManagementState.comprehensiveData}
+                cacheData={dataManagementState.cacheData}
+                personaData={dataManagementState.personaData}
+                productData={dataManagementState.productData}
+                attachDataToInput={dataManagementState.attachDataToInput}
+              />
               </div>
             </>
           ) : (
@@ -739,30 +739,34 @@ const ChatPage = () => {
               <p style={{ fontSize: 16, color: '#6b7280', marginTop: 8, marginBottom: 32 }}>
                 选择数据、模型和策略，然后提出您的问题。
               </p>
-              <div style={{width: '100%'}}>
-                <ChatInput
-                  inputValue={chatState.inputValue}
-                  setInputValue={chatState.setInputValue}
-                  sendMessage={handleSendMessage}
-                  isLoading={chatState.isLoading}
-                  attachedData={dataManagementState.attachedData}
-                  removeDataReference={dataManagementState.removeDataReference}
-                  showDataSelector={dataManagementState.showDataSelector}
-                  setShowDataSelector={dataManagementState.setShowDataSelector}
-                  renderDataSelector={renderDataSelector}
-                  selectedModel={modelState.selectedModel}
-                  handleModelChange={modelState.handleModelChange}
-                  modelsLoading={modelState.modelsLoading}
-                  availableModels={modelState.availableModels}
-                  selectedAgent={agentState.selectedAgent}
-                  handleAgentChange={agentState.handleAgentChange}
-                  inputRef={inputRef}
-                  handleKeyDown={handleKeyDown}
-                  currentTask={chatState.currentTask}
-                  cancelCurrentTask={messagingState.cancelCurrentTask}
-                  isStartScreen={true}
-                />
-              </div>
+                             <div style={{width: '100%'}}>
+                 <ChatInput
+                   inputValue={chatState.inputValue}
+                   setInputValue={chatState.setInputValue}
+                   sendMessage={handleSendMessage}
+                   isLoading={chatState.isLoading}
+                   attachedData={dataManagementState.attachedData}
+                   removeDataReference={dataManagementState.removeDataReference}
+                   selectedModel={modelState.selectedModel}
+                   handleModelChange={modelState.handleModelChange}
+                   modelsLoading={modelState.modelsLoading}
+                   availableModels={modelState.availableModels}
+                   selectedAgent={agentState.selectedAgent}
+                   handleAgentChange={agentState.handleAgentChange}
+                   inputRef={inputRef}
+                   handleKeyDown={handleKeyDown}
+                   currentTask={chatState.currentTask}
+                   cancelCurrentTask={messagingState.cancelCurrentTask}
+                   isStartScreen={true}
+                   mcpStatus={mcpState.mcpStatus}
+                   mcpLoading={mcpState.mcpLoading}
+                   comprehensiveData={dataManagementState.comprehensiveData}
+                   cacheData={dataManagementState.cacheData}
+                   personaData={dataManagementState.personaData}
+                   productData={dataManagementState.productData}
+                   attachDataToInput={dataManagementState.attachDataToInput}
+                 />
+               </div>
             </div>
           )}
         </div>
@@ -812,25 +816,27 @@ const ChatPage = () => {
         )}
             
             {isXhsPanelVisible && (
-                <XhsResultsPanel
-                    results={xhsResults}
-                    isVisible={isXhsPanelVisible}
-                    onClose={() => setIsXhsPanelVisible(false)}
-                    onWidthChange={setXhsPanelWidth}
-            />
+        <XhsResultsPanel
+          results={xhsResults}
+          isVisible={isXhsPanelVisible}
+          onClose={() => setIsXhsPanelVisible(false)}
+          onWidthChange={setXhsPanelWidth}
+        />
         )}
-        
+
         {/* 页面引导系统 */}
-        <UniversalGuide
+        {/* <UniversalGuide
           pageType="chat"
           pageConfig={guideConfigs.chat}
           hasData={messages.length > 0}
-          onCreateAction={() => {/* 可以触发发送示例问题 */}}
+          onCreateAction={() => {
+            // 可以触发发送示例问题
+          }}
           onViewExample={() => {
             setInputValue('请帮我分析目标用户特征和行为模式');
             messagingState.sendMessage('请帮我分析目标用户特征和行为模式');
           }}
-        />
+        /> */}
       </div>
     </div>
   );

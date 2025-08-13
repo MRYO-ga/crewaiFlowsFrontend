@@ -157,6 +157,12 @@ export const useMessaging = (state, modelState, agentState) => {
                       if (data.session_id && !state.currentSessionId) {
                         state.setCurrentSessionId(data.session_id);
                         console.log('✅ 设置会话ID:', data.session_id);
+                        
+                        // 触发新会话创建事件，通知历史列表更新
+                        window.dispatchEvent(new CustomEvent('newSessionCreated', {
+                          detail: { sessionId: data.session_id }
+                        }));
+                        console.log('📢 [useMessaging] 已触发新会话创建事件');
                       }
                       break;
                       

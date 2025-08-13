@@ -1,8 +1,11 @@
-import React from 'react';
-import { Input, Button, Popover, Tooltip, Select, Tag, Space } from 'antd';
-import { SendOutlined, DatabaseOutlined, UserOutlined, StopOutlined, ArrowUpOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Input, Button, Tooltip, Select, Tag, Space } from 'antd';
+import { SendOutlined, StopOutlined, ArrowUpOutlined, RobotOutlined, ProjectOutlined } from '@ant-design/icons';
 import { agentOptions } from './agentOptions';
-import { useNavigate } from 'react-router-dom';
+import MCPToolsButton from '../../../components/MCPToolsButton';
+import DigitalPersonSelector from '../../../components/DigitalPersonSelector';
+import DocumentSelector from '../../../components/DocumentSelector';
+import SOPNodes from '../../../components/BottomMenu/SOPNodes';
 
 const { TextArea } = Input;
 
@@ -13,9 +16,6 @@ const ChatInput = ({
   isLoading,
   attachedData,
   removeDataReference,
-  showDataSelector,
-  setShowDataSelector,
-  renderDataSelector,
   selectedModel,
   handleModelChange,
   modelsLoading,
@@ -26,111 +26,146 @@ const ChatInput = ({
   handleKeyDown,
   currentTask,
   cancelCurrentTask,
-  isStartScreen = false
+  isStartScreen = false,
+  // MCP相关props
+  mcpStatus,
+  mcpLoading,
+  // 真实数据props
+  comprehensiveData,
+  cacheData,
+  personaData,
+  productData,
+  // 数据处理函数
+  attachDataToInput
 }) => {
-  const navigate = useNavigate();
+  // 删除了本地selectedDocuments状态，统一使用attachedData
 
   return (
-    <div className={`chat-input-wrapper ${isStartScreen ? 'start-screen' : ''}`}>
-      <div className="chat-input-controls" style={{
-        marginBottom: (attachedData.length > 0 || isStartScreen) ? 12 : 0,
-        justifyContent: isStartScreen ? 'center' : 'space-between'
+    <div style={{ 
+      width: '100%',
+      maxWidth: isStartScreen ? '800px' : '100%',
+      margin: isStartScreen ? '0 auto' : '0'
+    }}>
+
+
+      {/* 数据标签已移到DocumentSelector内部显示 */}
+
+      {/* 主输入区域 */}
+      <div style={{
+        position: 'relative',
+        border: '1px solid #e1e5e9',
+        borderRadius: 12,
+        background: '#ffffff',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+        overflow: 'hidden'
       }}>
-        <Space wrap size={isStartScreen ? "large" : "small"}>
-          <Popover
-            content={renderDataSelector()}
-            title="选择要引用的数据"
-            trigger="click"
-            open={showDataSelector}
-            onOpenChange={setShowDataSelector}
-            placement="top"
-            overlayStyle={{ width: '400px' }}
-          >
-            <Tooltip title="选择数据">
-              <Button icon={<DatabaseOutlined />} size={isStartScreen ? "large" : "middle"}>
-                选择数据
-              </Button>
-            </Tooltip>
-          </Popover>
-          <Select
-            value={selectedModel}
-            onChange={handleModelChange}
-            size={isStartScreen ? "large" : "small"}
-            style={{ width: 180 }}
-            placeholder="选择AI模型"
-            loading={modelsLoading}
-            disabled={modelsLoading || availableModels.length === 0}
-          >
-            {availableModels.map((model) => (
-              <Select.Option key={model.value} value={model.value}>
-                {model.label}
-              </Select.Option>
-            ))}
-          </Select>
-          <Select
-            value={selectedAgent}
-            onChange={handleAgentChange}
-            size={isStartScreen ? "large" : "small"}
-            style={{ width: 220 }}
-            placeholder="选择对话策略"
-          >
-            {agentOptions.map((agent) => (
-              <Select.Option key={agent.value} value={agent.value}>
-                {agent.icon} {agent.label}
-              </Select.Option>
-            ))}
-          </Select>
-        </Space>
-        <Tooltip title="详细介绍">
-          <Button
-            type="text"
-            shape="circle"
-            icon={<InfoCircleOutlined />}
-            size={isStartScreen ? "large" : "middle"}
-            onClick={() => navigate('/app/new-page-info')}
-          />
-        </Tooltip>
-      </div>
-
-      {attachedData.length > 0 && !isStartScreen && (
-        <div style={{ marginBottom: 12 }}>
-          <Space wrap>
-            {attachedData.map(item => (
-              <Tag 
-                key={item.id}
-                closable
-                color="blue"
-                onClose={() => removeDataReference(item.id)}
-              >
-                {item.type}: {item.name}
-              </Tag>
-            ))}
-          </Space>
-        </div>
-      )}
-
-      <div className="chat-input-main">
+        {/* 输入框 */}
         <TextArea
           ref={inputRef}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="提出您的问题或需求..."
-          autoSize={isStartScreen ? { minRows: 2, maxRows: 8 } : { minRows: 1, maxRows: 6 }}
-          className="chat-textarea"
+          placeholder={`给${selectedModel || 'DeepSeek-R1-满血版 (0528)'}发送消息，Enter发送，Shift + Enter换行`}
+          autoSize={{ minRows: isStartScreen ? 3 : 1, maxRows: 8 }}
+          style={{
+            border: 'none',
+            resize: 'none',
+            fontSize: 14,
+            lineHeight: 1.6,
+            padding: '12px 16px 12px 16px',
+            background: 'transparent'
+          }}
+          onFocus={(e) => {
+            e.target.style.outline = 'none';
+            e.target.style.boxShadow = 'none';
+          }}
         />
-        <Tooltip title={isLoading ? "中断" : "发送"}>
-          <Button
-            type="primary"
-            shape="circle"
-            size="large"
-            icon={isLoading ? <StopOutlined /> : <ArrowUpOutlined />}
-            onClick={isLoading ? cancelCurrentTask : sendMessage}
-            loading={isLoading && !cancelCurrentTask}
-            className="send-button"
-            style={{background: '#4F46E5', boxShadow: '0 4px 14px 0 rgba(79, 70, 229, 0.39)'}}
-          />
-        </Tooltip>
+
+        {/* 底部工具栏 */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '8px 12px',
+          borderTop: '1px solid #f0f0f0',
+          background: '#fafbfc'
+        }}>
+          {/* 左侧工具 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* MCP工具按钮 */}
+            <MCPToolsButton 
+              mcpStatus={mcpStatus}
+              mcpLoading={mcpLoading}
+            />
+          </div>
+
+          {/* 中间功能区 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* SOP节点 */}
+            <div style={{ transform: 'scale(0.9)', transformOrigin: 'center' }}>
+              <SOPNodes />
+            </div>
+          </div>
+
+          {/* 右侧工具 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* 模型选择器 */}
+            <Select
+              value={selectedModel}
+              onChange={handleModelChange}
+              size="small"
+              style={{ 
+                width: 120,
+                fontSize: 12
+              }}
+              placeholder="模型"
+              loading={modelsLoading}
+              disabled={modelsLoading || availableModels.length === 0}
+              bordered={false}
+              dropdownStyle={{ fontSize: 12 }}
+            >
+              {availableModels.map((model) => (
+                <Select.Option key={model.value} value={model.value}>
+                  <span style={{ fontSize: 12 }}>{model.label}</span>
+                </Select.Option>
+              ))}
+            </Select>
+
+            {/* 数字人选择 */}
+            <DigitalPersonSelector 
+              selectedAgent={selectedAgent}
+              onAgentChange={handleAgentChange}
+            />
+
+            {/* 文档选择器 */}
+            <DocumentSelector 
+              comprehensiveData={comprehensiveData}
+              cacheData={cacheData}
+              personaData={personaData}
+              productData={productData}
+              attachDataToInput={attachDataToInput}
+              attachedData={attachedData}
+              removeDataReference={removeDataReference}
+            />
+
+            {/* 发送按钮 */}
+            <Button
+              type="primary"
+              size="small"
+              shape="circle"
+              icon={isLoading ? <StopOutlined /> : <ArrowUpOutlined />}
+              onClick={isLoading ? cancelCurrentTask : sendMessage}
+              loading={isLoading && !cancelCurrentTask}
+              style={{
+                width: 28,
+                height: 28,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                border: 'none',
+                boxShadow: '0 2px 4px rgba(102, 126, 234, 0.4)'
+              }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

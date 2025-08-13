@@ -131,7 +131,12 @@ export const useDataManagement = (userId) => {
   };
 
   const removeDataReference = (referenceId) => {
-    setAttachedData(prev => prev.filter(item => item.id !== referenceId));
+    console.log('🗑️ [useDataManagement] 删除数据引用:', referenceId);
+    setAttachedData(prev => {
+      const newData = prev.filter(item => item.id !== referenceId);
+      console.log('🗑️ [useDataManagement] 删除前:', prev.length, '删除后:', newData.length);
+      return newData;
+    });
   };
 
   return {

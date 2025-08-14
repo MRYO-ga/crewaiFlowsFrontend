@@ -157,15 +157,7 @@ const SidebarChatHistory = ({
         };
     }, []);
 
-    // 定期自动刷新（每2分钟刷新一次）
-    useEffect(() => {
-        const interval = setInterval(() => {
-            console.log('⏰ [SidebarChatHistory] 定期刷新历史列表');
-            fetchSessions();
-        }, 120000); // 2分钟
-
-        return () => clearInterval(interval);
-    }, []);
+    // 移除定期自动刷新功能，改为有新对话时自动更新
 
     if (collapsed) {
         return null;

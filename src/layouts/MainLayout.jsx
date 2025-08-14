@@ -286,7 +286,7 @@ const MainLayout = () => {
         )}
 
         {/* 中间内容区域 */}
-        <section className="flex-1 flex flex-col bg-gray-50 overflow-hidden">
+        <section className="flex-1 flex flex-col bg-gray-50 overflow-x-hidden overflow-y-auto custom-scrollbar">
           <Outlet />
         </section>
       </main>

@@ -1,23 +1,49 @@
 .research-input-container {
-    padding: 20px 40px;
-    background-color: #f7f7f7;
-  }
-  
-  .research-input-wrapper {
-    display: flex;
-    align-items: center;
-    background-color: #fff;
-    border-radius: 30px;
-    padding: 5px 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  }
-  
-  .research-input {
-    flex-grow: 1;
-    font-size: 16px;
-  }
-  
-  .research-input-actions {
-    display: flex;
-    gap: 10px;
-  }
+  padding: 20px 40px;
+  background-color: #ffffff;
+  border-top: 1px solid #e0e0e0;
+}
+
+.research-input-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 25px;
+  padding: 8px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.research-input-wrapper:focus-within {
+  border-color: #007bff;
+  box-shadow: 0 2px 12px rgba(0, 123, 255, 0.15);
+  background-color: #ffffff;
+}
+
+.research-input {
+  flex-grow: 1;
+  font-size: 16px;
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 8px 0;
+}
+
+.research-input::placeholder {
+  color: #6c757d;
+}
+
+.research-input-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.research-input-actions button {
+  transition: all 0.2s ease;
+}
+
+.research-input-actions button:hover {
+  transform: scale(1.05);
+}

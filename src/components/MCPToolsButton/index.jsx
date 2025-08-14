@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Button, Dropdown, Card, Typography, Badge, Space, Spin } from 'antd';
-import { ToolOutlined, DownOutlined, ApiOutlined, DatabaseOutlined } from '@ant-design/icons';
+import { ToolOutlined, DownOutlined, ApiOutlined, DatabaseOutlined, ReloadOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
-const MCPToolsButton = ({ mcpStatus, mcpLoading }) => {
+const MCPToolsButton = ({ mcpStatus, mcpLoading, onReloadTools }) => {
   const [visible, setVisible] = useState(false);
 
   // MCP工具下拉面板
@@ -62,9 +62,31 @@ const MCPToolsButton = ({ mcpStatus, mcpLoading }) => {
       )}
       
       <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #f0f0f0' }}>
-        <Text type="secondary" style={{ fontSize: 10 }}>
-          💡 工具会在对话中自动调用
-        </Text>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <Text type="secondary" style={{ fontSize: 10 }}>
+            💡 工具会在对话中自动调用
+          </Text>
+          <Button
+            type="text"
+            size="small"
+            icon={<ReloadOutlined />}
+            onClick={() => {
+              if (onReloadTools) {
+                onReloadTools();
+              }
+              setVisible(false); // 点击后关闭下拉面板
+            }}
+            loading={mcpLoading}
+            style={{
+              fontSize: 10,
+              height: 24,
+              padding: '0 8px',
+              color: '#1890ff'
+            }}
+          >
+            重新加载
+          </Button>
+        </div>
       </div>
     </Card>
   );
@@ -101,5 +123,7 @@ const MCPToolsButton = ({ mcpStatus, mcpLoading }) => {
 };
 
 export default MCPToolsButton;
+
+
 
 

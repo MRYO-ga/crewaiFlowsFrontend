@@ -399,20 +399,6 @@ const OnboardingGuide = ({
         </div>
       </Modal>
 
-      {/* 快速帮助浮动按钮 */}
-      {showQuickStart && !visible && (
-        <div className="floating-help">
-          <Button
-            type="primary"
-            shape="circle"
-            size="large"
-            icon={<QuestionCircleOutlined />}
-            onClick={() => setShowWelcome(true)}
-            className="help-button"
-            title="查看引导"
-          />
-        </div>
-      )}
     </>
   );
 };

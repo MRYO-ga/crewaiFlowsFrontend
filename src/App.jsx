@@ -7,6 +7,7 @@ import NewPageInfo from './pages/Chat/NewPageInfo';
 import ResearchPage from './pages/Chat/ResearchPage';
 import TaskPage from './pages/Task';
 import CompetitorPage from './pages/Competitor';
+import CompetitorNotesPage from './pages/Competitor/CompetitorNotesPage';
 import ContentPage from './pages/Content';
 import SchedulePage from './pages/Schedule';
 
@@ -40,8 +41,12 @@ function App() {
         <Route path="/legal/terms" element={<TermsPage />} />
         <Route path="/legal/cookies" element={<CookiesPage />} />
         <Route path="/legal/compliance" element={<CompliancePage />} />
+        
+        {/* 竞品笔记页面路由 - 修复前端跳转问题 */}
+        <Route path="/competitor/:competitorId/notes" element={<CompetitorNotesPage />} />
+        
         <Route path="/app" element={<MainLayout />}>
-          <Route index element={<Navigate to="workflow" replace />} />
+          <Route index element={<Navigate to="chat" replace />} />
           <Route path="new-page-info" element={<NewPageInfo />} />
           <Route path="research" element={<ResearchPage />} />
           <Route path="chat" element={<ChatPage />} />

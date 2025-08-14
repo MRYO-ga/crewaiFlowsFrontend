@@ -1,0 +1,182 @@
+/* 帮助侧边栏样式 */
+.help-sidebar .ant-drawer-body {
+  padding: 24px 20px;
+}
+
+.help-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.help-icon {
+  color: #1890ff;
+  font-size: 18px;
+}
+
+/* 内容区域 */
+.help-sidebar-content {
+  height: 100%;
+}
+
+/* 页面信息卡片 */
+.page-info-card {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+}
+
+.page-title {
+  color: #0369a1;
+  margin-bottom: 8px;
+}
+
+.page-description {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* 章节标题 */
+.section-title {
+  color: #262626;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+/* 帮助选项 */
+.help-options {
+  margin-bottom: 24px;
+}
+
+.help-item-card {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.help-item-card:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.help-item-card .ant-card-body {
+  padding: 16px;
+}
+
+.help-item-content {
+  width: 100%;
+}
+
+.help-item-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.help-item-icon {
+  color: #1890ff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+}
+
+.help-item-title {
+  font-size: 14px;
+  color: #262626;
+}
+
+.help-item-description {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* 快速提示区域 */
+.quick-tips-section {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 16px;
+  border-left: 4px solid #52c41a;
+}
+
+.tips-list {
+  margin-top: 12px;
+}
+
+.tip-item {
+  margin-bottom: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.tip-item:last-child {
+  margin-bottom: 0;
+}
+
+/* 分割线样式 */
+.help-sidebar .ant-divider {
+  margin: 20px 0;
+  border-color: #f0f0f0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .help-sidebar {
+    width: 100% !important;
+  }
+  
+  .help-sidebar .ant-drawer-body {
+    padding: 16px;
+  }
+  
+  .help-item-card .ant-card-body {
+    padding: 12px;
+  }
+  
+  .quick-tips-section {
+    padding: 12px;
+  }
+}
+
+/* 深色主题支持 */
+@media (prefers-color-scheme: dark) {
+  .page-info-card {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    border-color: #3b82f6;
+  }
+  
+  .page-title {
+    color: #93c5fd;
+  }
+  
+  .help-item-card {
+    background: #1f1f1f;
+    border-color: #303030;
+  }
+  
+  .help-item-card:hover {
+    border-color: #1890ff;
+    background: #262626;
+  }
+  
+  .quick-tips-section {
+    background: #262626;
+    border-left-color: #52c41a;
+  }
+}
+
+
+
+
+
+
+

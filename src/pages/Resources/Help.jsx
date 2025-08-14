@@ -27,7 +27,7 @@ const HelpPage = () => {
       <section id="quickstart" className="mb-10">
         <h2 className="text-2xl font-semibold mb-3">快速入门</h2>
         <ol className="list-decimal pl-5 space-y-2 text-gray-700">
-          <li>进入 <a className="text-indigo-600" href="/app/workflow">SOP</a> 选择适合的流程模版。</li>
+          <li>进入 <a className="text-indigo-600" href="/app/chat">智能对话</a> 开始您的AI之旅。</li>
           <li>使用 <a className="text-indigo-600" href="/app/competitor">竞品分析</a> 获取市场洞察与选题灵感。</li>
           <li>在 <a className="text-indigo-600" href="/app/content">内容库</a> 生成并管理图文/视频脚本。</li>
           <li>通过 <a className="text-indigo-600" href="/app/schedule">发布计划</a> 安排投放并追踪表现。</li>

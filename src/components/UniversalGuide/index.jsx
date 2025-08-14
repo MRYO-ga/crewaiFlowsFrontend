@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import OnboardingGuide from '../OnboardingGuide';
 import TutorialTour from '../TutorialTour';
-import EmptyStateGuide from '../EmptyStateGuide';
-import FloatingHelp from '../FloatingHelp';
+import HelpSidebar from '../HelpSidebar';
 import { Modal } from 'antd';
 
-const UniversalGuide = ({ 
+const UniversalGuide = React.forwardRef(({ 
   pageType = 'default',
   pageConfig = {},
   hasData = true,
   onCreateAction,
   onViewExample,
   customTourSteps = []
-}) => {
+}, ref) => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTour, setShowTour] = useState(false);
+  const [showHelpSidebar, setShowHelpSidebar] = useState(false);
   const [isFirstVisit, setIsFirstVisit] = useState(false);
+
+  // 暴露方法给父组件
+  React.useImperativeHandle(ref, () => ({
+    openHelpSidebar: handleShowHelpSidebar
+  }));
 
   // 检查是否首次访问该页面
   const checkFirstVisit = () => {
@@ -52,8 +57,16 @@ const UniversalGuide = ({
     setShowTour(false);
   };
 
-  const handleShowOnboardingFromFloat = () => {
+  const handleShowOnboardingFromSidebar = () => {
     setShowOnboarding(true);
+  };
+
+  const handleShowHelpSidebar = () => {
+    setShowHelpSidebar(true);
+  };
+
+  const handleCloseHelpSidebar = () => {
+    setShowHelpSidebar(false);
   };
 
   const handleShowTips = () => {
@@ -80,16 +93,6 @@ const UniversalGuide = ({
 
   return (
     <>
-      {/* 空状态引导 - 只在没有数据时显示，但chat页面除外 */}
-      {!hasData && pageType !== 'chat' && (
-        <EmptyStateGuide
-          type={pageType}
-          onCreatePlan={onCreateAction}
-          onViewExample={onViewExample}
-          onStartTour={handleStartTour}
-        />
-      )}
-      
       {/* 引导组件 */}
       <OnboardingGuide
         visible={showOnboarding}
@@ -105,17 +108,20 @@ const UniversalGuide = ({
         steps={customTourSteps}
         pageType={pageType}
       />
-      
-      {/* 浮动帮助按钮 */}
-      <FloatingHelp
-        onShowOnboarding={handleShowOnboardingFromFloat}
+
+      {/* 帮助侧边栏 */}
+      <HelpSidebar
+        visible={showHelpSidebar}
+        onClose={handleCloseHelpSidebar}
+        onShowOnboarding={handleShowOnboardingFromSidebar}
         onStartTour={handleStartTour}
         onViewExample={onViewExample}
         onShowTips={handleShowTips}
+        pageConfig={pageConfig}
       />
     </>
   );
-};
+});
 
 // 获取默认使用技巧
 const getDefaultTips = (pageType) => {

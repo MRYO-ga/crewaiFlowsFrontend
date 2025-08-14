@@ -1,0 +1,134 @@
+.competitor-note-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 16px;
+}
+
+.competitor-note-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.competitor-note-cover-wrapper {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.competitor-note-cover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.competitor-note-card:hover .competitor-note-cover-image {
+  transform: scale(1.05);
+}
+
+.competitor-note-no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  color: #999;
+  font-size: 24px;
+}
+
+.competitor-note-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.competitor-note-desc {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 12px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.competitor-note-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.competitor-note-author-nickname {
+  font-size: 12px;
+  color: #333;
+  font-weight: 500;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.competitor-note-interactions {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 12px;
+}
+
+.interaction-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.interaction-item:hover {
+  background-color: #f5f5f5;
+}
+
+.interaction-item .anticon {
+  font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .competitor-note-cover-wrapper {
+    height: 160px;
+  }
+  
+  .competitor-note-title {
+    font-size: 13px;
+  }
+  
+  .competitor-note-desc {
+    font-size: 11px;
+  }
+  
+  .competitor-note-interactions {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .competitor-note-cover-wrapper {
+    height: 140px;
+  }
+  
+  .competitor-note-interactions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

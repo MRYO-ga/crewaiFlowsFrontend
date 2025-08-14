@@ -48,26 +48,59 @@ const MCPStatusIndicator = ({ compact = false }) => {
     );
   }
 
+  // 根据连接类型和状态显示不同的指示器
+  const getStatusInfo = () => {
+    if (!status.initialized) {
+      return {
+        color: 'bg-yellow-500',
+        text: '初始化中...',
+        textColor: 'text-yellow-600'
+      };
+    }
+    
+    if (!status.connected) {
+      return {
+        color: 'bg-red-500',
+        text: '连接断开',
+        textColor: 'text-red-600'
+      };
+    }
+    
+    if (status.connection_type === 'multi_server') {
+      return {
+        color: 'bg-green-500',
+        text: `多服务器 (${status.connected_servers?.length || 0})`,
+        textColor: 'text-green-600'
+      };
+    }
+    
+    if (status.connection_type === 'single_server') {
+      return {
+        color: 'bg-blue-500',
+        text: '单服务器',
+        textColor: 'text-blue-600'
+      };
+    }
+    
+    return {
+      color: 'bg-green-500',
+      text: '已连接',
+      textColor: 'text-green-600'
+    };
+  };
+
+  const statusInfo = getStatusInfo();
+
   return (
     <Link 
       to="/mcp" 
       className={`flex items-center gap-2 hover:opacity-80 transition-opacity ${compact ? 'text-sm' : ''}`}
     >
-      <div className={`w-2 h-2 rounded-full ${
-        status.connected ? 'bg-green-500' : 'bg-red-500'
-      }`}></div>
-      <span className={status.connected ? 'text-green-600' : 'text-red-600'}>
-        {status.connected ? (
-          compact ? 'MCP已连接' : `MCP已连接 (${status.current_server})`
-        ) : (
-          'MCP未连接'
-        )}
+      <div className={`w-2 h-2 ${statusInfo.color} rounded-full`}></div>
+      <span className={statusInfo.textColor}>
+        {statusInfo.text}
+        {status.tools_count > 0 && ` (${status.tools_count} 工具)`}
       </span>
-      {status.connected && status.tools_count !== undefined && !compact && (
-        <span className="text-gray-500 text-xs">
-          {status.tools_count} 工具
-        </span>
-      )}
     </Link>
   );
 };

@@ -253,36 +253,7 @@
   justify-content: flex-end;
 }
 
-/* 浮动帮助按钮 */
-.floating-help {
-  position: fixed;
-  bottom: 80px;
-  right: 24px;
-  z-index: 1000;
-}
-
-.help-button {
-  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.3);
-  border: none;
-  background: #1890ff;
-  width: 56px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.help-button:hover {
-  background: #40a9ff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(24, 144, 255, 0.4);
-}
-
-.help-button .anticon {
-  font-size: 20px;
-  color: white;
-}
+/* 浮动帮助按钮已移除 */
 
 /* 响应式设计 */
 @media (max-width: 768px) {
@@ -317,19 +288,7 @@
     margin-bottom: 12px;
   }
   
-  .floating-help {
-    bottom: 20px;
-    right: 20px;
-  }
-  
-  .help-button {
-    width: 48px;
-    height: 48px;
-  }
-  
-  .help-button .anticon {
-    font-size: 18px;
-  }
+  /* 浮动帮助按钮响应式样式已移除 */
 }
 
 /* 动画效果 */

@@ -5,7 +5,8 @@ import { guideConfigs } from '../../../configs/guideConfig';
 const Header = ({ 
   hasData = false,
   onCreateAction,
-  onViewExample 
+  onViewExample,
+  onOpenHelpSidebar
 }) => {
   return (
     <div style={{ 
@@ -23,6 +24,7 @@ const Header = ({
         hasData={hasData}
         onCreateAction={onCreateAction}
         onViewExample={onViewExample}
+        onOpenHelpSidebar={onOpenHelpSidebar}
       />
     </div>
   );

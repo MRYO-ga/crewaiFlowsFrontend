@@ -4,10 +4,12 @@ import ReactMarkdown from 'react-markdown';
 import { toast } from 'react-toastify';
 import { competitorApi } from '../services/api';
 import LoadingSpinner from './LoadingSpinner';
+import { useNavigate } from 'react-router-dom';
 
 const { Panel } = Collapse;
 
 const CompetitorCard = ({ competitor, onDelete, onViewProfile }) => {
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [notesData, setNotesData] = useState(null);
@@ -49,7 +51,9 @@ const CompetitorCard = ({ competitor, onDelete, onViewProfile }) => {
       // 首次展开时加载笔记数据
       setNotesLoading(true);
       try {
-        const data = await competitorApi.getBloggerNoteAnalysis(competitor.id);
+        const response = await competitorApi.getBloggerNoteAnalysis(competitor.id);
+        // 处理API返回的数据结构
+        const data = response.success ? response.data : response;
         setNotesData(data);
       } catch (error) {
         toast.error('加载笔记数据失败');
@@ -357,6 +361,19 @@ const CompetitorCard = ({ competitor, onDelete, onViewProfile }) => {
 
   return (
     <div className="mb-4">
+      <style jsx>{`
+        .no-image {
+          background-color: #f3f4f6;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #9ca3af;
+          font-size: 2rem;
+        }
+        .no-image::after {
+          content: '📷';
+        }
+      `}</style>
       <Card
         hoverable
         className="transition-all duration-300 card-hover"
@@ -448,77 +465,88 @@ const CompetitorCard = ({ competitor, onDelete, onViewProfile }) => {
                     {notesData?.map((note) => (
                       <div 
                         key={note.id} 
-                        className="flex-shrink-0 w-80 bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group"
+                        className="flex-shrink-0 w-60 bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group border border-gray-200"
                         onClick={() => handleNoteClick(note)}
                       >
-                        {/* 笔记封面 */}
-                        <div className="relative">
+                        {/* 笔记封面 - 3:4比例 */}
+                        <div className="relative aspect-[3/4]">
                           <img 
-                            src={note.coverImage} 
-                            alt={note.title}
-                            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                            src={note.cover_image_local ? 
+                              `http://localhost:9000/static/xhs_images/${note.cover_image_local.replace(/^.*?data[/\\]xhs_images[/\\]/, '')}` : 
+                              note.cover_image || note.coverImage
+                            } 
+                            alt={note.title || note.display_title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.parentNode.classList.add('no-image');
+                            }}
                           />
-                          <div className="absolute top-3 right-3">
+                          {/* 只显示视频标签，不显示normal */}
+                          {note.type === 'video' && (
+                          <div className="absolute top-2 right-2">
                             <span className="px-2 py-1 bg-black/70 text-white text-xs rounded-full">
-                              {note.type}
+                              视频
                             </span>
                           </div>
-                          <div className="absolute bottom-3 left-3 right-3">
-                            <div className="bg-black/70 text-white p-2 rounded-lg backdrop-blur-sm">
-                              <h4 className="font-medium text-sm line-clamp-2 mb-1">{note.title}</h4>
-                              <div className="flex items-center justify-between text-xs">
-                                <span>{note.uploadTime}</span>
-                                <span>{note.location}</span>
-                              </div>
-                            </div>
-                          </div>
+                          )}
                         </div>
 
                         {/* 笔记信息 */}
-                        <div className="p-4">
+                        <div className="p-3">
+                          {/* 标题和描述 */}
+                          <div className="mb-2">
+                            <h4 className="font-medium text-sm line-clamp-2 text-gray-900 mb-1">
+                              {note.title || note.display_title}
+                            </h4>
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <span>{note.upload_time || note.uploadTime || note.time}</span>
+                              <span>{note.ip_location || note.location}</span>
+                            </div>
+                          </div>
+
                           {/* 互动数据 */}
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center space-x-4 text-sm text-gray-600">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center space-x-3 text-xs text-gray-600">
                               <span className="flex items-center">
                                 <i className="fa-solid fa-heart text-red-500 mr-1"></i>
-                                {formatNumber(note.likes)}
+                                {formatNumber(parseInt(note.likes || note.liked_count || '0'))}
                               </span>
                               <span className="flex items-center">
                                 <i className="fa-solid fa-bookmark text-yellow-500 mr-1"></i>
-                                {formatNumber(note.collects)}
+                                {formatNumber(parseInt(note.collects || note.collected_count || '0'))}
                               </span>
                               <span className="flex items-center">
                                 <i className="fa-solid fa-comment text-blue-500 mr-1"></i>
-                                {formatNumber(note.comments)}
+                                {formatNumber(parseInt(note.comments || note.comment_count || '0'))}
                               </span>
-                            </div>
-                            <div className="text-xs text-gray-400">
-                              互动率 {((note.likes + note.comments + note.collects) / 10000 * 100).toFixed(1)}%
                             </div>
                           </div>
 
                           {/* 标签 */}
-                          <div className="flex flex-wrap gap-1 mb-3">
-                            {note.topics?.slice(0, 3).map((tag, index) => (
-                              <span key={index} className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded">
-                                #{tag}
-                              </span>
-                            ))}
-                            {note.topics?.length > 3 && (
-                              <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
-                                +{note.topics.length - 3}
-                              </span>
-                            )}
-                          </div>
+                          {note.topics && note.topics.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {note.topics?.slice(0, 2).map((tag, index) => (
+                                <span key={index} className="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs rounded">
+                                  #{tag}
+                                </span>
+                              ))}
+                              {note.topics?.length > 2 && (
+                                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
+                                  +{note.topics.length - 2}
+                                </span>
+                              )}
+                            </div>
+                          )}
 
                           {/* 操作按钮 */}
                           <div className="flex items-center justify-between">
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
-                                window.open(note.url, '_blank');
+                                window.open(note.note_url || note.url, '_blank');
                               }}
-                              className="px-3 py-1.5 border border-gray-200 rounded text-xs hover:bg-gray-50 transition-colors"
+                              className="px-2 py-1 border border-gray-200 rounded text-xs hover:bg-gray-50 transition-colors"
                             >
                               <i className="fa-solid fa-external-link mr-1"></i>查看原文
                             </button>

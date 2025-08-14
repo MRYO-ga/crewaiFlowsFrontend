@@ -6,7 +6,9 @@ export const useMcp = () => {
   const [mcpStatus, setMcpStatus] = useState({
     connected: false,
     tools_count: 0,
-    tools: []
+    tools: [],
+    initialized: false,
+    connection_type: 'unknown'
   });
   const [mcpLoading, setMcpLoading] = useState(false);
 
@@ -17,12 +19,20 @@ export const useMcp = () => {
       const data = await response.json();
       
       if (data.status === 'success') {
-        setMcpStatus(data.data);
+        const statusData = {
+          ...data.data,
+          // 正确传递工具列表，如果后端没有提供则使用空数组
+          tools: data.data.tools || []
+        };
+        setMcpStatus(statusData);
+        return statusData; // 返回状态数据
       } else {
         message.warning('MCP状态获取失败');
+        return null;
       }
     } catch (error) {
       message.error('无法连接到后端服务');
+      return null;
     } finally {
       setMcpLoading(false);
     }
@@ -31,27 +41,17 @@ export const useMcp = () => {
   const initializeMcpConnection = async () => {
     try {
       setMcpLoading(true);
-      await loadMcpStatus();
+      const status = await loadMcpStatus();
       
-      const statusResponse = await fetch(`${API_PATHS.CHAT}mcp-status`);
-      const statusData = await statusResponse.json();
-      
-      if (!statusData.data?.connected || statusData.data?.tools_count === 0) {
-        message.loading('正在自动连接开发工具 (SQL数据库 + 小红书工具)...', 0);
-        
-        const connectResponse = await fetch(`${API_PATHS.MCP}multi-connect`, {
-          method: 'POST'
-        });
-        const connectData = await connectResponse.json();
-        
-        message.destroy();
-        
-        if (connectData.success) {
-          message.success(`✅ 成功连接开发工具: ${connectData.connected_servers.join(' + ')}`);
-          await loadMcpStatus();
-        } else {
-          message.warning('⚠️ 开发工具连接失败，数据库和小红书功能可能受限');
-        }
+      // 检查MCP是否已经初始化
+      if (status && status.initialized && status.connected) {
+        message.success(`✅ MCP服务已就绪: ${status.message || '连接正常'}`);
+      } else if (status && status.initialized && !status.connected) {
+        message.warning('⚠️ MCP服务已初始化但连接断开，尝试重新连接...');
+        await reconnectMcp();
+      } else {
+        // 等待一段时间后再次检查
+        setTimeout(loadMcpStatus, 2000);
       }
     } catch (error) {
       message.error('MCP连接初始化失败');
@@ -63,9 +63,9 @@ export const useMcp = () => {
   const reconnectMcp = async () => {
     try {
       setMcpLoading(true);
-      message.loading('正在连接开发工具 (SQL数据库 + 小红书工具)...', 0);
+      message.loading('正在重新连接MCP服务...', 0);
       
-      const response = await fetch(`${API_PATHS.MCP}multi-connect`, {
+      const response = await fetch(`${API_PATHS.MCP}reconnect`, {
         method: 'POST'
       });
       const data = await response.json();
@@ -73,16 +73,10 @@ export const useMcp = () => {
       message.destroy();
       
       if (data.success) {
-        setMcpStatus({
-          connected: true,
-          tools_count: data.total_servers,
-          tools: [],
-          connected_servers: data.connected_servers
-        });
-        message.success(`✅ 成功连接开发工具: ${data.connected_servers.join(' + ')}`);
+        message.success(`✅ MCP服务重连成功: ${data.result.message || '连接已恢复'}`);
         await loadMcpStatus();
       } else {
-        message.error(`❌ 开发工具连接失败: ${data.message}`);
+        message.error(`❌ MCP服务重连失败: ${data.error || '未知错误'}`);
       }
     } catch (error) {
       message.destroy();

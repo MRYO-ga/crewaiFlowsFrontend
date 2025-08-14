@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { DatabaseOutlined, FileTextOutlined, SearchOutlined, UserOutlined, ShoppingOutlined, ReloadOutlined, PlusOutlined, TeamOutlined, RobotOutlined } from '@ant-design/icons';
 import { Button, Space, Tooltip, Badge } from 'antd';
@@ -21,6 +21,9 @@ import XhsResultsPanel from './components/XhsResultsPanel';
 
 import { API_PATHS } from '../../configs/env';
 import { guideConfigs } from '../../configs/guideConfig';
+import UniversalGuide from '../../components/UniversalGuide';
+import { message } from 'antd';
+import { getShanghaiTimeShort } from '../../utils';
 
 const getUserId = () => localStorage.getItem('userId') || 'default_user';
 
@@ -34,6 +37,7 @@ const ChatPage = () => {
   const messagingState = useMessaging({ ...chatState, ...dataManagementState, lastChatStatus, setLastChatStatus }, modelState, agentState);
 
   const [isChatStarted, setIsChatStarted] = useState(false);
+  const universalGuideRef = useRef(null);
 
   const { messages, setMessages, setStreamingMessage, setCurrentTask, setInputValue, inputRef } = chatState;
   const { selectedAgent, showPersonaIntro, setShowPersonaIntro, currentPersonaIntro } = agentState;
@@ -69,7 +73,7 @@ const ChatPage = () => {
               id: msg.id,
               type: msg.sender,
               content: msg.content,
-              timestamp: msg.created_at ? new Date(msg.created_at).toLocaleTimeString() : new Date().toLocaleTimeString(),
+              timestamp: msg.created_at ? new Date(msg.created_at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Shanghai' }) : getShanghaiTimeShort(),
               isCompleted: true, // 确保恢复的消息显示为已完成状态
               model: sessionData.model_name // 添加模型信息
             };
@@ -292,7 +296,7 @@ const ChatPage = () => {
       id: Date.now(),
       type: 'assistant',
       content: selectedAgentOption.introduction,
-      timestamp: new Date().toLocaleTimeString()
+      timestamp: getShanghaiTimeShort()
     };
     
     setMessages(prev => [...prev, introMessage]);
@@ -678,7 +682,10 @@ const ChatPage = () => {
         onCreateAction={() => {/* 可以触发发送示例问题 */}}
         onViewExample={() => {
           setInputValue('请帮我分析目标用户特征和行为模式');
-          messagingState.sendMessage('请帮我分析目标用户特征和行为模式');
+          // 只设置输入框内容，不自动发送
+        }}
+        onOpenHelpSidebar={() => {
+          universalGuideRef.current?.openHelpSidebar();
         }}
       />
       
@@ -728,6 +735,7 @@ const ChatPage = () => {
                 cancelCurrentTask={messagingState.cancelCurrentTask}
                 mcpStatus={mcpState.mcpStatus}
                 mcpLoading={mcpState.mcpLoading}
+                reconnectMcp={mcpState.reconnectMcp}
                 comprehensiveData={dataManagementState.comprehensiveData}
                 cacheData={dataManagementState.cacheData}
                 personaData={dataManagementState.personaData}
@@ -776,6 +784,7 @@ const ChatPage = () => {
                    isStartScreen={true}
                    mcpStatus={mcpState.mcpStatus}
                    mcpLoading={mcpState.mcpLoading}
+                   reconnectMcp={mcpState.reconnectMcp}
                    comprehensiveData={dataManagementState.comprehensiveData}
                    cacheData={dataManagementState.cacheData}
                    personaData={dataManagementState.personaData}
@@ -843,7 +852,8 @@ const ChatPage = () => {
         )}
 
         {/* 页面引导系统 */}
-        {/* <UniversalGuide
+        <UniversalGuide
+          ref={universalGuideRef}
           pageType="chat"
           pageConfig={guideConfigs.chat}
           hasData={messages.length > 0}
@@ -852,9 +862,9 @@ const ChatPage = () => {
           }}
           onViewExample={() => {
             setInputValue('请帮我分析目标用户特征和行为模式');
-            messagingState.sendMessage('请帮我分析目标用户特征和行为模式');
+            // 只设置输入框内容，不自动发送
           }}
-        /> */}
+        />
       </div>
     </div>
   );

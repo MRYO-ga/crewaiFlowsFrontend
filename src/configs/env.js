@@ -22,7 +22,6 @@ export const API_BASE_URL = getApiUrl();
 export const API_PATHS = {
   CHAT: `${API_BASE_URL}/api/chat/`,
   MCP: `${API_BASE_URL}/api/mcp/`,
-  CREW: `${API_BASE_URL}/api/crew/`,
   ACCOUNTS: `${API_BASE_URL}/api/accounts/`,
   PRODUCTS: `${API_BASE_URL}/api/products/`,
   KNOWLEDGE: `${API_BASE_URL}/api/knowledge/`,
@@ -34,5 +33,6 @@ export const API_PATHS = {
   TASKS: `${API_BASE_URL}/api/tasks/`,
   SOPS: `${API_BASE_URL}/api/sops/`,
   CATEGORIZED_NOTES: `${API_BASE_URL}/api/categorized-notes`,
-  LANDING: `${API_BASE_URL}/api/landing/`
+  LANDING: `${API_BASE_URL}/api/landing/`,
+  COMPETITORS: `${API_BASE_URL}/api/competitors/`
 };

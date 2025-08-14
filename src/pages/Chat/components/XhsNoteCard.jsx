@@ -13,7 +13,9 @@ const XhsNoteCard = ({ note, onDelete }) => {
     display_title,
     desc,
     cover_image,
+    cover_image_local,
     images,
+    images_local,
     user,
     interact_info,
     liked_count,
@@ -23,6 +25,7 @@ const XhsNoteCard = ({ note, onDelete }) => {
     user_nickname,
     time,
     ip_location,
+    type,
   } = note;
 
   const getInteractCount = (count) => {
@@ -41,7 +44,21 @@ const XhsNoteCard = ({ note, onDelete }) => {
   };
 
   const getCoverUrl = () => {
+    // 优先使用本地图片路径
+    if (cover_image_local) {
+      // 转换本地路径为可访问的URL
+      return `http://localhost:9000/static/xhs_images/${cover_image_local.replace(/^.*?data[/\\]xhs_images[/\\]/, '')}`;
+    }
     if (cover_image) return cover_image;
+    
+    // 处理本地images_local数组
+    if (images_local && images_local.length > 0) {
+      const firstLocalImage = images_local.find(img => img.type && img.type.includes('cover'));
+      if (firstLocalImage && firstLocalImage.local_path) {
+        return `http://localhost:9000/static/xhs_images/${firstLocalImage.local_path.replace(/^.*?data[/\\]xhs_images[/\\]/, '')}`;
+      }
+    }
+    
     if (images && images.length > 0 && images[0].url_default) return images[0].url_default;
     return null;
   };
@@ -56,7 +73,7 @@ const XhsNoteCard = ({ note, onDelete }) => {
   return (
     <Card
       hoverable
-      className="xhs-note-card"
+      className="h-full border border-gray-200 rounded-lg overflow-hidden"
       actions={onDelete ? [
         <Popconfirm
           title="确定要删除这个笔记吗？"
@@ -68,70 +85,87 @@ const XhsNoteCard = ({ note, onDelete }) => {
         </Popconfirm>
       ] : []}
       cover={
-        <div className="xhs-note-cover-wrapper">
+        <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
           {coverUrl ? (
             <img 
               alt={display_title} 
               src={coverUrl} 
-              className="xhs-note-cover-image"
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.parentNode.classList.add('no-image');
               }}
             />
           ) : (
-            <div className="xhs-note-no-image">
-              <PictureOutlined />
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+              <PictureOutlined className="text-gray-400 text-2xl" />
+            </div>
+          )}
+          {/* 只显示视频标签（无图标） */}
+          {type === 'video' && (
+            <div className="absolute top-2 right-2">
+              <span className="px-2 py-1 bg-black/70 text-white text-xs rounded-full">
+                视频
+              </span>
             </div>
           )}
         </div>
       }
       bodyStyle={{ padding: '12px' }}
     >
-      <div className="xhs-note-title" title={display_title}>
-        {display_title || '无标题'}
-      </div>
-      
-      {desc && (
-        <div className="xhs-note-desc" title={desc}>
-          {desc}
+      <div className="flex flex-col h-full">
+        {/* 标题 */}
+        <div className="font-medium text-sm text-gray-900 mb-2 line-clamp-2" title={display_title}>
+          {display_title || '无标题'}
         </div>
-      )}
-      
-      <div className="xhs-note-footer">
-          <div className="xhs-note-author">
+        
+        {/* 描述 */}
+        {desc && (
+          <div className="text-xs text-gray-600 mb-3 line-clamp-2 flex-grow" title={desc}>
+            {desc}
+          </div>
+        )}
+        
+        {/* 互动数据 */}
+        <div className="flex items-center justify-between mb-2 text-xs text-gray-500">
+          <div className="flex items-center space-x-3">
+            <span className="flex items-center">
+              <HeartOutlined className="mr-1 text-red-500" />
+              {finalLikedCount}
+            </span>
+            <span className="flex items-center">
+              <StarOutlined className="mr-1 text-yellow-500" />
+              {finalCollectedCount}
+            </span>
+            <span className="flex items-center">
+              <MessageOutlined className="mr-1 text-blue-500" />
+              {finalCommentCount}
+            </span>
+          </div>
+        </div>
+        
+        {/* 作者和时间信息 */}
+        <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
+          <div className="flex items-center min-w-0 flex-1">
             <Avatar
               src={finalUserAvatar}
-              size="small"
+              size={18}
+              className="flex-shrink-0"
               style={{ backgroundColor: '#f56a00' }}
             >
               {!finalUserAvatar ? (finalUserNickname || '用户')?.charAt(0) : null}
             </Avatar>
-            <span className="xhs-note-author-nickname" title={finalUserNickname}>
+            <span className="ml-2 text-xs text-gray-600 truncate" title={finalUserNickname}>
               {finalUserNickname || '未知用户'}
             </span>
           </div>
-
-          <div className="xhs-note-interactions">
-            <Tooltip title={`点赞: ${liked_count || interact_info?.liked_count || '0'}`}>
-              <span className="interaction-item">
-                <HeartOutlined /> {finalLikedCount}
-              </span>
-            </Tooltip>
-
-            <Tooltip title={`评论: ${comment_count || interact_info?.comment_count || '0'}`}>
-              <span className="interaction-item">
-                <MessageOutlined /> {finalCommentCount}
-              </span>
-            </Tooltip>
-
-            <Tooltip title={`收藏: ${collected_count || interact_info?.collected_count || '0'}`}>
-              <span className="interaction-item">
-                <StarOutlined /> {finalCollectedCount}
-              </span>
-            </Tooltip>
+          
+          <div className="flex items-center text-xs text-gray-400 ml-2">
+            <span>{time}</span>
+            {ip_location && <span className="ml-1">·{ip_location}</span>}
           </div>
         </div>
+      </div>
     </Card>
   );
 };

@@ -2,6 +2,7 @@ import { message } from 'antd';
 import { useState } from 'react';
 import { agentOptions } from '../components/agentOptions';
 import { API_PATHS } from '../../../configs/env';
+import { getShanghaiTimeShort } from '../../../utils';
 
 const getUserId = () => localStorage.getItem('userId') || 'default_user';
 
@@ -28,10 +29,11 @@ export const useMessaging = (state, modelState, agentState) => {
       id: streamingId,
       type: 'assistant',
       content: '',
-      timestamp: new Date().toLocaleTimeString(),
+      timestamp: getShanghaiTimeShort(),
       startTime: Date.now(),
       status: 'processing',
-      steps: []
+      steps: [],
+      userInput: queryContent // 保存用户输入内容
     };
     
     setStreamingMessage(streamingMessage);
@@ -158,11 +160,9 @@ export const useMessaging = (state, modelState, agentState) => {
                         state.setCurrentSessionId(data.session_id);
                         console.log('✅ 设置会话ID:', data.session_id);
                         
-                        // 触发新会话创建事件，通知历史列表更新
-                        window.dispatchEvent(new CustomEvent('newSessionCreated', {
-                          detail: { sessionId: data.session_id }
-                        }));
-                        console.log('📢 [useMessaging] 已触发新会话创建事件');
+                        // 移除立即触发新会话创建事件的逻辑
+                        // 改为在收到complete事件且确认数据已保存后再触发
+                        console.log('📢 [useMessaging] 会话ID已设置，等待对话完成后再更新历史列表');
                       }
                       break;
                       
@@ -241,6 +241,20 @@ export const useMessaging = (state, modelState, agentState) => {
                         setLastChatStatus(data.data.chat_status);
                       } else {
                         console.log("📥 complete事件中无chat_status数据");
+                      }
+
+                      // 触发新会话创建事件，通知历史列表更新
+                      // 此时用户消息和AI回复已经保存到数据库
+                      if (state.currentSessionId) {
+                        console.log('📢 [useMessaging] 对话完成，触发历史列表更新事件');
+                        window.dispatchEvent(new CustomEvent('newSessionCreated', {
+                          detail: { 
+                            sessionId: state.currentSessionId,
+                            isCompleted: true,
+                            userInput: updated.userInput || '用户输入',
+                            aiResponse: finalContent || 'AI回复'
+                          }
+                        }));
                       }
 
                       setTimeout(() => {
@@ -349,7 +363,7 @@ export const useMessaging = (state, modelState, agentState) => {
       id: Date.now(),
       type: 'user',
       content: inputValue,
-      timestamp: new Date().toLocaleTimeString(),
+      timestamp: getShanghaiTimeShort(),
       attachedData: currentAttachedData,
       model: selectedModel,
       isCompleted: true // 用户消息默认为完成状态

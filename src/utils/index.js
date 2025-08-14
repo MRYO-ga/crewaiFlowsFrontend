@@ -101,3 +101,30 @@ export const isEmpty = (obj) => {
   if (typeof obj === 'object') return Object.keys(obj).length === 0;
   return false;
 }; 
+
+/**
+ * 获取上海时间
+ * @param {Date} date - 可选，默认为当前时间
+ * @returns {string} 格式化的上海时间字符串 (HH:MM:SS)
+ */
+export const getShanghaiTime = (date = new Date()) => {
+  return date.toLocaleTimeString('zh-CN', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    second: '2-digit',
+    timeZone: 'Asia/Shanghai'
+  });
+};
+
+/**
+ * 获取上海时间（仅显示时:分）
+ * @param {Date} date - 可选，默认为当前时间
+ * @returns {string} 格式化的上海时间字符串 (HH:MM)
+ */
+export const getShanghaiTimeShort = (date = new Date()) => {
+  return date.toLocaleTimeString('zh-CN', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    timeZone: 'Asia/Shanghai'
+  });
+}; 

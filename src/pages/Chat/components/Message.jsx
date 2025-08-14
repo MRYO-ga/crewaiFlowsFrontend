@@ -1,5 +1,6 @@
 import React from 'react';
 import { Avatar, Card, Typography, Tag, Button, Spin, Space, Tooltip } from 'antd';
+import { getShanghaiTimeShort } from '../../../utils';
 import { UserOutlined, RobotOutlined, DownloadOutlined, CheckCircleOutlined, SyncOutlined, CopyOutlined, FileTextOutlined } from '@ant-design/icons';
 import EnhancedMarkdown from './EnhancedMarkdown';
 import NoteGenerationCard from './NoteGenerationCard';
@@ -362,8 +363,8 @@ const Message = ({ message, onCancel, onQuickQuery, onGenerateDocument, onRegene
           <Text strong>{isUser ? '开发者' : 'AI助手'}</Text>
           <Text type="secondary" style={{ marginLeft: 8, fontSize: '12px' }}>
             {message.timestamp && message.timestamp !== 'Invalid Date' ? 
-              (message.timestamp.includes(':') ? message.timestamp : new Date(message.timestamp).toLocaleTimeString()) 
-              : new Date().toLocaleTimeString()}
+              (message.timestamp.includes(':') ? message.timestamp : new Date(message.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Shanghai' })) 
+              : getShanghaiTimeShort()}
           </Text>
           {isAssistant && message.executionTime > 0 && (
             <Text type="secondary" style={{ marginLeft: 8, fontSize: '12px' }}>

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Input, Button, Tooltip, Select, Tag, Space } from 'antd';
-import { SendOutlined, StopOutlined, ArrowUpOutlined, RobotOutlined, ProjectOutlined } from '@ant-design/icons';
+import { SendOutlined, StopOutlined, ArrowUpOutlined, RobotOutlined, ProjectOutlined, StarOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { agentOptions } from './agentOptions';
 import MCPToolsButton from '../../../components/MCPToolsButton';
 import DigitalPersonSelector from '../../../components/DigitalPersonSelector';
 import DocumentSelector from '../../../components/DocumentSelector';
 import SOPPills from '../../../components/SOPPills';
-
 
 const { TextArea } = Input;
 
@@ -31,6 +31,7 @@ const ChatInput = ({
   // MCP相关props
   mcpStatus,
   mcpLoading,
+  reconnectMcp,
   // 真实数据props
   comprehensiveData,
   cacheData,
@@ -44,6 +45,7 @@ const ChatInput = ({
   hasMessages = false
 }) => {
   const [selectedSOPPill, setSelectedSOPPill] = useState(null);
+  const navigate = useNavigate();
 
   const handleSOPPillSelect = (pill) => {
     setSelectedSOPPill(pill);
@@ -62,14 +64,16 @@ const ChatInput = ({
     }
   };
 
+  const handleMagicClick = () => {
+    navigate('/app/new-page-info');
+  };
+
   return (
     <div style={{ 
       width: '100%',
       maxWidth: isStartScreen ? '800px' : '100%',
       margin: isStartScreen ? '0 auto' : '0'
     }}>
-
-
       {/* 数据标签已移到DocumentSelector内部显示 */}
 
       {/* 主输入区域 */}
@@ -81,6 +85,39 @@ const ChatInput = ({
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
         overflow: 'hidden'
       }}>
+        {/* 魔法图标 - 右上角 */}
+        <Tooltip title="AI研究规划助手" placement="top">
+          <Button
+            type="text"
+            icon={<StarOutlined />}
+            onClick={handleMagicClick}
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              zIndex: 10,
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              border: 'none',
+              boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'scale(1.1)';
+              e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'scale(1)';
+              e.target.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.3)';
+            }}
+          />
+        </Tooltip>
+
         {/* 输入框 */}
         <TextArea
           ref={inputRef}
@@ -118,10 +155,9 @@ const ChatInput = ({
             <MCPToolsButton 
               mcpStatus={mcpStatus}
               mcpLoading={mcpLoading}
+              onReloadTools={reconnectMcp}
             />
           </div>
-
-
 
           {/* 右侧工具 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

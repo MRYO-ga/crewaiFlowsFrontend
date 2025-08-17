@@ -3,8 +3,30 @@ import { useState } from 'react';
 import { agentOptions } from '../components/agentOptions';
 import { API_PATHS } from '../../../configs/env';
 import { getShanghaiTimeShort } from '../../../utils';
+import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 const getUserId = () => localStorage.getItem('userId') || 'default_user';
+
+// JSON完整性验证函数
+const isValidCompleteJSON = (str) => {
+  if (!str || typeof str !== 'string') return false;
+  
+  str = str.trim();
+  if (!str) return false;
+  
+  // 检查是否以 { 开头并以 } 结尾（对象），或以 [ 开头并以 ] 结尾（数组）
+  if (!((str.startsWith('{') && str.endsWith('}')) || 
+        (str.startsWith('[') && str.endsWith(']')))) {
+    return false;
+  }
+  
+  try {
+    JSON.parse(str);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
 
 export const useMessaging = (state, modelState, agentState) => {
   const { 
@@ -49,8 +71,12 @@ export const useMessaging = (state, modelState, agentState) => {
     //   setMessages([]);
     //   setStreamingMessage(null);
     // }
+    console.log("📤 [Direct] 发送流式消息:", streamingMessage);
     try {
-        const response = await fetch(`${API_PATHS.CHAT}stream`, {
+        let finalContent = '';
+        let fullResponse = '';
+
+        await fetchEventSource(`${API_PATHS.CHAT}stream`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -72,93 +98,79 @@ export const useMessaging = (state, modelState, agentState) => {
               },
             ]
           }),
-          signal: controller.signal
-        });
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let finalContent = '';
-        let fullResponse = '';
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const text = decoder.decode(value);
-          fullResponse += text;
+          signal: controller.signal,
           
-          // 检查累积的响应是否是完整的JSON错误格式
-          if (fullResponse.trim().startsWith('{"') && fullResponse.trim().endsWith('}')) {
-            try {
-              const errorData = JSON.parse(fullResponse.trim());
-              if (errorData.error || errorData.reply) {
-                // 这是一个错误响应，抛出错误
-                throw new Error(errorData.error || errorData.reply);
-              }
-            } catch (parseError) {
-              // 如果不是有效的JSON，继续正常处理
-              if (parseError.message.startsWith('LLM') || parseError.message.includes('error')) {
-                throw parseError;
-              }
+          onopen(response) {
+            console.log("📥 [EventSource] 连接已打开, status:", response.status);
+            if (response.ok && response.headers.get('content-type')?.includes('text/event-stream')) {
+              return; // 正常的 SSE 连接
+            } else {
+              throw new Error(`HTTP error! status: ${response.status}`);
             }
-          }
+          },
           
-          const lines = text.split('\n');
+          onmessage(event) {
+            const data = event.data;
+            fullResponse += data;
 
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(line.slice(6));
+            // 验证JSON完整性
+            if (!isValidCompleteJSON(data)) {
+              console.log("📥 [EventSource] JSON不完整，跳过此消息:", data.substring(0, 100) + "...");
+              return;
+            }
+
+            try {
+              const parsedData = JSON.parse(data);
+              
+              // 检查是否是错误响应
+              if (parsedData.error || parsedData.reply) {
+                console.log("📥 [EventSource] 收到错误响应:", parsedData);
+                throw new Error(parsedData.error || parsedData.reply);
+              }
+              
+              // 设置最新的JSON消息，供主页面使用
+              setLastJsonMessage(parsedData);
                 
-                // 检查是否是错误响应
-                if (data.error) {
-                  throw new Error(data.error);
+              const stepInfo = {
+                timestamp: Date.now(),
+                type: parsedData.type,
+                content: parsedData.content,
+                data: parsedData.data
+              };
+              console.log("📥 [EventSource] 收到流式消息:", stepInfo);
+              
+              setTaskHistory(prev => [...prev, stepInfo]);
+
+              // 处理特殊事件，但不拦截 xhs_notes_result
+              if (parsedData.type === 'background_status_update') {
+                if (parsedData.data && parsedData.data.chat_status) {
+                  console.log("📥 [EventSource] 后台状态更新，保存chat_status:", parsedData.data.chat_status);
+                  setLastChatStatus(parsedData.data.chat_status);
+                } else {
+                  console.log("⚠️ background_status_update事件中没有chat_status数据");
                 }
-                
-                // 设置最新的JSON消息，供主页面使用
-                setLastJsonMessage(data);
-                
-                const stepInfo = {
-                  timestamp: Date.now(),
-                  type: data.type,
-                content: data.content,
-                  data: data.data
-                };
-                
-                setTaskHistory(prev => [...prev, stepInfo]);
+                return; 
+              }
+              
+              // 对于 xhs_notes_result 事件，不在这里处理，让主页面处理
+              if (parsedData.type === 'xhs_notes_result') {
+                console.log("📱 [useMessaging] 收到小红书笔记结果事件，传递给主页面处理");
+                console.log("📱 [useMessaging] xhs_notes_result 数据:", parsedData);
+                return;
+              }
 
-                // 处理特殊事件，但不拦截 xhs_notes_result
-                if (data.type === 'background_status_update') {
-                  if (data.data && data.data.chat_status) {
-                    console.log("📥 [Direct] 后台状态更新，保存chat_status:", data.data.chat_status);
-                    setLastChatStatus(data.data.chat_status);
-                  } else {
-                    console.log("⚠️ background_status_update事件中没有chat_status数据");
-                  }
-                  continue; 
-                }
-                
-                // 对于 xhs_notes_result 事件，不在这里处理，让主页面处理
-                if (data.type === 'xhs_notes_result') {
-                  console.log("📱 [useMessaging] 收到小红书笔记结果事件，传递给主页面处理");
-                  console.log("📱 [useMessaging] xhs_notes_result 数据:", data);
-                  continue;
-                }
+              setStreamingMessage(prev => {
+                if (!prev || prev.id !== streamingId) return prev;
 
-                setStreamingMessage(prev => {
-                  if (!prev || prev.id !== streamingId) return prev;
-
-                  const updated = { ...prev };
-                  updated.steps = [...(updated.steps || []), stepInfo];
-
-                  switch (data.type) {
+                const updated = { ...prev };
+                updated.steps = [...(updated.steps || []), stepInfo];
+                console.log('parsedData:', parsedData);
+                switch (parsedData.type) {
                     case 'session_id':
-                      // 获取并设置会话ID
-                      if (data.session_id && !state.currentSessionId) {
-                        state.setCurrentSessionId(data.session_id);
-                        console.log('✅ 设置会话ID:', data.session_id);
+                    // 获取并设置会话ID
+                    if (parsedData.session_id && !state.currentSessionId) {
+                      state.setCurrentSessionId(parsedData.session_id);
+                      console.log('✅ 设置会话ID:', parsedData.session_id);
                         
                         // 移除立即触发新会话创建事件的逻辑
                         // 改为在收到complete事件且确认数据已保存后再触发
@@ -166,82 +178,82 @@ export const useMessaging = (state, modelState, agentState) => {
                       }
                       break;
                       
-                    case 'start':
-                      updated.status = 'processing';
-                      updated.content = data.content;
-                      break;
-                    
-                    case 'chat_status':
-                      // 状态信息，不在UI上显示，但可用于调试或内部逻辑
-                      console.log('Chat Status:', data.content);
-                      break;
+                  case 'start':
+                    updated.status = 'processing';
+                    updated.content = parsedData.content;
+                    break;
+                  
+                  case 'chat_status':
+                    // 状态信息，不在UI上显示，但可用于调试或内部逻辑
+                    console.log('Chat Status:', parsedData.content);
+                    break;
 
-                    case 'ai_message':
-                      updated.status = 'generating_answer';
+                  case 'ai_message':
+                    updated.status = 'generating_answer';
                     // 直接累加Markdown内容
-                    updated.content = (updated.content || '') + data.content;
-                      break;
+                    updated.content = (updated.content || '') + parsedData.content;
+                    break;
 
-                    case 'tool_calling':
-                      updated.status = 'calling_tool';
-                      console.log('tool_calling:', data);
-                      updated.content = updated.content || ''; // 保持已显示的文本
-                      updated.currentTool = data.data; // 存储工具调用信息
-                      break;
+                  case 'tool_calling':
+                    updated.status = 'calling_tool';
+                    console.log('tool_calling:', parsedData);
+                    updated.content = updated.content || ''; // 保持已显示的文本
+                    updated.currentTool = parsedData.data; // 存储工具调用信息
+                    break;
 
-                    case 'tool_result':
-                      updated.status = 'ai_analysing_tool_result';
-                      updated.content = updated.content || ''; // 保持已显示的文本
-                      updated.currentTool = data.data; // 存储工具调用信息
-                      break;
+                  case 'tool_result':
+                    updated.status = 'ai_analysing_tool_result';
+                    updated.content = updated.content || ''; // 保持已显示的文本
+                    updated.currentTool = parsedData.data; // 存储工具调用信息
+                    break;
 
-                    case 'generating_document':
-                      updated.status = 'generating_document';
-                      updated.documentData = data.data;
-                      break;
+                  case 'generating_document':
+                    updated.status = 'generating_document';
+                    updated.documentData = parsedData.data;
+                    break;
 
-                    case 'document_content':
-                      updated.status = 'generating_document';
-                      // 累加文档内容
-                      updated.documentContent = (updated.documentContent || '') + data.content;
-                      break;
+                  case 'document_content':
+                    updated.status = 'generating_document';
+                    // 累加文档内容
+                    updated.documentContent = (updated.documentContent || '') + parsedData.content;
+                    break;
 
-                    case 'document_complete':
-                      updated.status = 'document_ready';
-                      updated.documentReady = true;
-                      break;
+                  case 'document_complete':
+                    updated.status = 'document_ready';
+                    updated.documentReady = true;
+                    break;
 
-                    case 'status_change':
-                      updated.status = data.content;
-                      break;
+                  case 'status_change':
+                    updated.status = parsedData.content;
+                    break;
 
-                    case 'reflection_choices':
-                      updated.status = 'waiting_for_reflection_choices';
-                      updated.reflectionChoices = data.data;
-                      updated.waitingForReflection = true;
-                      console.log('🤔 收到反思选择数据:', data.data);
-                      // 不解锁UI，等待用户选择
-                      break;
+                  case 'reflection_choices':
+                    updated.status = 'waiting_for_reflection_choices';
+                    updated.reflectionChoices = parsedData.data;
+                    updated.waitingForReflection = true;
+                    console.log('🤔 收到反思选择数据:', parsedData.data);
+                    // 不解锁UI，等待用户选择
+                    break;
 
-                    case 'complete':
-                      updated.status = 'complete';
-                      updated.isCompleted = true;
-                      
-                      // 立即解锁UI，不再等待流关闭
-                      console.log("✅ 收到Complete事件，立即解锁UI")
-                      setIsLoading(false);
+                  case 'complete':
+                    updated.status = 'complete';
+                    updated.isCompleted = true;
+                    
+                    // 立即解锁UI，不再等待流关闭
+                    console.log("✅ 收到Complete事件，立即解锁UI")
+                    setIsLoading(false);
 
-                      // 确保最终内容被设置
-                      finalContent = updated.content || '';
-                      updated.content = finalContent;
+                    // 确保最终内容被设置
+                    finalContent = updated.content || '';
+                    updated.content = finalContent;
 
-                      // 在完成时检查并存储chat_status
-                      if (data.data && data.data.chat_status) {
-                        console.log("📥 捕获到chat_status:", data.data.chat_status);
-                        setLastChatStatus(data.data.chat_status);
-                      } else {
-                        console.log("📥 complete事件中无chat_status数据");
-                      }
+                    // 在完成时检查并存储chat_status
+                    if (parsedData.data && parsedData.data.chat_status) {
+                      console.log("📥 捕获到chat_status:", parsedData.data.chat_status);
+                      setLastChatStatus(parsedData.data.chat_status);
+                    } else {
+                      console.log("📥 complete事件中无chat_status数据");
+                    }
 
                       // 触发新会话创建事件，通知历史列表更新
                       // 此时用户消息和AI回复已经保存到数据库
@@ -282,24 +294,35 @@ export const useMessaging = (state, modelState, agentState) => {
                       }, 100); // 缩短延迟
                       break;
                     
-                    case 'error':
-                      updated.status = 'error';
-                      updated.content = data.content;
-                      updated.isCompleted = true;
-                      break;
+                  case 'error':
+                    updated.status = 'error';
+                    updated.content = parsedData.content;
+                    updated.isCompleted = true;
+                    break;
 
-                    // 可以保留一些旧的状态以兼容，或者移除它们
-                    case 'llm_thinking':
-                      updated.status = 'thinking';
-                      updated.content = data.content;
-                      break;
+                  // 可以保留一些旧的状态以兼容，或者移除它们
+                  case 'llm_thinking':
+                    updated.status = 'thinking';
+                    updated.content = parsedData.content;
+                    break;
                   }
                   return updated;
                 });
-              } catch (e) {}
+            } catch (error) {
+              console.error("📥 [EventSource] JSON解析错误:", error);
+              console.error("📥 [EventSource] 原始数据:", data);
             }
-        }
-      }
+          },
+          
+          onerror(error) {
+            console.error("📥 [EventSource] 连接错误:", error);
+            throw error;
+          },
+          
+          onclose() {
+            console.log("📥 [EventSource] 连接已关闭");
+          }
+        });
     } catch (error) {
       if (error.name === 'AbortError') {
         message.info('任务已取消');

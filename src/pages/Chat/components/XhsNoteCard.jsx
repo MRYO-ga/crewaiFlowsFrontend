@@ -44,22 +44,60 @@ const XhsNoteCard = ({ note, onDelete }) => {
   };
 
   const getCoverUrl = () => {
+    // console.log(`🖼️ [XhsNoteCard] 笔记 ${id} 图片来源分析:`, {
+    //   hasCoverImageLocal: !!cover_image_local,
+    //   coverImageLocal: cover_image_local,
+    //   hasCoverImage: !!cover_image,
+    //   coverImage: cover_image,
+    //   hasImagesLocal: !!(images_local && images_local.length > 0),
+    //   imagesLocalCount: images_local?.length || 0,
+    //   hasImages: !!(images && images.length > 0),
+    //   imagesCount: images?.length || 0,
+    //   imagesLocalData: images_local?.slice(0, 2) // 显示前2个本地图片的详细信息
+    // });
+
     // 优先使用本地图片路径
-    if (cover_image_local) {
-      // 转换本地路径为可访问的URL
-      return `http://localhost:9000/static/xhs_images/${cover_image_local.replace(/^.*?data[/\\]xhs_images[/\\]/, '')}`;
+    if (cover_image_local && cover_image_local.trim()) {
+      // 转换本地路径为可访问的URL，统一处理路径分隔符
+      const cleanedPath = cover_image_local.replace(/^.*?data[/\\]xhs_images[/\\]/, '').replace(/\\/g, '/');
+      const localUrl = `http://localhost:9000/static/xhs_images/${cleanedPath}`;
+      console.log(`✅ [XhsNoteCard] 笔记 ${id} 使用本地封面图片:`, localUrl);
+      return localUrl;
     }
-    if (cover_image) return cover_image;
     
-    // 处理本地images_local数组
+    // 如果没有封面图，检查本地images_local数组
     if (images_local && images_local.length > 0) {
-      const firstLocalImage = images_local.find(img => img.type && img.type.includes('cover'));
+      // 先查找标记为封面的图片
+      const coverImage = images_local.find(img => img.type && img.type.includes('cover'));
+      if (coverImage && coverImage.local_path) {
+        const cleanedPath = coverImage.local_path.replace(/^.*?data[/\\]xhs_images[/\\]/, '').replace(/\\/g, '/');
+        const localUrl = `http://localhost:9000/static/xhs_images/${cleanedPath}`;
+        console.log(`✅ [XhsNoteCard] 笔记 ${id} 使用本地封面图片(从images_local):`, localUrl);
+        return localUrl;
+      }
+      
+      // 如果没有封面图，使用第一张本地图片
+      const firstLocalImage = images_local[0];
       if (firstLocalImage && firstLocalImage.local_path) {
-        return `http://localhost:9000/static/xhs_images/${firstLocalImage.local_path.replace(/^.*?data[/\\]xhs_images[/\\]/, '')}`;
+        const cleanedPath = firstLocalImage.local_path.replace(/^.*?data[/\\]xhs_images[/\\]/, '').replace(/\\/g, '/');
+        const localUrl = `http://localhost:9000/static/xhs_images/${cleanedPath}`;
+        console.log(`✅ [XhsNoteCard] 笔记 ${id} 使用第一张本地图片:`, localUrl);
+        return localUrl;
       }
     }
     
-    if (images && images.length > 0 && images[0].url_default) return images[0].url_default;
+    // 如果都没有本地图片，才使用CDN图片
+    if (cover_image) {
+      console.log(`🌐 [XhsNoteCard] 笔记 ${id} 使用CDN封面图片:`, cover_image);
+      return cover_image;
+    }
+    
+    if (images && images.length > 0 && images[0].url_default) {
+      console.log(`🌐 [XhsNoteCard] 笔记 ${id} 使用CDN图片数组:`, images[0].url_default);
+      return images[0].url_default;
+    }
+    
+    console.log(`❌ [XhsNoteCard] 笔记 ${id} 无可用图片`);
     return null;
   };
 

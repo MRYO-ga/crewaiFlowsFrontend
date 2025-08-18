@@ -448,7 +448,7 @@ class XhsManagement extends Component {
       <div>
         <Descriptions column={2} bordered>
           <Descriptions.Item label="标题" span={2}>
-            {selectedNote.title}
+            {selectedNote.display_title}
           </Descriptions.Item>
           <Descriptions.Item label="用户昵称">
             {selectedNote.user_nickname}
@@ -466,20 +466,20 @@ class XhsManagement extends Component {
             {selectedNote.collected_count || 0}
           </Descriptions.Item>
           <Descriptions.Item label="分享数">
-            {selectedNote.shared_count || 0}
+            {selectedNote.share_count || 0}
           </Descriptions.Item>
           <Descriptions.Item label="内容" span={2}>
             <div style={{ maxHeight: 200, overflow: 'auto' }}>
-              {selectedNote.content}
+              {selectedNote.desc}
             </div>
           </Descriptions.Item>
         </Descriptions>
         
-        {selectedNote.comments && selectedNote.comments.length > 0 && (
+        {selectedNote.comments_json && selectedNote.comments_json.length > 0 && (
           <div style={{ marginTop: 16 }}>
-            <h4>评论列表 ({selectedNote.comments.length}条)</h4>
+            <h4>评论列表 ({selectedNote.comments_json.length}条)</h4>
             <div style={{ maxHeight: 300, overflow: 'auto' }}>
-              {selectedNote.comments.map((comment, index) => (
+              {selectedNote.comments_json.map((comment, index) => (
                 <div key={comment.id || index} style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>
                   <div style={{ fontWeight: 'bold' }}>{comment.user_nickname}</div>
                   <div>{comment.content}</div>

@@ -111,6 +111,30 @@ const CategorizedNotesPage = () => {
             const response = await fetch(url);
             const result = await response.json();
             if (result.success) {
+                console.log(`📊 [CategorizedNotesPage] 获取分类笔记成功:`, {
+                    category: category,
+                    totalNotes: result.data.length,
+                    notesWithLocalCover: result.data.filter(note => note.cover_image_local).length,
+                    notesWithCdnCover: result.data.filter(note => note.cover_image && !note.cover_image_local).length,
+                    notesWithLocalImages: result.data.filter(note => note.images_local?.length > 0).length,
+                    notesWithCdnImages: result.data.filter(note => note.images?.length > 0).length
+                });
+                
+                // 详细打印前3个笔记的图片信息
+                result.data.slice(0, 3).forEach((note, index) => {
+                    console.log(`📝 [CategorizedNotesPage] 分类笔记 ${index + 1} (${note.id}) 图片详情:`, {
+                        title: note.display_title?.substring(0, 20) + '...',
+                        category: note.category,
+                        hasCoverImageLocal: !!note.cover_image_local,
+                        coverImageLocal: note.cover_image_local,
+                        hasCoverImage: !!note.cover_image,
+                        coverImage: note.cover_image,
+                        hasImagesLocal: !!(note.images_local?.length > 0),
+                        hasImages: !!(note.images?.length > 0),
+                        preferredSource: note.cover_image_local ? '本地图片' : note.cover_image ? 'CDN图片' : '无图片'
+                    });
+                });
+                
                 setNotes(result.data);
             } else {
                 message.error('Failed to fetch notes');

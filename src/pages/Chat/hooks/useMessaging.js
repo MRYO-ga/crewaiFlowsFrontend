@@ -138,6 +138,12 @@ export const useMessaging = (state, modelState, agentState) => {
                 data: parsedData.data
               };
               console.log("📥 [EventSource] 收到流式消息:", stepInfo);
+              console.log("📊 [EventSource] 消息详细信息:", {
+                type: parsedData.type,
+                hasContent: !!parsedData.content,
+                hasData: !!parsedData.data,
+                dataKeys: parsedData.data ? Object.keys(parsedData.data) : []
+              });
               
               setTaskHistory(prev => [...prev, stepInfo]);
 
@@ -155,7 +161,13 @@ export const useMessaging = (state, modelState, agentState) => {
               // 对于 xhs_notes_result 事件，不在这里处理，让主页面处理
               if (parsedData.type === 'xhs_notes_result') {
                 console.log("📱 [useMessaging] 收到小红书笔记结果事件，传递给主页面处理");
-                console.log("📱 [useMessaging] xhs_notes_result 数据:", parsedData);
+                console.log("📱 [useMessaging] xhs_notes_result 数据结构:", {
+                  hasData: !!parsedData.data,
+                  toolName: parsedData.data?.tool_name,
+                  groupId: parsedData.data?.group_id,
+                  hasNotesData: !!parsedData.data?.notes_data,
+                  notesCount: parsedData.data?.notes_data?.notes?.length || 0
+                });
                 return;
               }
 
@@ -164,7 +176,6 @@ export const useMessaging = (state, modelState, agentState) => {
 
                 const updated = { ...prev };
                 updated.steps = [...(updated.steps || []), stepInfo];
-                console.log('parsedData:', parsedData);
                 switch (parsedData.type) {
                     case 'session_id':
                     // 获取并设置会话ID

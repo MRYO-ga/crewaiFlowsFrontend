@@ -93,6 +93,29 @@ const XhsResultsPanel = ({ results, onClose, isVisible, onWidthChange }) => {
                                 {/* 分两排显示笔记 */}
                                 {(() => {
                                     const notes = group.notes_data.notes.filter(note => note && note.id && (note.display_title || note.desc));
+                                    
+                                    // 调试打印：显示侧边栏笔记的图片来源统计
+                                    console.log(`📊 [XhsResultsPanel] 侧边栏笔记组 ${group.group_id} 图片来源统计:`, {
+                                        totalNotes: notes.length,
+                                        toolName: group.tool_name,
+                                        notesWithLocalCover: notes.filter(note => note.cover_image_local).length,
+                                        notesWithCdnCover: notes.filter(note => note.cover_image && !note.cover_image_local).length,
+                                        notesWithLocalImages: notes.filter(note => note.images_local?.length > 0).length,
+                                        notesWithCdnImages: notes.filter(note => note.images?.length > 0).length
+                                    });
+                                    
+                                    // 详细打印前3个笔记的图片信息
+                                    notes.slice(0, 3).forEach((note, index) => {
+                                        console.log(`📝 [XhsResultsPanel] 侧边栏笔记 ${index + 1} (${note.id}) 图片详情:`, {
+                                            title: note.display_title?.substring(0, 20) + '...',
+                                            hasCoverImageLocal: !!note.cover_image_local,
+                                            hasCoverImage: !!note.cover_image,
+                                            hasImagesLocal: !!(note.images_local?.length > 0),
+                                            hasImages: !!(note.images?.length > 0),
+                                            preferredSource: note.cover_image_local ? '本地图片' : note.cover_image ? 'CDN图片' : '无图片'
+                                        });
+                                    });
+                                    
                                     const row1 = notes.filter((_, index) => index % 2 === 0);
                                     const row2 = notes.filter((_, index) => index % 2 === 1);
                                     

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { DatabaseOutlined, FileTextOutlined, SearchOutlined, UserOutlined, ShoppingOutlined, ReloadOutlined, PlusOutlined, TeamOutlined, RobotOutlined } from '@ant-design/icons';
 import { Button, Space, Tooltip, Badge } from 'antd';
+import { adaptMessageMetadata, getXhsResults, logMetadataOptimization } from '../../utils/messageMetadataAdapter';
 import '../../styles/chat.css';
 
 import { useChatState } from './hooks/useChatState';
@@ -100,11 +101,21 @@ const ChatPage = () => {
           console.log('🔍 开始分析会话数据，消息数量:', sessionData.messages.length);
           
           sessionData.messages.forEach((msg, index) => {
+            // 使用适配器处理优化后的元数据
+            const adaptedMsg = adaptMessageMetadata(msg);
+            
+            // 记录优化信息（开发模式）
+            if (process.env.NODE_ENV === 'development') {
+              logMetadataOptimization(adaptedMsg);
+            }
+            
             // 检查XHS结果
-            if (msg.sender === 'assistant' && msg.message_metadata && msg.message_metadata.xhs_results) {
-              const xhsCount = msg.message_metadata.xhs_results.length;
-              restoredXhsResults = restoredXhsResults.concat(msg.message_metadata.xhs_results);
-              console.log(`📱 消息 ${index + 1} 包含 ${xhsCount} 个小红书结果`);
+            if (adaptedMsg.sender === 'assistant') {
+              const xhsResults = getXhsResults(adaptedMsg);
+              if (xhsResults.length > 0) {
+                restoredXhsResults = restoredXhsResults.concat(xhsResults);
+                console.log(`📱 消息 ${index + 1} 包含 ${xhsResults.length} 个小红书结果`);
+              }
             }
             
             // 检查文档内容

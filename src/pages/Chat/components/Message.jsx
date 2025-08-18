@@ -2,6 +2,7 @@ import React from 'react';
 import { Avatar, Card, Typography, Tag, Button, Spin, Space, Tooltip } from 'antd';
 import { getShanghaiTimeShort } from '../../../utils';
 import { UserOutlined, RobotOutlined, DownloadOutlined, CheckCircleOutlined, SyncOutlined, CopyOutlined, FileTextOutlined } from '@ant-design/icons';
+import { adaptMessageMetadata } from '../../../utils/messageMetadataAdapter';
 import EnhancedMarkdown from './EnhancedMarkdown';
 import NoteGenerationCard from './NoteGenerationCard';
 
@@ -84,7 +85,10 @@ const cleanMessageContentForDisplay = (content) => {
 const renderConversationFlow = (message) => {
   if (!message) return null;
 
-  const hasSteps = message.steps && message.steps.length > 0;
+  // 使用适配器处理优化后的元数据
+  const adaptedMessage = adaptMessageMetadata(message);
+  
+  const hasSteps = adaptedMessage.steps && adaptedMessage.steps.length > 0;
   if (!hasSteps) {
     // 检查是否包含笔记生成内容
     const noteContent = extractNoteGenerationContent(message.content);
@@ -112,7 +116,7 @@ const renderConversationFlow = (message) => {
     );
   }
   
-  const orderedSteps = [...message.steps].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  const orderedSteps = [...adaptedMessage.steps].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
   let lastTextContent = null;
   const conversationParts = [];
@@ -151,12 +155,12 @@ const renderConversationFlow = (message) => {
   });
 
   // 检查是否有文档内容
-  if (message.documentContent || message.documentReady) {
+  if (adaptedMessage.documentContent || adaptedMessage.documentReady) {
     conversationParts.push({ 
       type: 'document', 
-      content: message.documentContent || '',
-      ready: message.documentReady || false,
-      status: message.status
+      content: adaptedMessage.documentContent || '',
+      ready: adaptedMessage.documentReady || false,
+      status: adaptedMessage.status
     });
   }
 

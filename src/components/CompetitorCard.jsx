@@ -471,10 +471,28 @@ const CompetitorCard = ({ competitor, onDelete, onViewProfile }) => {
                         {/* 笔记封面 - 3:4比例 */}
                         <div className="relative aspect-[3/4]">
                           <img 
-                            src={note.cover_image_local ? 
-                              `http://localhost:9000/static/xhs_images/${note.cover_image_local.replace(/^.*?data[/\\]xhs_images[/\\]/, '')}` : 
-                              note.cover_image || note.coverImage
-                            } 
+                            src={(() => {
+                              const imageUrl = note.cover_image_local ? 
+                                `http://localhost:9000/static/xhs_images/${note.cover_image_local.replace(/^.*?data[/\\]xhs_images[/\\]/, '').replace(/\\/g, '/')}` : 
+                                note.cover_image || note.coverImage;
+                              
+                              console.log(`🖼️ [CompetitorCard] 笔记 ${note.id} 图片来源:`, {
+                                hasCoverImageLocal: !!note.cover_image_local,
+                                coverImageLocal: note.cover_image_local,
+                                hasCoverImage: !!note.cover_image,
+                                coverImage: note.cover_image,
+                                finalUrl: imageUrl,
+                                isLocal: !!note.cover_image_local
+                              });
+                              
+                              if (note.cover_image_local) {
+                                console.log(`✅ [CompetitorCard] 笔记 ${note.id} 使用本地图片:`, imageUrl);
+                              } else {
+                                console.log(`🌐 [CompetitorCard] 笔记 ${note.id} 使用CDN图片:`, imageUrl);
+                              }
+                              
+                              return imageUrl;
+                            })()} 
                             alt={note.title || note.display_title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             onError={(e) => {

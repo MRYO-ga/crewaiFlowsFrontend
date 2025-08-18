@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Avatar, Tooltip, Popconfirm } from 'antd';
 import { HeartOutlined, StarOutlined, MessageOutlined, PictureOutlined, DeleteOutlined } from '@ant-design/icons';
+import { API_BASE_URL } from '../../../configs/env';
 import './XhsNoteCard.css';
 
 const XhsNoteCard = ({ note, onDelete }) => {
@@ -60,8 +61,7 @@ const XhsNoteCard = ({ note, onDelete }) => {
     if (cover_image_local && cover_image_local.trim()) {
       // 转换本地路径为可访问的URL，统一处理路径分隔符
       const cleanedPath = cover_image_local.replace(/^.*?data[/\\]xhs_images[/\\]/, '').replace(/\\/g, '/');
-      const localUrl = `http://localhost:9000/static/xhs_images/${cleanedPath}`;
-      console.log(`✅ [XhsNoteCard] 笔记 ${id} 使用本地封面图片:`, localUrl);
+      const localUrl = `${API_BASE_URL}/api/static/xhs_images/${cleanedPath}`;
       return localUrl;
     }
     
@@ -71,8 +71,7 @@ const XhsNoteCard = ({ note, onDelete }) => {
       const coverImage = images_local.find(img => img.type && img.type.includes('cover'));
       if (coverImage && coverImage.local_path) {
         const cleanedPath = coverImage.local_path.replace(/^.*?data[/\\]xhs_images[/\\]/, '').replace(/\\/g, '/');
-        const localUrl = `http://localhost:9000/static/xhs_images/${cleanedPath}`;
-        console.log(`✅ [XhsNoteCard] 笔记 ${id} 使用本地封面图片(从images_local):`, localUrl);
+        const localUrl = `${API_BASE_URL}/api/static/xhs_images/${cleanedPath}`;
         return localUrl;
       }
       
@@ -80,7 +79,7 @@ const XhsNoteCard = ({ note, onDelete }) => {
       const firstLocalImage = images_local[0];
       if (firstLocalImage && firstLocalImage.local_path) {
         const cleanedPath = firstLocalImage.local_path.replace(/^.*?data[/\\]xhs_images[/\\]/, '').replace(/\\/g, '/');
-        const localUrl = `http://localhost:9000/static/xhs_images/${cleanedPath}`;
+        const localUrl = `${API_BASE_URL}/api/static/xhs_images/${cleanedPath}`;
         console.log(`✅ [XhsNoteCard] 笔记 ${id} 使用第一张本地图片:`, localUrl);
         return localUrl;
       }

@@ -3,6 +3,7 @@ import { Card, Button, Avatar, Tag, Collapse } from 'antd';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'react-toastify';
 import { competitorApi } from '../services/api';
+import { API_BASE_URL } from '../configs/env';
 import LoadingSpinner from './LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
 
@@ -473,7 +474,7 @@ const CompetitorCard = ({ competitor, onDelete, onViewProfile }) => {
                           <img 
                             src={(() => {
                               const imageUrl = note.cover_image_local ? 
-                                `http://localhost:9000/static/xhs_images/${note.cover_image_local.replace(/^.*?data[/\\]xhs_images[/\\]/, '').replace(/\\/g, '/')}` : 
+                                `${API_BASE_URL}/api/static/xhs_images/${note.cover_image_local.replace(/^.*?data[/\\]xhs_images[/\\]/, '').replace(/\\/g, '/')}` : 
                                 note.cover_image || note.coverImage;
                               
                               console.log(`🖼️ [CompetitorCard] 笔记 ${note.id} 图片来源:`, {

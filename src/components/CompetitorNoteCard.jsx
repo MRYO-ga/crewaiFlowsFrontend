@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Avatar, Tooltip, Tag, Button } from 'antd';
 import { HeartOutlined, StarOutlined, MessageOutlined, PictureOutlined, EyeOutlined, ShareAltOutlined } from '@ant-design/icons';
+import { API_BASE_URL } from '../configs/env';
 import './CompetitorNoteCard.css';
 
 const CompetitorNoteCard = ({ note, onNoteClick, onViewOriginal }) => {
@@ -65,7 +66,7 @@ const CompetitorNoteCard = ({ note, onNoteClick, onViewOriginal }) => {
     if (cover_image_local) {
       // 转换本地路径为可访问的URL，统一处理路径分隔符
       const cleanedPath = cover_image_local.replace(/^.*?data[/\\]xhs_images[/\\]/, '').replace(/\\/g, '/');
-      const localUrl = `http://localhost:9000/static/xhs_images/${cleanedPath}`;
+      const localUrl = `${API_BASE_URL}/api/static/xhs_images/${cleanedPath}`;
       console.log(`✅ [CompetitorNoteCard] 笔记 ${id} 使用本地图片:`, localUrl);
       return localUrl;
     }
@@ -79,7 +80,7 @@ const CompetitorNoteCard = ({ note, onNoteClick, onViewOriginal }) => {
       const firstLocalImage = images_local.find(img => img.type && img.type.includes('cover'));
       if (firstLocalImage && firstLocalImage.local_path) {
         const cleanedPath = firstLocalImage.local_path.replace(/^.*?data[/\\]xhs_images[/\\]/, '').replace(/\\/g, '/');
-        const localUrl = `http://localhost:9000/static/xhs_images/${cleanedPath}`;
+        const localUrl = `${API_BASE_URL}/api/static/xhs_images/${cleanedPath}`;
         console.log(`✅ [CompetitorNoteCard] 笔记 ${id} 使用本地图片数组:`, localUrl);
         return localUrl;
       }

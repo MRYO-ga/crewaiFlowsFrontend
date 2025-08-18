@@ -208,6 +208,7 @@ const ChatInput = ({
               icon={isLoading ? <StopOutlined /> : <ArrowUpOutlined />}
               onClick={isLoading ? cancelCurrentTask : sendMessage}
               loading={isLoading && !cancelCurrentTask}
+              disabled={isLoading && !cancelCurrentTask} // 在加载状态下禁用按钮，防止重复点击
               style={{
                 width: 28,
                 height: 28,

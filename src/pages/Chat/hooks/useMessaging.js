@@ -375,6 +375,12 @@ export const useMessaging = (state, modelState, agentState) => {
 
   const sendMessage = async (inputValue) => {
     if (!inputValue.trim()) return;
+    
+    // 防止重复发送：检查是否已经有请求在进行中
+    if (state.isLoading || streamingMessage || abortController) {
+      console.log("📤 [sendMessage] 请求已在进行中，跳过重复发送");
+      return;
+    }
 
     let currentAttachedData = [...attachedData];
 

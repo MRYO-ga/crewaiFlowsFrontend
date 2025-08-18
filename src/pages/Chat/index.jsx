@@ -395,7 +395,8 @@ const ChatPage = () => {
   }, [messagingState.lastJsonMessage]);
 
   const handleSendMessage = () => {
-    if (chatState.inputValue.trim()) {
+    // 防止重复发送：检查是否有输入内容且没有正在进行的请求
+    if (chatState.inputValue.trim() && !chatState.isLoading) {
       messagingState.sendMessage(chatState.inputValue);
       if (!isChatStarted) {
         setIsChatStarted(true);
@@ -404,7 +405,7 @@ const ChatPage = () => {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !chatState.isLoading) {
       e.preventDefault();
       handleSendMessage();
     }

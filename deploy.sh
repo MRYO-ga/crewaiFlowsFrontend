@@ -7,7 +7,7 @@ cd /home/code/crewaiFlowsFrontend/
 
 # 拉取最新代码
 echo "Pulling latest code from git..."
-git pull
+git pull origin master
 
 # 安装依赖
 # echo "Installing dependencies..."

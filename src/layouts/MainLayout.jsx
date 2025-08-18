@@ -2,6 +2,15 @@ import React, { useState } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import SidebarChatHistory from '../components/SidebarChatHistory';
 
+// 获取前端 URL
+const getFrontendUrl = () => {
+  // 在生产环境使用当前域名，开发环境使用 localhost:3000
+  if (process.env.NODE_ENV === 'production') {
+    return window.location.origin;
+  }
+  return 'http://localhost:3000';
+};
+
 const MainLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -77,7 +86,7 @@ const MainLayout = () => {
             <div className="mb-6 flex items-center justify-between">
               <div 
                 className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity flex-1"
-                onClick={() => window.open('http://localhost:3000/', '_blank')}
+                onClick={() => window.open(getFrontendUrl(), '_blank')}
               >
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-primary/70 flex items-center justify-center">
                   <i className="fa-solid fa-bolt text-white text-xl"></i>
@@ -200,7 +209,7 @@ const MainLayout = () => {
               <div className="flex justify-between items-center mb-4">
                 <div 
                   className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => window.open('http://localhost:3000/', '_blank')}
+                  onClick={() => window.open(getFrontendUrl(), '_blank')}
                 >
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-primary/70 flex items-center justify-center">
                     <i className="fa-solid fa-bolt text-white text-xl"></i>

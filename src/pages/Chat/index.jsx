@@ -607,7 +607,7 @@ const ChatPage = () => {
         }
         .message-item.user { flex-direction: row-reverse; }
         .message-content { 
-          max-width: 80%; 
+          max-width: 100%; 
           flex: 1; 
           min-width: 0; /* 允许flex项目缩小 */
           overflow-wrap: break-word;

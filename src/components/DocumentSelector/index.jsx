@@ -246,19 +246,19 @@ const DocumentSelector = ({
       const idMatch = documentId && itemDataId && documentId === itemDataId;
       
       // 调试日志
-      console.log('🔍 [DocumentSelector] 检查选中状态:', {
-        documentTitle: document.title,
-        documentType: document.type,
-        expectedName,
-        itemName: item.name,
-        itemType: item.type,
-        nameMatch,
-        documentId,
-        itemDataId,
-        hasOriginalData: !!item.originalData,
-        idMatch,
-        finalMatch: nameMatch || idMatch
-      });
+      // console.log('🔍 [DocumentSelector] 检查选中状态:', {
+      //   documentTitle: document.title,
+      //   documentType: document.type,
+      //   expectedName,
+      //   itemName: item.name,
+      //   itemType: item.type,
+      //   nameMatch,
+      //   documentId,
+      //   itemDataId,
+      //   hasOriginalData: !!item.originalData,
+      //   idMatch,
+      //   finalMatch: nameMatch || idMatch
+      // });
       
       return nameMatch || idMatch;
     });

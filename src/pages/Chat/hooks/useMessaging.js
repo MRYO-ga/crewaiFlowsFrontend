@@ -137,13 +137,13 @@ export const useMessaging = (state, modelState, agentState) => {
                 content: parsedData.content,
                 data: parsedData.data
               };
-              console.log("📥 [EventSource] 收到流式消息:", stepInfo);
-              console.log("📊 [EventSource] 消息详细信息:", {
-                type: parsedData.type,
-                hasContent: !!parsedData.content,
-                hasData: !!parsedData.data,
-                dataKeys: parsedData.data ? Object.keys(parsedData.data) : []
-              });
+              // console.log("📥 [EventSource] 收到流式消息:", stepInfo);
+              // console.log("📊 [EventSource] 消息详细信息:", {
+              //   type: parsedData.type,
+              //   hasContent: !!parsedData.content,
+              //   hasData: !!parsedData.data,
+              //   dataKeys: parsedData.data ? Object.keys(parsedData.data) : []
+              // });
               
               setTaskHistory(prev => [...prev, stepInfo]);
 

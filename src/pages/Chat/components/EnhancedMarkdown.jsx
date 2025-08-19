@@ -19,13 +19,13 @@ const EnhancedMarkdown = ({ content, children, fontSize = '13px' }) => {
       remarkPlugins={[remarkGfm]}
       components={{
         // 自定义样式
-        h1: ({children}) => <h1 style={{fontSize: '18px', fontWeight: 'bold', margin: '16px 0 8px 0', color: '#1890ff'}}>{children}</h1>,
-        h2: ({children}) => <h2 style={{fontSize: '16px', fontWeight: 'bold', margin: '14px 0 6px 0', color: '#1890ff'}}>{children}</h2>,
-        h3: ({children}) => <h3 style={{fontSize: '14px', fontWeight: 'bold', margin: '12px 0 4px 0', color: '#1890ff'}}>{children}</h3>,
-        p: ({children}) => <p style={{margin: '8px 0', lineHeight: 1.6, fontSize}}>{children}</p>,
-        ul: ({children}) => <ul style={{margin: '8px 0', paddingLeft: '20px'}}>{children}</ul>,
-        ol: ({children}) => <ol style={{margin: '8px 0', paddingLeft: '20px'}}>{children}</ol>,
-        li: ({children}) => <li style={{margin: '4px 0'}}>{children}</li>,
+        h1: ({children}) => <h1 style={{fontSize: '20px', fontWeight: 'bold', margin: '16px 0 8px 0', color: '#1890ff'}}>{children}</h1>,
+        h2: ({children}) => <h2 style={{fontSize: '18px', fontWeight: 'bold', margin: '14px 0 6px 0', color: '#1890ff'}}>{children}</h2>,
+        h3: ({children}) => <h3 style={{fontSize: '16px', fontWeight: 'bold', margin: '12px 0 4px 0', color: '#1890ff'}}>{children}</h3>,
+        p: ({children}) => <p style={{margin: '10px 0', lineHeight: 1.6, fontSize}}>{children}</p>,
+        ul: ({children}) => <ul style={{margin: '10px 0', paddingLeft: '20px'}}>{children}</ul>,
+        ol: ({children}) => <ol style={{margin: '10px 0', paddingLeft: '20px'}}>{children}</ol>,
+        li: ({children}) => <li style={{margin: '10px 0'}}>{children}</li>,
         
         // 表格样式
         table: ({children}) => (

@@ -19,14 +19,14 @@ const personaConfig = {
   // 页面配置
   pageTitle: '账号人设管理',
   pageDescription: '使用AI助手构建账号人设，管理已创建的人设文档',
-  builderTabLabel: 'AI人设构建',
+  builderTabLabel: '人设构建',
   listTabLabel: '人设文档库',
   listTitle: '人设文档管理',
   
   // 第一阶段配置
   phase1Title: '小红书账号人设构建 - 第一阶段：基础信息采集',
   welcomeTitle: '欢迎使用小红书AI营销助手！',
-  phase1Description: '为了给您提供最精准的营销建议，我需要先了解一些基本情况。请完成以下选择题：',
+  phase1Description: '为了给您提供最精准的营销建议，我需要先了解一些基本情况。请完成以下选择题：（这里添加人设相关知识？）',
   
   // AI配置
   aiConfig: {
@@ -35,7 +35,7 @@ const personaConfig = {
     contextName: 'PersonaBuilding',
     gradientColors: 'from-blue-500 to-purple-500',
     chatTitle: 'AI人设构建对话',
-    inputPlaceholder: '向AI描述您的想法或提出问题...'
+    inputPlaceholder: '向AI补充您的想法...'
   },
   
   // 预览配置

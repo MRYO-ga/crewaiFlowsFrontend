@@ -21,11 +21,6 @@ class SmartChatService {
       // 如果有附加数据，添加到请求中
       if (attachedData && attachedData.length > 0) {
         requestBody.attached_data = attachedData;
-        requestBody.data_references = attachedData.map(item => ({
-          type: item.type,
-          name: item.name,
-          data: item.data
-        }));
       }
 
       const response = await fetch(`${this.baseUrl}/api/chat`, {

@@ -8,7 +8,7 @@ import { API_PATHS } from './env';
 const productConfig = {
   // 基础配置
   type: 'product',
-  displayName: '小红书账号分析',
+  displayName: '产品分析',
   userId: 'product_builder_user',
   
   // 服务方法映射
@@ -19,16 +19,16 @@ const productConfig = {
   },
   
   // 页面配置
-  pageTitle: '品牌产品信息管理',
-  pageDescription: '使用AI助手进行品牌产品信息深度分析，管理已创建的产品文档',
-  builderTabLabel: 'AI品牌产品信息分析',
+  pageTitle: '产品信息管理',
+  pageDescription: '使用AI助手进行产品信息深度分析，管理已创建的产品文档',
+  builderTabLabel: '产品信息分析',
   listTabLabel: '产品管理',
-  listTitle: '品牌产品文档管理',
+  listTitle: '产品文档管理',
   
   // 第一阶段配置
-  phase1Title: '品牌产品信息深度分析 - 第一阶段：基础信息采集',
-  welcomeTitle: '欢迎使用品牌产品信息分析AI助手！',
-  phase1Description: '为了帮您进行深度的品牌产品信息分析，我需要先了解一些基本情况。请完成以下表单：',
+  phase1Title: '产品信息深度分析 - 第一阶段：基础信息采集',
+  welcomeTitle: '欢迎使用产品信息分析AI助手！',
+  phase1Description: '为了帮您进行深度的产品信息分析，我需要先了解一些基本情况。请完成以下表单：',
   
   // AI配置
   aiConfig: {
@@ -36,13 +36,13 @@ const productConfig = {
     agent: 'product_analysis',
     contextName: 'ProductAnalysis',
     gradientColors: 'from-pink-400 to-red-500',
-    chatTitle: 'AI品牌产品信息分析对话',
-    inputPlaceholder: '向AI描述您的账号特色或提出问题...'
+    chatTitle: '产品信息分析对话',
+    inputPlaceholder: '向AI补充您的想法...'
   },
   
   // 预览配置
   previewConfig: {
-    title: '品牌产品信息预览',
+    title: '产品信息预览',
     gradientColors: 'from-pink-400 to-red-500'
   },
   
@@ -179,7 +179,7 @@ const productConfig = {
   },
   
   // 解析提示词
-  parsePrompt: `请将以下文本解析为结构化的小红书账号分析数据。返回值必须严格按照以下JSON格式：
+  parsePrompt: `请将以下文本解析为结构化的分析数据。返回值必须严格按照以下JSON格式：
 
 {
   "accountInfo": {
@@ -367,7 +367,7 @@ const productConfig = {
                   const requestBody = {
                     user_input: `${productConfig.parsePrompt}\n\n下面是要解析的文本内容:\n\n${text}`,
                     user_id: "product_form_parser",
-                    model: "gpt-4o",
+                    model: "doubao-seed-1-6-250615",//"gpt-4o",
                     conversation_history: []
                   };
                   
@@ -1164,20 +1164,10 @@ const productConfig = {
   
   // 生成初始消息
   generateInitialMessage: (basicInfo) => {
-    return `我已经完成了基础信息采集，现在进入深入对话阶段。以下是我的小红书账号基本信息：
-
-📝 **小红书账号基本信息**：
-• 账号昵称：${basicInfo.accountNickname || '未设置'}
-• 账号类型：${productConfig.getFieldDisplayValue('accountType', basicInfo.accountType)}
-• 粉丝数量：${basicInfo.fansCount || '未设置'}
-• 内容领域：${productConfig.getFieldDisplayValue('contentCategory', basicInfo.contentCategory)}
-• 内容风格：${productConfig.getFieldDisplayValue('contentStyle', basicInfo.contentStyle)}
-• 主推产品：${basicInfo.mainProduct || '未设置'}
-• 目标受众：${basicInfo.audienceProfile || '未设置'}
-${basicInfo.profileUrl ? `• 主页链接：${basicInfo.profileUrl}` : ''}
-${basicInfo.additionalInfo ? `\n**额外补充信息**：\n${basicInfo.additionalInfo}` : ''}
-
-请基于这些信息，进入深入对话阶段，帮我进行详细的小红书账号信息深度分析。`;
+    return `我已经完成了基础信息采集，现在进入深入对话阶段。以下是我的基本信息：
+            请基于这些信息，进入深入对话阶段，帮我进行详细的小红书账号信息深度分析。
+            ${JSON.stringify(basicInfo, null, 2)}
+            `;
   },
   
   // 渲染当前分析主体
@@ -1282,7 +1272,7 @@ ${basicInfo.additionalInfo ? `\n**额外补充信息**：\n${basicInfo.additiona
     const totalMessages = 0; // 从其他地方获取
     const aiMessages_count = 0; // 从其他地方获取
     
-    let summary = `${basicInfo.accountNickname}的小红书账号分析，`;
+    let summary = `${basicInfo.accountNickname}的产品分析，`;
     summary += `涵盖${productConfig.getFieldDisplayValue('contentCategory', basicInfo.contentCategory)}领域，`;
     summary += `${productConfig.getFieldDisplayValue('contentStyle', basicInfo.contentStyle)}风格，`;
     summary += `主推产品"${basicInfo.mainProduct}"，`;
@@ -1440,7 +1430,8 @@ ${basicInfo.additionalInfo ? `\n**额外补充信息**：\n${basicInfo.additiona
     {
       title: '账号信息',
       key: 'account',
-      width: 280,
+      flex: 1,
+      minWidth: 280,
       render: (_, record) => (
         <div className="flex items-center space-x-3">
           <div className="w-12 h-12 rounded-full bg-gradient-to-r from-pink-500 to-red-500 flex items-center justify-center">
@@ -1465,7 +1456,7 @@ ${basicInfo.additionalInfo ? `\n**额外补充信息**：\n${basicInfo.additiona
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      width: 120,
+      width: 100,
       render: (status) => {
         const statusMap = {
           'completed': <Tag color="green">已完成</Tag>,
@@ -1478,7 +1469,7 @@ ${basicInfo.additionalInfo ? `\n**额外补充信息**：\n${basicInfo.additiona
       title: '创建时间',
       dataIndex: 'created_at',
       key: 'created_at',
-      width: 120,
+      width: 110,
       render: (created_at) => (
         <div className="text-sm">
           <CalendarOutlined className="mr-1" />
@@ -1490,7 +1481,7 @@ ${basicInfo.additionalInfo ? `\n**额外补充信息**：\n${basicInfo.additiona
       title: '更新时间',
       dataIndex: 'updated_at',
       key: 'updated_at',
-      width: 120,
+      width: 110,
       render: (updated_at) => (
         <div className="text-sm">
           <CalendarOutlined className="mr-1" />
@@ -1502,7 +1493,8 @@ ${basicInfo.additionalInfo ? `\n**额外补充信息**：\n${basicInfo.additiona
       title: '文档摘要',
       dataIndex: 'summary',
       key: 'summary',
-      width: 200,
+      flex: 1,
+      minWidth: 200,
       render: (summary) => (
         <div className="text-sm text-gray-600 line-clamp-2">
           {summary || '暂无摘要'}
@@ -1512,7 +1504,7 @@ ${basicInfo.additionalInfo ? `\n**额外补充信息**：\n${basicInfo.additiona
     {
       title: '操作',
       key: 'actions',
-      width: 200,
+      width: 180,
       render: (_, record) => (
         <Space>
           <Button 
@@ -1591,7 +1583,7 @@ ${basicInfo.additionalInfo ? `\n**额外补充信息**：\n${basicInfo.additiona
       </div>
       
       <div className="border rounded-lg p-4 bg-gray-50">
-        <h4 className="font-medium mb-2">账号分析内容</h4>
+        <h4 className="font-medium mb-2">品牌/产品分析内容</h4>
         <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
           <ReactMarkdown>{viewingItem.document_content}</ReactMarkdown>
         </div>

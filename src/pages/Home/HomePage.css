@@ -1658,12 +1658,30 @@ body {
   }
 
   .trust-content {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 
   .trust-card {
-    padding: 2rem;
+    padding: 1rem;
+  }
+  
+  .trust-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  
+  .trust-title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .trust-description {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
   }
 
   .partners-logos {
@@ -1675,8 +1693,18 @@ body {
   }
 
   .advantages-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .intro-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 
   .stats-grid {
@@ -1689,6 +1717,98 @@ body {
     right: 1rem;
     width: 44px;
     height: 44px;
+  }
+
+  /* 手机端卡片样式调整 - 更小的尺寸，适合并排显示 */
+  .intro-card {
+    padding: 1rem;
+  }
+  
+  .intro-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .intro-title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .intro-description {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  
+  .feature-card {
+    margin-bottom: 1rem;
+  }
+  
+  .feature-content {
+    padding: 1.5rem;
+  }
+  
+  .feature-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.4rem;
+  }
+  
+  .feature-title {
+    font-size: 1.2rem;
+  }
+  
+  .advantage-card {
+    padding: 1rem;
+  }
+  
+  .advantage-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .advantage-title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .advantage-description {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+  }
+  
+  .advantage-metric .metric-value {
+    font-size: 1.2rem;
+  }
+  
+  .advantage-metric .metric-label {
+    font-size: 0.8rem;
+  }
+  
+  .scenario-tab {
+    padding: 1rem;
+  }
+  
+  .tab-number {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+  
+  .tab-question {
+    font-size: 1rem;
+  }
+  
+  .scenario-details {
+    padding: 1.5rem;
+  }
+  
+  .scenario-title {
+    font-size: 1.3rem;
   }
 
   /* 模态框移动端优化 */
@@ -1743,6 +1863,64 @@ body {
     width: 80px;
     height: 80px;
     font-size: 2rem;
+  }
+  
+  /* 超小屏幕优化 - 复杂卡片保持单列，简单卡片保持双列 */
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .trust-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  /* 简单卡片保持双列 */
+  .intro-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+  
+  .advantages-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+  
+  .intro-card {
+    padding: 0.8rem;
+  }
+  
+  .intro-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+  
+  .intro-title {
+    font-size: 0.9rem;
+  }
+  
+  .intro-description {
+    font-size: 0.7rem;
+  }
+  
+  .advantage-card {
+    padding: 0.8rem;
+  }
+  
+  .advantage-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+  
+  .advantage-title {
+    font-size: 0.9rem;
+  }
+  
+  .advantage-description {
+    font-size: 0.7rem;
   }
 }
 

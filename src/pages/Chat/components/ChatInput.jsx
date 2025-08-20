@@ -6,6 +6,7 @@ import { agentOptions } from './agentOptions';
 import MCPToolsButton from '../../../components/MCPToolsButton';
 import DigitalPersonSelector from '../../../components/DigitalPersonSelector';
 import DocumentSelector from '../../../components/DocumentSelector';
+import ModelSelector from '../../../components/ModelSelector';
 import SOPPills from '../../../components/SOPPills';
 
 const { TextArea } = Input;
@@ -74,6 +75,59 @@ const ChatInput = ({
       maxWidth: isStartScreen ? '800px' : '100%',
       margin: isStartScreen ? '0 auto' : '0'
     }}>
+      <style jsx>{`
+        /* 手机端样式：药丸组件只显示icon */
+        @media (max-width: 768px) {
+          .digital-person-selector-btn .selector-text,
+          .document-selector-btn .selector-text,
+          .mcp-tools-btn .selector-text {
+            display: none !important;
+          }
+          
+          .digital-person-selector-btn .selector-icon,
+          .document-selector-btn .selector-icon,
+          .mcp-tools-btn .selector-icon {
+            margin-right: 0 !important;
+          }
+          
+                     .digital-person-selector-btn .selector-arrow,
+           .document-selector-btn .selector-arrow,
+           .mcp-tools-btn .selector-arrow {
+             display: none !important;
+           }
+          
+          .digital-person-selector-btn,
+          .document-selector-btn,
+          .mcp-tools-btn {
+            min-width: 32px !important;
+            max-width: 32px !important;
+            padding: 4px !important;
+            justify-content: center !important;
+          }
+          
+          /* 模型选择器在手机端的样式 */
+          .model-selector {
+            width: 32px !important;
+            min-width: 32px !important;
+          }
+          
+          .model-selector .ant-select-selector {
+            padding: 0 4px !important;
+          }
+          
+          .model-selector .ant-select-selection-item {
+            display: none !important;
+          }
+          
+          .model-selector .ant-select-selector::before {
+            content: '🤖';
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+          }
+        }
+      `}</style>
       {/* 数据标签已移到DocumentSelector内部显示 */}
 
       {/* 主输入区域 */}
@@ -162,26 +216,12 @@ const ChatInput = ({
           {/* 右侧工具 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {/* 模型选择器 */}
-            <Select
-              value={selectedModel}
-              onChange={handleModelChange}
-              size="small"
-              style={{ 
-                width: 120,
-                fontSize: 12
-              }}
-              placeholder="模型"
-              loading={modelsLoading}
-              disabled={modelsLoading || availableModels.length === 0}
-              bordered={false}
-              dropdownStyle={{ fontSize: 12 }}
-            >
-              {availableModels.map((model) => (
-                <Select.Option key={model.value} value={model.value}>
-                  <span style={{ fontSize: 12 }}>{model.label}</span>
-                </Select.Option>
-              ))}
-            </Select>
+            <ModelSelector
+              selectedModel={selectedModel}
+              availableModels={availableModels}
+              modelsLoading={modelsLoading}
+              onModelChange={handleModelChange}
+            />
 
             {/* 数字人选择 */}
             <DigitalPersonSelector 

@@ -18,8 +18,73 @@ const DigitalPersonSelector = ({ selectedAgent, onAgentChange }) => {
 
   const selectedExpert = getSelectedExpert();
 
-  const expertsPanel = (
-    <Card style={{ width: 380, maxHeight: 500, overflow: 'auto' }}>
+  // 检查是否为手机端
+  const isMobile = window.innerWidth <= 768;
+
+  // 手机端简单选择面板
+  const mobilePanel = (
+    <Card style={{ 
+      width: Math.min(250, window.innerWidth - 20), 
+      maxHeight: Math.min(300, window.innerHeight - 100), 
+      overflow: 'auto' 
+    }}>
+      <div style={{ marginBottom: 8 }}>
+        <Text strong style={{ fontSize: 13 }}>选择AI助手</Text>
+      </div>
+      
+      <div style={{ maxHeight: 200, overflow: 'auto' }}>
+        {expertOptions.map((expert) => (
+          <div 
+            key={expert.value}
+            style={{ 
+              padding: '8px',
+              border: selectedAgent === expert.value ? '1px solid #1890ff' : '1px solid #f0f0f0',
+              borderRadius: '6px',
+              marginBottom: '6px',
+              cursor: 'pointer',
+              background: selectedAgent === expert.value ? '#f6f8ff' : '#fff',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            onClick={() => {
+              onAgentChange(expert.value);
+              setVisible(false);
+            }}
+          >
+            <div style={{ fontSize: 14, marginRight: 8 }}>
+              {expert.icon}
+            </div>
+            <div style={{ flex: 1 }}>
+              <Text style={{ fontSize: 12, fontWeight: selectedAgent === expert.value ? 'bold' : 'normal' }}>
+                {expert.label}
+              </Text>
+              {selectedAgent === expert.value && (
+                <div style={{ 
+                  background: '#1890ff',
+                  color: '#fff',
+                  fontSize: 9,
+                  padding: '1px 4px',
+                  borderRadius: '3px',
+                  marginLeft: 6,
+                  display: 'inline-block'
+                }}>
+                  ✓
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+
+  // 桌面端详细面板（保持原有设计）
+  const desktopPanel = (
+    <Card style={{ 
+      width: 380, 
+      maxHeight: 500, 
+      overflow: 'auto' 
+    }}>
       <div style={{ marginBottom: 12 }}>
         <Text strong style={{ fontSize: 14 }}>选择AI助手</Text>
         <Text type="secondary" style={{ display: 'block', fontSize: 12, marginTop: 4 }}>
@@ -104,7 +169,7 @@ const DigitalPersonSelector = ({ selectedAgent, onAgentChange }) => {
 
   return (
     <Dropdown 
-      overlay={expertsPanel}
+      overlay={isMobile ? mobilePanel : desktopPanel}
       trigger={['click']}
       visible={visible}
       onVisibleChange={setVisible}
@@ -125,17 +190,18 @@ const DigitalPersonSelector = ({ selectedAgent, onAgentChange }) => {
           fontSize: 12,
           background: '#ffffff'
         }}
+        className="digital-person-selector-btn"
       >
-        <RobotOutlined style={{ marginRight: 4, fontSize: 12 }} />
+        <RobotOutlined style={{ marginRight: 4, fontSize: 12 }} className="selector-icon" />
         <span style={{ 
           overflow: 'hidden', 
           textOverflow: 'ellipsis', 
           whiteSpace: 'nowrap',
           flex: 1
-        }}>
+        }} className="selector-text">
           {selectedExpert ? selectedExpert.label : '选择助手'}
         </span>
-        <DownOutlined style={{ marginLeft: 4, fontSize: 10 }} />
+        <DownOutlined style={{ marginLeft: 4, fontSize: 10 }} className="selector-arrow" />
       </Button>
     </Dropdown>
   );

@@ -678,12 +678,32 @@ const ChatPage = () => {
         @media (max-width: 768px) {
           .message-content { max-width: 90%; }
           .chat-messages { padding: 10px; }
-          .chat-input-area { padding: 15px; }
+          .chat-input-area { 
+            padding: 15px; 
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 1000 !important;
+            background: #ffffff !important;
+            border-top: 1px solid #e5e7eb !important;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1) !important;
+          }
+          
+          /* 为固定输入框预留底部空间 */
+          .chat-container {
+            padding-bottom: 80px !important;
+          }
+          
+          /* 消息列表在手机端需要额外的底部边距 */
+          .chat-messages {
+            padding-bottom: 100px !important;
+          }
         }
         
         @media (max-width: 480px) {
           .message-content { max-width: 95%; }
-          .chat-messages { padding: 8px; }
+          .chat-messages { padding: 8px; padding-bottom: 100px !important; }
           .chat-input-area { padding: 12px; }
         }
       `}</style>

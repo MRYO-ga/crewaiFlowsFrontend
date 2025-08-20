@@ -24,6 +24,12 @@ const MainLayout = () => {
 
   const navItems = [
     { 
+      title: '功能导航', 
+      items: [
+        { path: '/app/features', name: '功能概览', icon: 'fa-grid-2' },
+      ]
+    },
+    { 
       title: '主功能区', 
       items: [
         { path: '/app/chat', name: '智能对话', icon: 'fa-comments' },
@@ -48,6 +54,34 @@ const MainLayout = () => {
 
   return (
     <div className="flex h-screen bg-gray-100 text-dark">
+      <style jsx>{`
+        /* 手机端菜单栏优化 */
+        @media (max-width: 640px) {
+          .mobile-sidebar {
+            width: 280px !important;
+          }
+          
+          .mobile-sidebar .p-4 {
+            padding: 1rem !important;
+          }
+          
+          .mobile-sidebar .py-2\.5 {
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+          }
+          
+          .mobile-sidebar .py-3 {
+            padding-top: 0.75rem !important;
+            padding-bottom: 0.75rem !important;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .mobile-sidebar {
+            width: 260px !important;
+          }
+        }
+      `}</style>
       <style jsx>{`
         .custom-scrollbar {
           scrollbar-width: thin;
@@ -204,25 +238,31 @@ const MainLayout = () => {
 
         {/* 移动端侧边栏 */}
         {showMobileMenu && (
-          <aside className="fixed inset-0 bg-white z-40 md:hidden">
-            <div className="p-4 h-full flex flex-col">
-              <div className="flex justify-between items-center mb-4">
-                <div 
-                  className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => window.open(getFrontendUrl(), '_blank')}
-                >
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-primary/70 flex items-center justify-center">
-                    <i className="fa-solid fa-bolt text-white text-xl"></i>
+          <>
+            {/* 遮罩层 */}
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+              onClick={() => setShowMobileMenu(false)}
+            ></div>
+            {/* 侧边栏 */}
+            <aside className="mobile-sidebar fixed top-0 left-0 w-72 sm:w-80 h-full bg-white z-40 md:hidden transform transition-transform duration-300 shadow-xl">
+              <div className="p-4 h-full flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                  <div 
+                    className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => window.open(getFrontendUrl(), '_blank')}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-primary to-primary/70 flex items-center justify-center">
+                      <i className="fa-solid fa-bolt text-white text-sm"></i>
+                    </div>
+                    <div>
+                      <h1 className="text-lg font-bold text-dark">SAM</h1>
+                    </div>
                   </div>
-                  <div>
-                    <h1 className="text-xl font-bold text-dark">Social AgentMind</h1>
-                    <p className="text-xs text-gray-400">智能社交媒体运营助手</p>
-                  </div>
+                  <button onClick={() => setShowMobileMenu(false)}>
+                    <i className="fa-solid fa-times text-gray-500 text-lg"></i>
+                  </button>
                 </div>
-                <button onClick={() => setShowMobileMenu(false)}>
-                  <i className="fa-solid fa-times text-gray-500 text-xl"></i>
-                </button>
-              </div>
               
               <nav className="flex-1 overflow-y-auto custom-scrollbar">
                 {navItems.map((section, sIndex) => (
@@ -292,6 +332,7 @@ const MainLayout = () => {
               </nav>
             </div>
           </aside>
+          </>
         )}
 
         {/* 中间内容区域 */}

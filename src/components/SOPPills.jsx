@@ -510,12 +510,14 @@ const SOPPills = ({ onSelect, selectedPill, isVisible = true }) => {
         })}
       </div>
       
-      {/* 展开的阶段卡片 */}
-      {expandedStage && (
-        <div style={{
-          animation: 'fadeInUp 0.3s ease-out',
-          marginTop: 8
-        }}>
+              {/* 展开的阶段卡片 */}
+        {expandedStage && (
+          <div 
+            className="expanded-cards-container"
+            style={{
+              animation: 'fadeInUp 0.3s ease-out',
+              marginTop: 8
+            }}>
           {sopStages
             .find(stage => stage.id === expandedStage)?.items
             .map((item) => {
@@ -634,43 +636,158 @@ const SOPPills = ({ onSelect, selectedPill, isVisible = true }) => {
           }
           
           .stage-pill {
-            min-width: 100px !important;
+            min-width: 80px !important;
             max-width: none !important;
-            flex: 1 1 calc(50% - 3px) !important;
+            flex: 1 1 calc(33.333% - 4px) !important;
+          }
+          
+          .expanded-cards-container {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 6px !important;
+          }
+          
+          .expanded-cards-container .ant-card {
+            margin-bottom: 0 !important;
+          }
+          
+          .expanded-cards-container .card-text-content {
+            min-width: auto !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+          }
+          
+          .expanded-cards-container .ant-card .ant-card-body {
+            padding: 8px !important;
           }
           
           .stage-pill-content {
-            padding: 8px 4px !important;
-            min-height: 70px !important;
+            padding: 6px 2px !important;
+            min-height: 60px !important;
           }
           
           .stage-icon {
-            font-size: 14px !important;
+            font-size: 12px !important;
           }
           
           .stage-name {
-            font-size: 11px !important;
+            font-size: 10px !important;
           }
           
           .stage-description {
             font-size: 8px !important;
-            height: 16px !important;
+            height: 14px !important;
           }
           
           .expand-indicator {
-            font-size: 7px !important;
+            font-size: 6px !important;
           }
         }
         
         @media (max-width: 480px) {
           .stage-pill {
-            flex: 1 1 100% !important;
-            margin-bottom: 4px;
+            flex: 1 1 calc(33.333% - 3px) !important;
+            margin-bottom: 2px;
+            min-width: 70px !important;
+          }
+          
+          .expanded-cards-container {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 6px !important;
+          }
+          
+          .expanded-cards-container .ant-card {
+            flex: 1 1 calc(50% - 6px) !important;
+            min-width: 120px !important;
+            max-width: calc(50% - 6px) !important;
+            margin-bottom: 8px !important;
+          }
+          
+          .expanded-cards-container .card-text-content {
+            min-width: auto !important;
+            flex-direction: row !important;
+            align-items: flex-start !important;
+            gap: 4px !important;
+            flex: 1 !important;
+            margin-bottom: 4px !important;
+          }
+          
+          .expanded-cards-container .ant-card .ant-card-body {
+            padding: 6px !important;
+            font-size: 9px !important;
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          
+          .expanded-cards-container .ant-btn {
+            height: 20px !important;
+            font-size: 8px !important;
+            padding: 0 6px !important;
+            width: 100% !important;
+            margin-top: auto !important;
+            flex-shrink: 0 !important;
+          }
+          
+          /* 卡片容器高度调整 */
+          .expanded-cards-container .ant-card {
+            height: auto !important;
+            min-height: 80px !important;
+          }
+          
+          /* 卡片内容垂直布局，按钮在下方 */
+          .expanded-cards-container .card-content {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            justify-content: space-between !important;
+            gap: 4px !important;
+            height: 100% !important;
+          }
+          
+          /* 手机端简化文字内容 */
+          .expanded-cards-container .card-text-content > div:last-child > div:first-child {
+            font-size: 10px !important;
+            line-height: 1.2 !important;
+            margin-bottom: 2px !important;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: unset !important;
+            word-break: break-word !important;
+          }
+          
+          /* 隐藏描述文字 */
+          .expanded-cards-container .card-text-content > div:last-child > div:last-child {
+            display: none !important;
+          }
+          
+          /* 简化图标显示 */
+          .expanded-cards-container .card-text-content > div:first-child {
+            font-size: 12px !important;
+            margin-right: 4px !important;
+            margin-top: 0 !important;
           }
           
           .stage-pill-content {
-            padding: 6px 4px !important;
-            min-height: 60px !important;
+            padding: 4px 1px !important;
+            min-height: 50px !important;
+          }
+          
+          .stage-icon {
+            font-size: 10px !important;
+          }
+          
+          .stage-name {
+            font-size: 9px !important;
+          }
+          
+          .stage-description {
+            font-size: 7px !important;
+            height: 12px !important;
+          }
+          
+          .expand-indicator {
+            font-size: 5px !important;
           }
           
           .card-content {

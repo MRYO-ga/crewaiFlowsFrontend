@@ -20,6 +20,7 @@ import KnowledgeGraphPage from './pages/KnowledgeGraphPage';
 import KnowledgePage from './pages/Knowledge';
 import LightRAGPage from './pages/LightRAG';
 import CategorizedNotesPage from './pages/CategorizedNotesPage';
+import FeaturesPage from './pages/Features';
 import HelpPage from './pages/Resources/Help';
 import BlogPage from './pages/Resources/Blog';
 import ChangelogPage from './pages/Resources/Changelog';
@@ -64,6 +65,7 @@ function App() {
           <Route path="knowledge" element={<KnowledgePage />} />
           <Route path="lightrag" element={<LightRAGPage />} />
           <Route path="categorized-notes" element={<CategorizedNotesPage />} />
+          <Route path="features" element={<FeaturesPage />} />
         </Route>
       </Routes>
     </Router>

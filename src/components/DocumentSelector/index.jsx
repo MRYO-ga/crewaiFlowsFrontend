@@ -266,8 +266,110 @@ const DocumentSelector = ({
     return isSelected;
   };
 
-  const documentPanel = (
-    <Card style={{ width: 420, maxHeight: 500, overflow: 'auto' }}>
+  // 检查是否为手机端
+  const isMobile = window.innerWidth <= 768;
+
+  // 手机端简单文档面板
+  const mobilePanel = (
+    <Card style={{ 
+      width: Math.min(280, window.innerWidth - 20), 
+      maxHeight: Math.min(350, window.innerHeight - 100), 
+      overflow: 'auto' 
+    }}>
+      <div style={{ marginBottom: 8 }}>
+        <Text strong style={{ fontSize: 13 }}>选择数据</Text>
+        {attachedData.length > 0 && (
+          <Text type="secondary" style={{ fontSize: 10, marginLeft: 8 }}>
+            已选 {attachedData.length} 项
+          </Text>
+        )}
+      </div>
+      
+      {/* 已选择的数据简化显示 */}
+      {attachedData.length > 0 && (
+        <div style={{ marginBottom: 12, padding: 8, background: '#f0f8ff', borderRadius: 4 }}>
+          <Space wrap size={[2, 2]}>
+            {attachedData.slice(0, 3).map(item => (
+              <Tag 
+                key={item.id}
+                closable
+                size="small"
+                onClose={() => removeDataReference && removeDataReference(item.id)}
+                style={{ fontSize: 9, margin: 0 }}
+              >
+                {item.name}
+              </Tag>
+            ))}
+            {attachedData.length > 3 && (
+              <Tag size="small" style={{ fontSize: 9 }}>+{attachedData.length - 3}</Tag>
+            )}
+          </Space>
+        </div>
+      )}
+
+      {documentCategories.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+          <DatabaseOutlined style={{ fontSize: 20, color: '#d9d9d9', marginBottom: 8 }} />
+          <Text type="secondary" style={{ fontSize: 11 }}>暂无数据</Text>
+        </div>
+      ) : (
+        <div style={{ maxHeight: 220, overflow: 'auto' }}>
+          {documentCategories.map((category) => (
+            <div key={category.key} style={{ marginBottom: 12 }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                marginBottom: 6,
+                padding: '4px 6px',
+                background: '#fafafa',
+                borderRadius: 4
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  {category.icon}
+                  <Text strong style={{ fontSize: 11, marginLeft: 6 }}>
+                    {category.title}
+                  </Text>
+                </div>
+                <Badge count={category.documents.length} size="small" style={{ fontSize: 8 }} />
+              </div>
+              
+              <div style={{ paddingLeft: 8 }}>
+                {category.documents.slice(0, 5).map((document) => (
+                  <div key={document.id} style={{ marginBottom: 4 }}>
+                    <Checkbox
+                      checked={isDocumentSelected(document)}
+                      onChange={(e) => handleDocumentSelect(category.key, document.id, e.target.checked)}
+                      style={{ width: '100%' }}
+                    >
+                      <div style={{ marginLeft: 2 }}>
+                        <Text style={{ fontSize: 11 }}>
+                          {document.title.length > 15 ? `${document.title.slice(0, 15)}...` : document.title}
+                        </Text>
+                      </div>
+                    </Checkbox>
+                  </div>
+                ))}
+                {category.documents.length > 5 && (
+                  <Text type="secondary" style={{ fontSize: 9, paddingLeft: 20 }}>
+                    还有 {category.documents.length - 5} 项...
+                  </Text>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+
+  // 桌面端详细面板（保持原有设计）
+  const desktopPanel = (
+    <Card style={{ 
+      width: 420, 
+      maxHeight: 500, 
+      overflow: 'auto' 
+    }}>
       {/* 已选择的数据标签区域 */}
       {attachedData.length > 0 && (
         <div style={{ marginBottom: 16, padding: 12, background: '#f5f5f5', borderRadius: 8 }}>
@@ -302,8 +404,6 @@ const DocumentSelector = ({
           选择要载入对话的具体文档
         </Text>
       </div>
-
-
 
       {documentCategories.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 20px' }}>
@@ -403,7 +503,7 @@ const DocumentSelector = ({
 
   return (
     <Dropdown 
-      overlay={documentPanel}
+      overlay={isMobile ? mobilePanel : desktopPanel}
       trigger={['click']}
       visible={visible}
       onVisibleChange={setVisible}
@@ -423,13 +523,13 @@ const DocumentSelector = ({
           fontSize: 12,
           background: '#ffffff'
         }}
-
+        className="document-selector-btn"
       >
-        <DatabaseOutlined style={{ marginRight: 4, fontSize: 12 }} />
-        <span>
+        <DatabaseOutlined style={{ marginRight: 4, fontSize: 12 }} className="selector-icon" />
+        <span className="selector-text">
           {attachedData.length > 0 ? `数据 (${attachedData.length})` : '数据'}
         </span>
-        <DownOutlined style={{ marginLeft: 4, fontSize: 10 }} />
+        <DownOutlined style={{ marginLeft: 4, fontSize: 10 }} className="selector-arrow" />
       </Button>
     </Dropdown>
   );
